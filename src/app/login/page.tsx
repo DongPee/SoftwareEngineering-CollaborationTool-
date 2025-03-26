@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-
+import Link from "next/link";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -65,7 +65,9 @@ export default function LoginPage() {
         {/* 하단 링크 */}
         <div className="text-center text-sm text-gray-500 mt-4">
           <a href="#" className="text-blue-600 hover:underline">로그인할 수 없습니까?</a> ・{" "}
-          <a href="#" className="text-blue-600 hover:underline">계정 만들기</a>
+          <Link href="/signup" className="text-blue-600 hover:underline">
+            계정 만들기
+          </Link>
         </div>
 
         {/* 푸터 */}

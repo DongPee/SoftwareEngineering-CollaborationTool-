@@ -1,0 +1,105 @@
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f4f4f4;
+  }
+  
+  .signupBox {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+  
+  .title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .inputGroup {
+    text-align: left;
+    margin-bottom: 15px;
+  }
+  
+  .inputGroup label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 5px;
+  }
+  
+  .inputGroup input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+  }
+  
+  .submitButton {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  .submitButton:hover {
+    background-color: #0056b3;
+  }
+  .idenButtonContainer {
+    display: flex; /* 가로로 배치 */
+    justify-content: space-between; /* 버튼 간의 간격을 자동으로 설정 */
+    align-items: center; /* 수직 정렬을 가운데로 설정 */
+  }
+
+  .idenButton {
+      width: 48%; /* 버튼의 너비를 조정해서 간격을 조금 두기 */
+      padding: 10px;
+      background-color: #DDDDDD;
+      color: black;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s;
+
+  }
+  
+  .idenButton:hover {
+    background-color: #0056b3;
+    color: white;
+  }
+
+  .loginText {
+    font-size: 14px;
+    color: #666;
+    margin-top: 15px;
+  }
+  
+  .loginLink {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  
+  .loginLink:hover {
+    text-decoration: underline;
+  } 

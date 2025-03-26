@@ -23,7 +23,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             padding:0,
             color:"white"
           }}>Ollert</h1> 
-          <a href="/login">
+          
+          <Link href="login">
             <button
               className="login"
               style={{
@@ -35,7 +36,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             >
               log in
             </button>
-          </a>
+          </Link>
         </header>
         <main style={{ padding: "20px" }}>{children}</main>
       </body>
