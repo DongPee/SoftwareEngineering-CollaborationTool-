@@ -140,6 +140,7 @@ app.post('/api/signup', async (req, res) => {
 
 // 사용자 조회 API
 app.get('/api/users', async (req, res) => {
+    const { email, password } = req.body;
     try {
         const [rows] = await db.query('SELECT * FROM user_info'); 
         res.json(rows);
@@ -148,6 +149,37 @@ app.get('/api/users', async (req, res) => {
         res.status(500).json({ error: 'Database connection error' });
     }
 });
+
+app.post('/api/tryLogin', async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ error: "이메일과 비밀번호를 입력해야 합니다." });
+    }
+
+    try {
+        // 이메일로 유저 조회
+        const [rows] = await db.query('SELECT password_hash FROM user_info WHERE email = ?', [email]);
+
+        if (rows.length === 0) {
+            return res.status(401).json({ error: "이메일 또는 비밀번호가 올바르지 않습니다." });
+        }
+
+        const hashedPassword = rows[0].password_hash;
+
+        // 입력된 비밀번호와 해시 비교
+        const isMatch = await bcrypt.compare(password, hashedPassword);
+        if (!isMatch) {
+            return res.status(401).json({ error: "이메일 또는 비밀번호가 올바르지 않습니다." });
+        }
+
+        res.status(200).json({ message: "로그인 성공!" });
+    } catch (err) {
+        console.error("로그인 오류:", err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
 app.listen(5001, () => {
     console.log('Server is running on port 5001');
 });
