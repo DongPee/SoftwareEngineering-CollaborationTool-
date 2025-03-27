@@ -27,8 +27,8 @@ async function sendVerificationEmail(email, verificationCode) {
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-                user: 'kmjnet12@gmail.com',  // 실제 Gmail 주소 입력
-                pass: 'pvoyqqtfawrivojx', // 앱 비밀번호
+                user: 'swepswepswep15@gmail.com',  // 실제 Gmail 주소 입력
+                pass: 'hfmcwefavhkvnfod', // 앱 비밀번호
             }
         });
 
