@@ -9,9 +9,9 @@ export default function Signup() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState(""); // 추가됨
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [ICode, setICode] = useState("");
-  const [isVerified, setIsVerified] = useState(false); // 추가됨
+  const [isVerified, setIsVerified] = useState(false);
 
   // 인증 코드 요청
   const handleRequestVerification = async () => {
@@ -175,7 +175,7 @@ export default function Signup() {
 
         <p className={styles.loginText}>
           이미 계정이 있나요?{" "}
-          <Link href="/login" className={styles.loginLink}>
+          <Link href="login" className={styles.loginLink}>
             로그인하기
           </Link>
         </p>

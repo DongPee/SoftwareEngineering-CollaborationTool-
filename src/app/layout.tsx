@@ -1,45 +1,84 @@
+"use client";
+
 import "./globals.css";
 import Link from "next/link";
+import { useContext } from "react";
+import { AuthContext, AuthProvider } from "./frontend/AuthContext";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko">
-      <body>
-        <header
+    <AuthProvider>
+      <html lang="ko">
+        <body>
+          <Header />
+          <main style={{ padding: "20px" }}>{children}</main>
+        </body>
+      </html>
+    </AuthProvider>
+  );
+}
+
+function Header() {
+  const auth = useContext(AuthContext);
+
+  return (
+    <header
+      style={{
+        padding: "10px",
+        background: "#6200ea",
+        color: "black",
+        textAlign: "center",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        position: "relative",
+        borderRadius: 20,
+      }}
+    >
+      <Link href="/">
+        <button
+          type="button"
           style={{
-            padding: "10px",
-            background: "#6200ea",
-            color: "black",
-            textAlign: "center",
-            display: "flex",
-            justifyContent: "center", // h1을 가운데 정렬
-            alignItems: "center", // 세로 가운데 정렬
-            position: "relative", // 상대 위치로 설정하여 버튼을 오른쪽으로 이동시킬 수 있음
-            borderRadius :20
+            margin: 0,
+            fontSize: 30,
+            padding: 0,
+            color: "white",
           }}
         >
-          <h1 style={{ margin: 0,
-            fontSize:30,
-            padding:0,
-            color:"white"
-          }}>Ollert</h1> 
-          
-          <Link href="login">
-            <button
-              className="login"
-              style={{
-                position: "absolute", 
-                right: "10px", // 오른쪽에 배치
-                top: "50%", // 세로 가운데 정렬
-                transform: "translateY(-50%)", // 정확한 세로 가운데 정렬
-              }}
-            >
-              log in
-            </button>
-          </Link>
-        </header>
-        <main style={{ padding: "20px" }}>{children}</main>
-      </body>
-    </html>
+          Ollert
+        </button>
+      </Link>
+
+      {auth?.isLoggedIn ? (
+        <span
+          style={{
+            position: "absolute",
+            right: "10px",
+            top: "50%",
+            transform: "translateY(-50%)",
+            fontWeight: "bold",
+            color: "white",
+            cursor: "pointer",
+          }}
+          onClick={auth.logout}
+        >
+          {auth.username}님 (로그아웃)
+        </span>
+      ) : (
+        <Link href="/frontend/login">
+          <button
+            className="login"
+            style={{
+              position: "absolute",
+              right: "10px",
+              top: "50%",
+              transform: "translateY(-50%)",
+            }}
+          >
+            log in
+          </button>
+        </Link>
+      )}
+    </header>
   );
 }

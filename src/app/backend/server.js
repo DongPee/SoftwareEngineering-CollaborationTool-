@@ -140,9 +140,9 @@ app.post('/api/signup', async (req, res) => {
 
 // 사용자 조회 API
 app.get('/api/users', async (req, res) => {
-    const { email, password } = req.body;
+    const { email} = req.body;
     try {
-        const [rows] = await db.query('SELECT * FROM user_info'); 
+        const [rows] = await db.query('SELECT * FROM user_info where email = ?' [email]); 
         res.json(rows);
     } catch (err) {
         console.error("데이터베이스 오류:", err);
@@ -159,12 +159,11 @@ app.post('/api/tryLogin', async (req, res) => {
 
     try {
         // 이메일로 유저 조회
-        const [rows] = await db.query('SELECT password_hash FROM user_info WHERE email = ?', [email]);
+        const [rows] = await db.query('SELECT username, password_hash FROM user_info WHERE email = ?', [email]);
 
         if (rows.length === 0) {
             return res.status(401).json({ error: "이메일 또는 비밀번호가 올바르지 않습니다." });
         }
-
         const hashedPassword = rows[0].password_hash;
 
         // 입력된 비밀번호와 해시 비교
@@ -172,8 +171,7 @@ app.post('/api/tryLogin', async (req, res) => {
         if (!isMatch) {
             return res.status(401).json({ error: "이메일 또는 비밀번호가 올바르지 않습니다." });
         }
-
-        res.status(200).json({ message: "로그인 성공!" });
+        res.status(200).json({ message: "로그인 성공!", username : rows[0].username});
     } catch (err) {
         console.error("로그인 오류:", err);
         res.status(500).json({ error: "서버 오류 발생" });

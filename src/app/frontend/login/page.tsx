@@ -1,41 +1,50 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { useRouter } from "next/navigation"; // ✅ 추가
 import Image from "next/image";
 import Link from "next/link";
+import { AuthContext } from "../AuthContext";
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const auth = useContext(AuthContext);
+  const router = useRouter(); // ✅ useRouter 사용
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-        const response = await fetch("http://localhost:5001/api/tryLogin", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                email,       // useState로 관리하는 값
-                password,    // useState로 관리하는 값
-            }),
-        });
-        const data = await response.json();
-        if (response.ok) {
-            console.log("로그인 성공!", data);
-            alert("로그인 성공");
+      const response = await fetch("http://localhost:5001/api/tryLogin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
 
-        } else {
-            console.error("로그인 실패:", data.error);
-            alert("로그인 실패");
-            alert(data.error); // 에러 메시지 출력
-        }
+      const data = await response.json();
+      if (response.ok) {
+        console.log("로그인 성공!", data);
+        alert("로그인 성공");
+        auth?.login(data.username);
+
+        // ✅ 로그인 성공 후 메인 페이지로 이동
+        router.push("/");
+      } else {
+        console.error("로그인 실패:", data.error);
+        alert("로그인 실패");
+        alert(data.error);
+      }
     } catch (err) {
-        console.error("서버 오류:", err);
-        alert("서버 오류가 발생했습니다.");
+      console.error("서버 오류:", err);
+      alert("서버 오류가 발생했습니다.");
     }
-};
+  };
 
   return (
     <div className="flex justify-center items-center h-screen bg-white">
@@ -99,7 +108,7 @@ export default function LoginPage() {
         {/* 하단 링크 */}
         <div className="text-center text-sm text-gray-500 mt-4">
           <a href="#" className="text-blue-600 hover:underline">로그인할 수 없습니까?</a> ・{" "}
-          <Link href="/signup" className="text-blue-600 hover:underline">
+          <Link href="signup" className="text-blue-600 hover:underline">
             계정 만들기
           </Link>
         </div>
