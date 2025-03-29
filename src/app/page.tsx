@@ -6,7 +6,7 @@ import Board from "./frontend/projectBoard";
 import Top from "./frontend/projectTop";
 import Summary from "./frontend/projectSummary";
 export default function Page() {
-  const [active, setActive] = useState("home"); // active 상태 관리
+  const [active, setActive] = useState("summary"); // active 상태 관리
   return (
     <div className="flex">
       <div>

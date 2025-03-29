@@ -57,7 +57,7 @@ function Header() {
             top: "50%",
             transform: "translateY(-50%)",
             fontWeight: "bold",
-            color: "white",
+            color: "black",
             cursor: "pointer",
           }}
           onClick={auth.logout}
