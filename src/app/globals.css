@@ -11,7 +11,6 @@ body {
   font-family: sans-serif;
   background-color: #f4f4f4;
   color: #333;
-  padding: 20px;
 }
 
 .board {
@@ -51,7 +50,7 @@ body {
   cursor: pointer;
 }
 .login{
-  background: white;
+  background: rgb(255, 134, 53);
   padding: 10px;
   width: 80px;
   min-height: 40px;
@@ -69,3 +68,6 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+.projectNameButton{
+  
+}

@@ -11,7 +11,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <html lang="ko">
         <body>
           <Header />
-          <main style={{ padding: "20px" }}>{children}</main>
+          <main>{children}</main>
         </body>
       </html>
     </AuthProvider>
@@ -22,17 +22,17 @@ function Header() {
   const auth = useContext(AuthContext);
 
   return (
-    <header
+    <header className="border-b-2 border-gray-300"
       style={{
         padding: "10px",
-        background: "#6200ea",
+        background: "#ffffff",
         color: "black",
         textAlign: "center",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         position: "relative",
-        borderRadius: 20,
+        borderBottom: "4"
       }}
     >
       <Link href="/">
@@ -42,7 +42,7 @@ function Header() {
             margin: 0,
             fontSize: 30,
             padding: 0,
-            color: "white",
+            color: "black",
           }}
         >
           Ollert
