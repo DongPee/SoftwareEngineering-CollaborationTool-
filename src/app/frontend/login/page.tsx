@@ -107,8 +107,10 @@ export default function LoginPage() {
 
         {/* 하단 링크 */}
         <div className="text-center text-sm text-gray-500 mt-4">
-          <a href="#" className="text-blue-600 hover:underline">로그인할 수 없습니까?</a> ・{" "}
-          <Link href="signup" className="text-blue-600 hover:underline">
+        <Link href="forgotpassword" className="text-blue-600 hover:underline">
+          로그인할 수 없습니까?
+        </Link> ・{" "}
+        <Link href="signup" className="text-blue-600 hover:underline">
             계정 만들기
           </Link>
         </div>
