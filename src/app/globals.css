@@ -1,8 +1,24 @@
 @import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+.dark {
+  background-color: #1a202c;
+  color: #ffffff;
+}
+
+.dark body {
+  background-color: #1a202c;
+  color: white;
+}
+
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
 
 * {
-  margin: 10;
+  margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
@@ -11,6 +27,11 @@ body {
   font-family: sans-serif;
   background-color: #f4f4f4;
   color: #333;
+}
+
+.dark header {
+  background: #2d3748;
+  color: white;
 }
 
 .board {
@@ -31,6 +52,11 @@ body {
   overflow-y: auto;
 }
 
+.dark .column {
+  background: #2d3748;
+  color: white;
+}
+
 .card {
   background: #fff;
   padding: 10px;
@@ -38,6 +64,12 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 1);
   margin-bottom: 10px;
 }
+
+.dark .card {
+  background: #4a5568;
+  color: white;
+}
+
 .card-selected {
   background: rgb(50, 255, 47);
   padding: 10px;
@@ -45,11 +77,17 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 1);
   margin-bottom: 10px;
 }
+
+.dark .card-selected {
+  background: #38a169;
+}
+
 .card:hover {
   background-color: #AAA;
   cursor: pointer;
 }
-.login{
+
+.login {
   background: rgb(255, 134, 53);
   padding: 10px;
   width: 80px;
@@ -57,17 +95,59 @@ body {
   border-radius: 10px;
   font-size: 1.2em;
 }
-.login:hover{
-  background-color: #AAA; 
-  cursor:pointer;
+
+.login:hover {
+  background-color: #AAA;
+  cursor: pointer;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.dark .bg-white {
+  background-color: #2d3748 !important;
+  color: white !important;
 }
 
-.projectNameButton{
-  
+.dark .sidebar {
+  background-color: #1a202c;
+  color: white;
+  border-color: #4a5568;
+}
+
+.dark .project-header {
+  background: #2d3748;
+  color: white;
+  border-bottom: 2px solid #4a5568;
+}
+
+.dark .summary-card {
+  background: #2d3748;
+  color: white;
+  border-color: #4a5568;
+}
+
+.dark .card {
+  background: #4a5568;
+  color: white;
+}
+
+.dark .card-selected {
+  background: #38a169;
+}
+
+.dark .btn {
+  background: #4a5568;
+  color: white;
+}
+
+.dark-toggle {
+  background: rgb(255, 134, 53);
+  padding: 10px;
+  width: 80px;
+  min-height: 40px;
+  border-radius: 10px;
+  font-size: 1.2em;
+}
+
+.dark-toggle:hover {
+  background-color: #AAA;
+  cursor: pointer;
 }
