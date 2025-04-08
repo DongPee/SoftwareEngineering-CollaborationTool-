@@ -33,6 +33,7 @@ export default function Board() {
       newCardText: "", // 초기 카드 입력값
     };
     setColumns([...columns, newColumn]);
+    
   };
 
   // 카드 추가

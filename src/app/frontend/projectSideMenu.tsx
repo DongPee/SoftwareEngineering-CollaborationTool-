@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { getDarkMode } from "./DarkState";
+import { useEffect } from "react";
 
 type SidebarProps = {
   active: string;  
@@ -6,8 +8,11 @@ type SidebarProps = {
 };
 
 const Sidebar = ({ active, setActive }: SidebarProps) => {
+  useEffect(() => {
+      document.body.classList.toggle("dark-mode", getDarkMode());
+    }, []);
   return (
-    <div className="w-60 min-w-45 bg-white text-gray-900 p-6 flex flex-col gap-4 border-r-2 border-gray-300 overflow-y-auto max-h-none">
+    <div className="project-side-menu w-60 min-w-30 p-6 flex flex-col gap-4 overflow-y-auto">
         <div className="m-3">
             <h2 className="font-bold mb-6">계획</h2>
 

@@ -1,5 +1,30 @@
 @import "tailwindcss";
 
+:root {
+  --bg-color: #ffffff;
+  --text-color: #333;
+  --border-color: #d1d5db;
+  --column-bg-color: rgb(234, 234, 234);
+  --column-box-shadow: rgba(0,0,0,1);
+  --card-bg-color : #fff;
+  --bg-login-color : #fafafa;
+  --text-socialLogin-color : #4a5565;
+  --text-help-login-color : #155dfc;
+  --text-inputGroupLabel-color : #555;
+}
+
+.dark-mode {
+  --bg-color: #444444;
+  --text-color: #ffffff;
+  --border-color: #dddddd;
+  --column-bg-color: rgb(50, 50, 50);
+  --column-box-shadow: rgba(255,255,255,1);
+  --card-bg-color : #000;
+  --bg-login-color : #555555;
+  --text-socialLogin-color : #b5aa9a;
+  --text-help-login-color : #eaa203;
+  --text-inputGroupLabel-color : #ccc;
+}
 
 * {
   margin: 10;
@@ -9,8 +34,8 @@
 
 body {
   font-family: sans-serif;
-  background-color: #f4f4f4;
-  color: #333;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 .board {
@@ -21,53 +46,113 @@ body {
 }
 
 .column {
-  background: rgb(234, 234, 234);
+  background: var(--column-bg-color);
   padding: 15px;
   min-width: 300px;
   min-height: 400px;
   max-height: 400px;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 1);
+  box-shadow: 0 4px 6px var(--column-box-shadow);
   overflow-y: auto;
 }
 
 .card {
-  background: #fff;
+  background: var(--card-bg-color);
   padding: 10px;
   border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 1);
+  box-shadow: 0 2px 4px var(--column-box-shadow);
   margin-bottom: 10px;
 }
 .card-selected {
   background: rgb(50, 255, 47);
   padding: 10px;
   border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 1);
+  box-shadow: 0 2px 4px var(--column-box-shadow);
   margin-bottom: 10px;
 }
 .card:hover {
   background-color: #AAA;
   cursor: pointer;
 }
-.login{
+
+.darkMode-button{
   background: rgb(255, 134, 53);
   padding: 10px;
   width: 80px;
   min-height: 40px;
   border-radius: 10px;
   font-size: 1.2em;
+  position: absolute;
+  right: 100px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 .login:hover{
   background-color: #AAA; 
   cursor:pointer;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+
+.header {
+  padding: 10px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  border-bottom: 2px solid var(--border-color);
 }
 
-.projectNameButton{
-  
+.title-button {
+  margin: 0;
+  font-size: 30px;
+  padding: 0;
+  color: var(--text-color);
+}
+
+.user-status {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: bold;
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.login-button{
+  background: rgb(255, 134, 53);
+  padding: 10px;
+  width: 80px;
+  min-height: 40px;
+  border-radius: 10px;
+  font-size: 1.2em;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.summary-b{
+  background: var(--bg-color);
+  color : var(--text-color);
+}
+
+.summary-top{
+  border: 2px solid #d1d5dc;
+  background: #ffffff;
+  color : #333;
+  border-radius: 8px;
+}
+.project-info{
+  border-bottom: 2px solid var(--border-color);
+  background: var(--bg-color);
+  color : var(--text-color);
+}
+.project-side-menu{
+  border-right: 2px solid var(--border-color);
+  background: var(--bg-color);
+  color : var(--text-color);
 }
