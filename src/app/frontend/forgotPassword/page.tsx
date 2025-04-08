@@ -119,7 +119,7 @@ export default function ForgotPasswordPage() {
 
         <p className={styles.loginText}>
           로그인으로 돌아가기{" "}
-          <Link href="/frontend/login" className={styles.loginLink}>
+          <Link href="/frontend/login" className={styles.helpLogin}>
             로그인하기
           </Link>
         </p>
