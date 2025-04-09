@@ -11,6 +11,7 @@
   --text-socialLogin-color : #4a5565;
   --text-help-login-color : #155dfc;
   --text-inputGroupLabel-color : #555;
+  --summaryImages-filter : none;
 }
 
 .dark-mode {
@@ -24,6 +25,7 @@
   --text-socialLogin-color : #b5aa9a;
   --text-help-login-color : #eaa203;
   --text-inputGroupLabel-color : #ccc;
+  --summaryImages-filter : invert(1) brightness(2) contrast(0.47);
 }
 
 * {
@@ -141,9 +143,9 @@ body {
 }
 
 .summary-top{
-  border: 2px solid #d1d5dc;
-  background: #ffffff;
-  color : #333;
+  border: 2px solid var(--border-color);
+  background: var(--bg-color);
+  color : var(--text-color);
   border-radius: 8px;
 }
 .project-info{
@@ -155,4 +157,7 @@ body {
   border-right: 2px solid var(--border-color);
   background: var(--bg-color);
   color : var(--text-color);
+}
+.summaryImages{
+  filter :var(--summaryImages-filter);
 }
