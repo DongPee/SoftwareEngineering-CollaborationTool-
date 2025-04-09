@@ -12,7 +12,7 @@ const Sidebar = ({ active, setActive }: SidebarProps) => {
       document.body.classList.toggle("dark-mode", getDarkMode());
     }, []);
   return (
-    <div className="project-side-menu w-60 min-w-30 p-6 flex flex-col gap-4 overflow-y-auto">
+    <div className="project-side-menu w-60 min-w-30 p-6 flex flex-col gap-4 overflow-y-auto h-full">
         <div className="m-3">
             <h2 className="font-bold mb-6">계획</h2>
 

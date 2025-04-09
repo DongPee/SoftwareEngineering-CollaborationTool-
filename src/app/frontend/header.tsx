@@ -18,7 +18,7 @@ const Header = () => {
   };
 
   return (
-    <header className="header">
+    <header className="header h-1/15">
       <Link href="/">
         <button type="button" className="title-button">
           Ollert

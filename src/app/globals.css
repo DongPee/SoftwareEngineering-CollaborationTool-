@@ -1,4 +1,25 @@
 @import "tailwindcss";
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
+}
+
+/* 다크모드용 스크롤바 스타일 */
+.dark-mode ::-webkit-scrollbar-thumb {
+  background-color: #555;
+}
+
+.dark-mode ::-webkit-scrollbar-track {
+  background-color: #222;
+}
 
 :root {
   --bg-color: #ffffff;
@@ -35,6 +56,7 @@
 }
 
 body {
+  height:100vh;
   font-family: sans-serif;
   background-color: var(--bg-color);
   color: var(--text-color);
@@ -142,11 +164,18 @@ body {
   color : var(--text-color);
 }
 
-.summary-top{
+.summary-top, .summary-middle{
   border: 2px solid var(--border-color);
   background: var(--bg-color);
   color : var(--text-color);
   border-radius: 8px;
+}
+.summary-middle{
+  height:300px;
+  overflow-y: auto;
+}
+.summary-middle h1{
+  margin: 10px 0px 10px 10px;
 }
 .project-info{
   border-bottom: 2px solid var(--border-color);
