@@ -18,21 +18,26 @@ const Sidebar = ({ active, setActive }: SidebarProps) => {
 
             <nav className="flex flex-col gap-3">
                 <Link href="/" onClick={() => setActive("summary")}>
-                <div className={`flex items-center gap-3 rounded-2xl cursor-pointer hover:bg-blue-400 transition ${active === "summary" ? "border-2 border-blue-400" : ""}`}>
-                    <span className="m-2">🌐요약</span>
-                </div>
+                  <div className={`flex items-center gap-3 rounded-2xl cursor-pointer hover:bg-blue-400 transition ${active === "summary" ? "border-2 border-blue-400" : ""}`}>
+                      <span className="m-2">🌐요약</span>
+                  </div>
                 </Link>
 
                 <Link href="/" onClick={() => setActive("timeline")}>
-                <div className={`flex items-center gap-3 rounded-2xl cursor-pointer hover:bg-blue-400 transition ${active === "timeline" ? "border-2 border-blue-400" : ""}`}>
-                    <span className="m-2">타임라인</span>
-                </div>
+                  <div className={`flex items-center gap-3 rounded-2xl cursor-pointer hover:bg-blue-400 transition ${active === "timeline" ? "border-2 border-blue-400" : ""}`}>
+                      <span className="m-2">타임라인</span>
+                  </div>
                 </Link>
 
                 <Link href="/" onClick={() => setActive("board")}>
-                <div className={`flex items-center gap-3 rounded-2xl cursor-pointer hover:bg-blue-400 transition ${active === "board" ? "border-2 border-blue-400" : ""}`}>
-                    <span className="m-2">보드</span>
-                </div>
+                  <div className={`flex items-center gap-3 rounded-2xl cursor-pointer hover:bg-blue-400 transition ${active === "board" ? "border-2 border-blue-400" : ""}`}>
+                      <span className="m-2">보드</span>
+                  </div>
+                </Link>
+                <Link href="/" onClick={() => setActive("calender")}>
+                  <div className={`flex items-center gap-3 rounded-2xl cursor-pointer hover:bg-blue-400 transition ${active === "board" ? "border-2 border-blue-400" : ""}`}>
+                      <span className="m-2">캘린더</span>
+                  </div>
                 </Link>
             </nav>
         </div>
