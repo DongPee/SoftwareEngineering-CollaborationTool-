@@ -35,7 +35,7 @@ const Sidebar = ({ active, setActive }: SidebarProps) => {
                   </div>
                 </Link>
                 <Link href="/" onClick={() => setActive("calender")}>
-                  <div className={`flex items-center gap-3 rounded-2xl cursor-pointer hover:bg-blue-400 transition ${active === "board" ? "border-2 border-blue-400" : ""}`}>
+                  <div className={`flex items-center gap-3 rounded-2xl cursor-pointer hover:bg-blue-400 transition ${active === "calender" ? "border-2 border-blue-400" : ""}`}>
                       <span className="m-2">캘린더</span>
                   </div>
                 </Link>
