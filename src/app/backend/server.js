@@ -193,7 +193,7 @@ app.post('/api/showProjects', async (req, res) => {
             return res.status(404).json({ error: "사용자에게 연결된 프로젝트가 없습니다." });
         }
 
-        res.status(200).json({ projects: result });
+        res.status(200).json({ projects: rows });
 
     } catch (err) {
         console.error("프로젝트 불러오기 오류:", err);
