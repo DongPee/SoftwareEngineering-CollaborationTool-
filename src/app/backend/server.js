@@ -177,7 +177,29 @@ app.post('/api/tryLogin', async (req, res) => {
         res.status(500).json({ error: "서버 오류 발생" });
     }
 });
+app.post('/api/showProjects', async (req, res) => {
+    const { username } = req.body;
 
+    try {
+        const [rows] = await db.query(`
+            SELECT p.id AS project_id, p.name 
+            FROM user_info u
+            JOIN project_members pm ON u.id = pm.user_id
+            JOIN projects p ON pm.project_id = p.id
+            WHERE u.username = ?
+        `, [username]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: "사용자에게 연결된 프로젝트가 없습니다." });
+        }
+
+        res.status(200).json({ projects: result });
+
+    } catch (err) {
+        console.error("프로젝트 불러오기 오류:", err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
 app.listen(5001, () => {
     console.log('Server is running on port 5001');
 });

@@ -22,13 +22,13 @@ const MainPage = () => {
         >
           당신의 팀워크를 위한 완벽한 협업 툴.
         </motion.p>
-        <Link href="/frontend/project">
-            <motion.p
-            className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition"
+        <Link href="/frontend/projectList">
+          <motion.div
+            className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition cursor-pointer text-center"
             whileHover={{ scale: 1.2 }}
-            >
-            <p className="ml-10 mr-10">시작하기</p>
-            </motion.p>
+          >
+            시작하기
+          </motion.div>
         </Link>
       </section>
 
