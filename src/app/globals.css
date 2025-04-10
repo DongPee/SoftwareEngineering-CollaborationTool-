@@ -49,6 +49,9 @@
   --summaryImages-filter : invert(1) brightness(2) contrast(0.47);
 }
 
+.projectMain{
+  height: calc(100% - 64px);
+}
 * {
   margin: 10;
   padding: 0;
@@ -186,6 +189,30 @@ body {
   border-right: 2px solid var(--border-color);
   background: var(--bg-color);
   color : var(--text-color);
+  overflow-y : auto;
+  width: 240px;
+  min-width: 120px;
+}
+.allContent{
+  display : flex;
+}
+.project-side-menu-nav{
+  flex-direction: column;
+}
+@media (max-width: 600px) {
+  .project-side-menu {
+    width: 100%;
+    border : none;
+    border-bottom: 2px solid var(--border-color);
+    overflow-x: auto;
+    flex-grow: 1;
+  }
+  .allContent{
+    display : block;
+  }
+  .project-side-menu-nav{
+    flex-direction: row;
+  }
 }
 .summaryImages{
   filter :var(--summaryImages-filter);

@@ -9,7 +9,7 @@ import Calendar from "./frontend/projectCalender";
 export default function Page() {
   const [active, setActive] = useState("summary"); // active 상태 관리
   return (
-    <div className="flex h-full">
+    <div className="allContent h-full">
       <div>
         <Sidebar active={active} setActive={setActive} />
       </div>

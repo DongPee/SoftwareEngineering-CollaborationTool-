@@ -11,7 +11,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <html lang="ko">
         <body>
           <Header />
-          <main className="h-14/15">{children}</main>
+          <main className="projectMain">{children}</main>
         </body>
       </html>
     </AuthProvider>

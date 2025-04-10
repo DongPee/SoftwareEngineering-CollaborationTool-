@@ -8,27 +8,45 @@ const Calendar = () => {
   const [tempMonth, setTempMonth] = useState(currentDate.getMonth() + 1);
   const isScrolling = useRef(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const calendarRef = useRef<HTMLDivElement | null>(null);
 
-  // 스크롤로 월 이동
-  const handleScroll = (e: React.WheelEvent) => {
-    if (isScrolling.current) return;
+  // 스크롤 이벤트 수동 등록 (preventDefault 작동 보장)
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (!calendarRef.current || !calendarRef.current.contains(e.target as Node)) return;
 
-    isScrolling.current = true;
-    if (e.deltaY < 0) {
-      setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
-    } else {
-      setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+      e.preventDefault();
+
+      if (isScrolling.current) return;
+      isScrolling.current = true;
+
+      const deltaY = e.deltaY;
+      if (deltaY < 0) {
+        setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+      } else {
+        setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+      }
+
+      setTimeout(() => {
+        isScrolling.current = false;
+      }, 2000 / Math.abs(deltaY));
+    };
+
+    const calendarElement = calendarRef.current;
+    if (calendarElement) {
+      calendarElement.addEventListener("wheel", handleWheel, { passive: false });
     }
 
-    setTimeout(() => {
-      isScrolling.current = false;
-    }, 2000/Math.abs(e.deltaY));
-  };
+    return () => {
+      if (calendarElement) {
+        calendarElement.removeEventListener("wheel", handleWheel);
+      }
+    };
+  }, []);
 
   const generateCalendar = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const days = [];
@@ -44,21 +62,19 @@ const Calendar = () => {
   };
 
   const applyDateChange = () => {
-    const newMonth = Math.min(Math.max(tempMonth, 1), 12); // 1~12 제한
+    const newMonth = Math.min(Math.max(tempMonth, 1), 12);
     const newYear = tempYear;
     setCurrentDate(new Date(newYear, newMonth - 1, 1));
     setEditYear(false);
     setEditMonth(false);
   };
 
-  // Enter로 적용
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       applyDateChange();
     }
   };
 
-  // 외부 클릭 시 적용
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (inputRef.current && !inputRef.current.contains(e.target as Node)) {
@@ -75,12 +91,11 @@ const Calendar = () => {
 
   return (
     <div
+      ref={calendarRef}
       className="calendar-wrapper"
-      onWheel={handleScroll}
-      style={{ width: "80%", margin: "auto", userSelect: "none" }}
+      style={{ width: "80%", margin: "auto", userSelect: "none", overflow: "hidden" }}
     >
       <h2 style={{ textAlign: "center", marginBottom: "10px" }}>
-        {/* 연도 */}
         {editYear ? (
           <input
             ref={inputRef}
@@ -103,7 +118,6 @@ const Calendar = () => {
           </span>
         )}
 
-        {/* 월 */}
         {editMonth ? (
           <input
             ref={inputRef}
@@ -132,7 +146,8 @@ const Calendar = () => {
           <div key={i} className="text-center font-bold">{d}</div>
         ))}
         {calendarDays.map((day, idx) => (
-          <div key={idx} className="min-h-15 text-center border border-gray-300">
+          <div key={idx} className="min-h-15 text-center border border-gray-300 rounded-sm
+">
             {day}
           </div>
         ))}

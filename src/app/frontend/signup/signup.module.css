@@ -1,11 +1,17 @@
 .container {
+    height: calc(100% * 14 / 15);
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
     background-color: var(--bg-color);
+    overflow-y: auto;
   }
-  
+  @media (max-height: 800px) {
+    .container {
+      align-items: flex-start; 
+      padding-top: 2rem;
+    }
+  }
   .signupBox {
     background: var(--bg-login-color);
     padding: 30px;
