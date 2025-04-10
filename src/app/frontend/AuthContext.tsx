@@ -10,7 +10,7 @@ interface AuthContextType {
   isSocialLogin: string | null;  
   login: (username: string, social: string) => void;
   logout: () => void;
-  setIsSocialLogin: (value: string) => void; 
+  setIsSocialLogin: (value: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);

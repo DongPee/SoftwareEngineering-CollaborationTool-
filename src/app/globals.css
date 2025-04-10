@@ -33,6 +33,7 @@
   --text-help-login-color : #155dfc;
   --text-inputGroupLabel-color : #555;
   --summaryImages-filter : none;
+  --bg-mainPage-function : #f3f4f6;
 }
 
 .dark-mode {
@@ -47,6 +48,7 @@
   --text-help-login-color : #eaa203;
   --text-inputGroupLabel-color : #ccc;
   --summaryImages-filter : invert(1) brightness(2) contrast(0.47);
+  --bg-mainPage-function : #504e4d;
 }
 
 .projectMain{
@@ -216,4 +218,18 @@ body {
 }
 .summaryImages{
   filter :var(--summaryImages-filter);
+}
+input{
+  background: var(--bg-color);
+  color : var(--text-color);
+}
+.mainPage{
+  background: var(--bg-color);
+  color : var(--text-color);
+}
+.mainPage-function{
+  background: var(--bg-mainPage-function);
+  color : var(--text-color);
+  padding: 20px;
+  margin: 0px 20px;
 }

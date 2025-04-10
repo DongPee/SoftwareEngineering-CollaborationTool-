@@ -17,9 +17,9 @@ type Column = {
 
 export default function Board() {
   const [columns, setColumns] = useState<Column[]>([
-    { id: 1, title: "To Do", cards: [{ id: 101, text: "프로젝트 시작하기" ,selected: false},], newCardText: "" },
-    { id: 2, title: "In Progress", cards: [{ id: 201, text: "Next.js 학습" ,selected: false}], newCardText: "" },
-    { id: 3, title: "Done", cards: [{ id: 301, text: "기본 레이아웃 제작",selected: false }], newCardText: "" },
+    { id: 1, title: "To Do", cards: [], newCardText: "" },
+    { id: 2, title: "In Progress", cards: [], newCardText: "" },
+    { id: 3, title: "Done", cards: [], newCardText: "" },
   ]);
 
   const [newColumnTitle, setNewColumnTitle] = useState(""); // 새로운 컬럼 이름을 저장할 상태
