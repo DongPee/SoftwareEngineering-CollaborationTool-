@@ -7,10 +7,12 @@ import { signOut, getSession} from "next-auth/react";
 interface AuthContextType {
   isLoggedIn: boolean;
   username: string | null;
+  email : string | null;
   isSocialLogin: string | null;  
-  login: (username: string, social: string) => void;
+  login: (username: string, social: string, email : string) => void;
   logout: () => void;
   setIsSocialLogin: (value: string) => void;
+  setEmail: (email : string) => void
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -19,15 +21,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
   const [isSocialLogin, setIsSocialLogin] = useState<string | null>(null);
-
-  // 로그인 함수
-  const login = (username: string, social: string = "none") => {
+  const [email, setEmail] = useState<string | null>("");
+  const login = (username: string, social: string = "none", email: string = "") => {
     setIsLoggedIn(true);
     setUsername(username);
-    setIsSocialLogin(social); // 소셜 로그인 여부 설정
+    setIsSocialLogin(social);
     localStorage.setItem("username", username);
-    localStorage.setItem("isSocialLogin", social); 
-    console.log(username, social);
+    localStorage.setItem("isSocialLogin", social);
+    const finalEmail = email || localStorage.getItem("email") || "";
+    setEmail(finalEmail);
+    localStorage.setItem("email", finalEmail);
   };
 
   // 로그아웃 함수
@@ -35,8 +38,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoggedIn(false);
     setUsername(null);
     setIsSocialLogin(null); 
+    setEmail(null);
     localStorage.removeItem("username");
     localStorage.removeItem("isSocialLogin");
+    localStorage.removeItem("email");
     signOut({ redirect: false });
   };
 
@@ -44,16 +49,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const fetchSession = async () => {
       const session = await getSession();
       if (session?.user) {
+        const name = session.user.name || "";
+        const email = session.user.email || "";
+        const social = localStorage.getItem("isSocialLogin") || "no-social";
+        alert(`이름 : ${name}, ${email}, ${social}`);
+        login(name, social, name);
         setIsLoggedIn(true);
-        setUsername(session.user.name || null);
+        setUsername(name);
+        setEmail(email);
         setIsSocialLogin(localStorage.getItem("isSocialLogin"));
+        const response2 = await fetch("http://localhost:5001/api/socialLogin", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: name,
+            email: email,
+            social : social,
+          }),
+        });
       }
     };
     fetchSession();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, username, isSocialLogin, login, logout, setIsSocialLogin }}>
+    <AuthContext.Provider value={{ isLoggedIn, username, isSocialLogin, login, logout, setIsSocialLogin, email, setEmail}}>
       {children}
     </AuthContext.Provider>
   );

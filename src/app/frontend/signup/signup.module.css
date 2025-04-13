@@ -127,3 +127,15 @@
   .loginText{
     color : var(--text-color);
   }
+  .projectName {
+    width: 30%;
+    overflow-y: scroll;
+    color: black;
+  }
+  
+  .projectName::-webkit-scrollbar {
+    display: none;
+  }
+  .projectListColor{
+    filter :var(--projectColor);
+  }

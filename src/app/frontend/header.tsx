@@ -24,7 +24,9 @@ const Header = () => {
           Ollert
         </button>
       </Link>
-
+      <button onClick={toggleMode} className="darkMode-button">
+            {darkMode ? "Day" : "Night"}
+      </button>
       {auth?.isLoggedIn ? (
         <span className="user-status" onClick={auth.logout}>
           {auth?.isSocialLogin === "kakao"
@@ -35,9 +37,6 @@ const Header = () => {
         </span>
       ) : (
         <>
-          <button onClick={toggleMode} className="darkMode-button">
-            {darkMode ? "Day" : "Night"}
-          </button>
           <Link href="/frontend/login">
             <button className="login-button">log in</button>
           </Link>

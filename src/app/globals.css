@@ -48,6 +48,7 @@
   --text-help-login-color : #eaa203;
   --text-inputGroupLabel-color : #ccc;
   --summaryImages-filter : invert(1) brightness(2) contrast(0.47);
+  --projectColor : brightness(0.7) contrast(2);
   --bg-mainPage-function : #504e4d;
 }
 
@@ -112,7 +113,7 @@ body {
   border-radius: 10px;
   font-size: 1.2em;
   position: absolute;
-  right: 100px;
+  right: 200px;
   top: 50%;
   transform: translateY(-50%);
 }
