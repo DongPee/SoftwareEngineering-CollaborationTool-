@@ -2,65 +2,126 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import styles from "../signup/signup.module.css";
+import { requestVerification, verifyCode } from "@/app/backend/verification";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [ICode, setICode] = useState('');
+  const [isVerified, setIsVerified] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // 실제 API 연동 예정
-    setSubmitted(true);
+  };
+
+  const handleRequestVerification = async () => {
+    const result = await requestVerification(email);
+    if (result.success) {
+      setSubmitted(true);
+      alert('인증 코드가 이메일로 전송되었습니다.');
+    } else {
+      alert(`오류: ${result.error}`);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    const result = await verifyCode(email, ICode);
+    if (result.success) {
+      setIsVerified(true);
+      alert('인증 성공!');
+    } else {
+      alert(`인증 실패: ${result.error}`);
+    }
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-[#f4f6f8]">
-      {/* 로고 영역 */}
-      <div className="mb-4">
-        <Image src="/ollert-logo.jpg" alt="Logo" width={100} height={30} />
-      </div>
+    <div className={styles.container}>
+      <div className={styles.signupBox}>
+        <div className="flex justify-center">
+          <Image src="/ollert-logo.jpg" alt="Trello" width={120} height={40} />
+        </div>
+        <h1 className={styles.title}>비밀번호 찾기</h1>
 
-      {/* 카드 박스 */}
-      <div className="bg-white shadow-lg rounded-md w-full max-w-sm p-6 text-center">
-        <h2 className="text-xl font-semibold mb-4">로그인할 수 없습니까?</h2>
-
-        {!submitted ? (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-            <label className="text-sm text-left">다음으로 복구 링크 보내기:</label>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          {/* 이메일 입력 */}
+          <div className={styles.inputGroup}>
+            <label>이메일</label>
             <input
               type="email"
-              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="이메일 입력"
-              className="border border-gray-300 p-2 rounded"
+              required
             />
-            <button
-              type="submit"
-              className="bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-            >
-              복구 링크 보내기
-            </button>
-          </form>
-        ) : (
-          <p className="text-green-600 mt-4">📬 이메일로 복구 링크를 보냈습니다!</p>
-        )}
+          </div>
 
-        {/* 로그인으로 돌아가기 */}
-        <div className="mt-4">
-          <Link href="/frontend/login" className="text-blue-600 text-sm hover:underline">
-            로그인으로 돌아가기
+          {/* 인증코드 요청/입력 */}
+          {!submitted ? (
+            <div className={styles.inputGroup}>
+              <button type="button" className={styles.idenButton} onClick={handleRequestVerification}>
+                인증코드 보내기
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className={styles.inputGroup}>
+                <label>인증번호</label>
+                <input
+                  type="text"
+                  value={ICode}
+                  onChange={(e) => setICode(e.target.value)}
+                  required
+                />
+              </div>
+
+              {!isVerified ? (
+                <div className={styles.inputGroup}>
+                  <button type="button" className={styles.idenButton} onClick={handleVerifyCode}>
+                    인증하기
+                  </button>
+                  <button type="button" className={styles.idenButton} onClick={handleRequestVerification}>
+                    인증코드 다시 보내기
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className={styles.inputGroup}>
+                    <label>비밀번호</label>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className={styles.inputGroup}>
+                    <label>비밀번호 확인</label>
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <button type="submit" className={styles.submitButton}>
+                    비밀번호 변경
+                  </button>
+                </>
+              )}
+            </>
+          )}
+        </form>
+
+        <p className={styles.loginText}>
+          로그인으로 돌아가기{" "}
+          <Link href="/frontend/login" className={styles.helpLogin}>
+            로그인하기
           </Link>
-        </div>
-      </div>
-
-      {/* 푸터 */}
-      <div className="text-center text-xs text-gray-400 mt-6">
-        <p><strong>OLLERT</strong></p>
-        <p>프로젝트 협업툴 플랫폼</p>
-        <p className="mt-1">
-          <a href="#" className="underline">로그인 도움말</a> ・{" "}
-          <a href="#" className="underline">지원팀에 문의</a>
         </p>
       </div>
     </div>

@@ -1,20 +1,52 @@
 @import "tailwindcss";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-.dark {
-  background-color: #1a202c;
-  color: #ffffff;
+::-webkit-scrollbar {
+  width: 8px;
 }
 
-.dark body {
-  background-color: #1a202c;
-  color: white;
+::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 4px;
 }
 
-body {
-  transition: background-color 0.3s ease, color 0.3s ease;
+::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
+}
+
+/* 다크모드용 스크롤바 스타일 */
+.dark-mode ::-webkit-scrollbar-thumb {
+  background-color: #555;
+}
+
+.dark-mode ::-webkit-scrollbar-track {
+  background-color: #222;
+}
+
+:root {
+  --bg-color: #ffffff;
+  --text-color: #333;
+  --border-color: #d1d5db;
+  --column-bg-color: rgb(234, 234, 234);
+  --column-box-shadow: rgba(0,0,0,1);
+  --card-bg-color : #fff;
+  --bg-login-color : #fafafa;
+  --text-socialLogin-color : #4a5565;
+  --text-help-login-color : #155dfc;
+  --text-inputGroupLabel-color : #555;
+  --summaryImages-filter : none;
+}
+
+.dark-mode {
+  --bg-color: #444444;
+  --text-color: #ffffff;
+  --border-color: #dddddd;
+  --column-bg-color: rgb(50, 50, 50);
+  --column-box-shadow: rgba(255,255,255,1);
+  --card-bg-color : #000;
+  --bg-login-color : #555555;
+  --text-socialLogin-color : #b5aa9a;
+  --text-help-login-color : #eaa203;
+  --text-inputGroupLabel-color : #ccc;
+  --summaryImages-filter : invert(1) brightness(2) contrast(0.47);
 }
 
 * {
@@ -24,14 +56,10 @@ body {
 }
 
 body {
+  height:100vh;
   font-family: sans-serif;
-  background-color: #f4f4f4;
-  color: #333;
-}
-
-.dark header {
-  background: #2d3748;
-  color: white;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 .board {
@@ -42,44 +70,30 @@ body {
 }
 
 .column {
-  background: rgb(234, 234, 234);
+  background: var(--column-bg-color);
   padding: 15px;
   min-width: 300px;
   min-height: 400px;
   max-height: 400px;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 1);
+  box-shadow: 0 4px 6px var(--column-box-shadow);
   overflow-y: auto;
 }
 
-.dark .column {
-  background: #2d3748;
-  color: white;
-}
-
 .card {
-  background: #fff;
+  background: var(--card-bg-color);
   padding: 10px;
   border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 1);
+  box-shadow: 0 2px 4px var(--column-box-shadow);
   margin-bottom: 10px;
-}
-
-.dark .card {
-  background: #4a5568;
-  color: white;
 }
 
 .card-selected {
   background: rgb(50, 255, 47);
   padding: 10px;
   border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 1);
+  box-shadow: 0 2px 4px var(--column-box-shadow);
   margin-bottom: 10px;
-}
-
-.dark .card-selected {
-  background: #38a169;
 }
 
 .card:hover {
@@ -87,13 +101,17 @@ body {
   cursor: pointer;
 }
 
-.login {
+.darkMode-button{
   background: rgb(255, 134, 53);
   padding: 10px;
   width: 80px;
   min-height: 40px;
   border-radius: 10px;
   font-size: 1.2em;
+  position: absolute;
+  right: 100px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .login:hover {
@@ -101,53 +119,81 @@ body {
   cursor: pointer;
 }
 
-.dark .bg-white {
-  background-color: #2d3748 !important;
-  color: white !important;
+.header {
+  padding: 10px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  border-bottom: 2px solid var(--border-color);
 }
 
-.dark .sidebar {
-  background-color: #1a202c;
-  color: white;
-  border-color: #4a5568;
+.title-button {
+  margin: 0;
+  font-size: 30px;
+  padding: 0;
+  color: var(--text-color);
 }
 
-.dark .project-header {
-  background: #2d3748;
-  color: white;
-  border-bottom: 2px solid #4a5568;
+.user-status {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: bold;
+  color: var(--text-color);
+  cursor: pointer;
 }
 
-.dark .summary-card {
-  background: #2d3748;
-  color: white;
-  border-color: #4a5568;
-}
-
-.dark .card {
-  background: #4a5568;
-  color: white;
-}
-
-.dark .card-selected {
-  background: #38a169;
-}
-
-.dark .btn {
-  background: #4a5568;
-  color: white;
-}
-
-.dark-toggle {
+.login-button{
   background: rgb(255, 134, 53);
   padding: 10px;
   width: 80px;
   min-height: 40px;
   border-radius: 10px;
   font-size: 1.2em;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
-.dark-toggle:hover {
-  background-color: #AAA;
-  cursor: pointer;
+.summary-b{
+  background: var(--bg-color);
+  color : var(--text-color);
+}
+
+.summary-top, .summary-middle{
+  border: 2px solid var(--border-color);
+  background: var(--bg-color);
+  color : var(--text-color);
+  border-radius: 8px;
+}
+
+.summary-middle{
+  height:300px;
+  overflow-y: auto;
+}
+
+.summary-middle h1{
+  margin: 10px 0px 10px 10px;
+}
+
+.project-info{
+  border-bottom: 2px solid var(--border-color);
+  background: var(--bg-color);
+  color : var(--text-color);
+}
+
+.project-side-menu{
+  border-right: 2px solid var(--border-color);
+  background: var(--bg-color);
+  color : var(--text-color);
+}
+
+.summaryImages{
+  filter :var(--summaryImages-filter);
 }
