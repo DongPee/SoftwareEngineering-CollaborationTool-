@@ -17,7 +17,7 @@ export default function Signup() {
 
   // 인증 코드 요청
   const handleRequestVerification = async () => {
-    const result = await requestVerification(email);
+    const result = await requestVerification(email, username);
     if (result.success) {
       alert("인증 코드가 이메일로 전송되었습니다.");
       setSubmitted(true);
@@ -39,7 +39,7 @@ export default function Signup() {
 
   // 회원가입 처리
   const handleSubmit = async (e : React.FormEvent) => {
-    e.preventDefault(); // 기본 제출 방지
+    e.preventDefault(); 
 
     if (!isVerified) {
       alert("이메일 인증이 필요합니다.");

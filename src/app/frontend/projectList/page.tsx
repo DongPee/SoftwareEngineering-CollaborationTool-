@@ -208,6 +208,7 @@ export default function ProjectSelector() {
 
                         {newProjectName !== "" && (
                             <div className="flex flex-col items-start w-full">
+                                <label>프로젝트 이름</label>
                                 <input
                                     type="text"
                                     placeholder="새 프로젝트 이름 입력 후 Enter"
@@ -218,6 +219,7 @@ export default function ProjectSelector() {
                                     onCompositionEnd={handleCompositionEnd}
                                     className="border border-gray-300 rounded-md px-4 py-2 w-full max-w-md mb-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                                 />
+                                <label>프로젝트 설명</label>
                                 <input
                                     type="text"
                                     placeholder="새 프로젝트 설명 입력 후 Enter"

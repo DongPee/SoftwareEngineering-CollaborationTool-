@@ -48,19 +48,18 @@ async function sendVerificationEmail(email, verificationCode) {
 
 // 1. 인증 코드 요청 API
 app.post('/api/request-verification', async (req, res) => {
-    const { email } = req.body;
+    const { email, username} = req.body;
 
-    if (!email) {
-        return res.status(400).json({ error: "이메일을 입력해야 합니다." });
+    if (!email || !username) {
+        return res.status(400).json({ error: "사용자 이름과 이메일을 입력해야 합니다." });
     }
 
     try {
         const verificationCode = generateVerificationCode();
-        const tempUsername = "user_" + Math.random().toString(36).substring(2, 10);
         // 인증 코드 저장 (비밀번호 없이 저장, 기존 데이터 덮어쓰기)
         await db.query(
             'INSERT INTO user_info (username, email, verification_code, is_verified) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE verification_code = ?, is_verified = 0',
-            [tempUsername, email, verificationCode, false, verificationCode]
+            [username, email, verificationCode, false, verificationCode]
         );
 
         // 인증 코드 이메일 전송

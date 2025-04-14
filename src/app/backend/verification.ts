@@ -1,11 +1,11 @@
 // utils/verification.ts
 
-export const requestVerification = async (email: string) => {
+export const requestVerification = async (email: string, username : string) => {
     try {
       const response = await fetch("http://localhost:5001/api/request-verification", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, username}),
       });
   
       const data = await response.json();
