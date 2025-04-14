@@ -139,20 +139,15 @@ app.post('/api/signup', async (req, res) => {
 });
 app.delete("/api/deleteProject", async (req, res) => {
     const { projectId } = req.body;
-
+    console.log(projectId);
     if (!projectId) {
         return res.status(400).json({ message: "프로젝트 ID가 필요합니다." });
     }
 
     try {
-        const result = await db.query("DELETE FROM project_members WHERE project_id = ?", [projectId]);
+        const result = await db.query("DELETE FROM projects WHERE id = ?", [projectId]);
 
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: "프로젝트를 찾을 수 없습니다." });
-        }
-        const result2 = await db.query("DELETE FROM projects WHERE id = ?", [projectId]);
-
-        if (result2.affectedRows === 0) {
             return res.status(404).json({ message: "프로젝트를 찾을 수 없습니다." });
         }
 
@@ -209,11 +204,10 @@ app.post('/api/showProjects', async (req, res) => {
             FROM user_info u
             JOIN project_members pm ON u.id = pm.user_id
             JOIN projects p ON pm.project_id = p.id
-            WHERE u.email = 'kmjkmjnetnet21@gmail.com';
+            WHERE u.email = ?;
         `, [email]);
 
         if (rows.length === 0) {
-            console.log("no data!!!");
             return res.status(404).json({ error: "사용자에게 연결된 프로젝트가 없습니다." });
         }
         console.log(rows)

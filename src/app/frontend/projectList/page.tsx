@@ -38,21 +38,18 @@ export default function ProjectSelector() {
                 body: JSON.stringify({ email }),
             });
 
-            if (!response.ok) {
-                throw new Error("프로젝트 목록 불러오기 실패");
+            if (response.ok) {
+                const data = await response.json();
+
+                const loadedProjects: Project[] = data.projects.map((proj: any) => ({
+                    id: proj.project_id,
+                    name: proj.name,
+                    desc: proj.description ?? "",
+                    color: classyColors[Math.floor(Math.random() * classyColors.length)],
+                    editing: false,
+                }));
+                setProjects(loadedProjects);
             }
-
-            const data = await response.json();
-
-            const loadedProjects: Project[] = data.projects.map((proj: any) => ({
-                id: proj.project_id,
-                name: proj.name,
-                desc: proj.description ?? "",
-                color: classyColors[Math.floor(Math.random() * classyColors.length)],
-                editing: false,
-            }));
-
-            setProjects(loadedProjects);
         } catch (err) {
             console.error("서버 오류:", err);
             alert("서버 오류가 발생했습니다.");
