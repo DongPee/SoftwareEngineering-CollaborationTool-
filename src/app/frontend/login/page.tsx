@@ -32,7 +32,7 @@ export default function LoginPage() {
       if (response.ok) {
         console.log("로그인 성공!", data);
         alert("로그인 성공");
-        auth?.login(data.username, "none");
+        auth?.login(data.username, "none", data.email);
 
         router.push("/");
       } else {
@@ -51,15 +51,8 @@ const handleGoogleLogin = async () => {
   const response = await signIn("google", { redirect: false });
   if (response?.error) {
     console.error("로그인 오류:", response.error);
-  } else {
-    console.log("로그인 성공!");
-
-    // 로그인 후 session을 통해 user 정보 가져오기
-    const session = await getSession();
-    if (session?.user) {
-      // user가 존재하면 로그인 처리
-      auth?.login(session.user.name!, "goggle"); // 이름과 소셜 로그인 여부(true) 전달
-    }
+  } else{
+    auth?.login("", "goggle", "");
   }
   router.push("/"); 
 };
@@ -68,14 +61,8 @@ const handleKakaoLogin = async () => {
 
   if (response?.error) {
     console.error("카카오 로그인 오류:", response.error);
-  } else {
-    console.log("카카오 로그인 성공!");
-    const session = await getSession();
-
-    const username = session?.user?.name || "카카오 사용자"; // fallback
-    if (username) {
-      auth?.login(username, "kakao");
-    }
+  }else{
+    auth?.login("", "kakao", "");
   }
   router.push("/");
 };

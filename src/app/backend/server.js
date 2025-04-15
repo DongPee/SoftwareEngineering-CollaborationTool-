@@ -137,7 +137,31 @@ app.post('/api/signup', async (req, res) => {
         res.status(500).json({ error: "회원가입 처리 중 오류가 발생했습니다." });
     }
 });
+app.delete("/api/deleteProject", async (req, res) => {
+    const { projectId } = req.body;
 
+    if (!projectId) {
+        return res.status(400).json({ message: "프로젝트 ID가 필요합니다." });
+    }
+
+    try {
+        const result = await db.query("DELETE FROM project_members WHERE project_id = ?", [projectId]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "프로젝트를 찾을 수 없습니다." });
+        }
+        const result2 = await db.query("DELETE FROM projects WHERE id = ?", [projectId]);
+
+        if (result2.affectedRows === 0) {
+            return res.status(404).json({ message: "프로젝트를 찾을 수 없습니다." });
+        }
+
+        res.status(200).json({ message: "프로젝트 삭제 성공" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "서버 오류" });
+    }
+});
 // 사용자 조회 API
 app.get('/api/users', async (req, res) => {
     const { email} = req.body;
@@ -159,7 +183,7 @@ app.post('/api/tryLogin', async (req, res) => {
 
     try {
         // 이메일로 유저 조회
-        const [rows] = await db.query('SELECT username, password_hash FROM user_info WHERE email = ?', [email]);
+        const [rows] = await db.query('SELECT username, password_hash, email FROM user_info WHERE email = ?', [email]);
 
         if (rows.length === 0) {
             return res.status(401).json({ error: "이메일 또는 비밀번호가 올바르지 않습니다." });
@@ -171,9 +195,143 @@ app.post('/api/tryLogin', async (req, res) => {
         if (!isMatch) {
             return res.status(401).json({ error: "이메일 또는 비밀번호가 올바르지 않습니다." });
         }
-        res.status(200).json({ message: "로그인 성공!", username : rows[0].username});
+        res.status(200).json({ message: "로그인 성공!", username : rows[0].username, email : email});
     } catch (err) {
         console.error("로그인 오류:", err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+app.post('/api/showProjects', async (req, res) => {
+    const { email } = req.body;
+    try {
+        const [rows] = await db.query(`
+            SELECT p.id AS project_id, p.name, p.description
+            FROM user_info u
+            JOIN project_members pm ON u.id = pm.user_id
+            JOIN projects p ON pm.project_id = p.id
+            WHERE u.email = 'kmjkmjnetnet21@gmail.com';
+        `, [email]);
+
+        if (rows.length === 0) {
+            console.log("no data!!!");
+            return res.status(404).json({ error: "사용자에게 연결된 프로젝트가 없습니다." });
+        }
+        console.log(rows)
+        res.status(200).json({ projects: rows });
+
+    } catch (err) {
+        console.error("프로젝트 불러오기 오류:", err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+app.post('/api/updateProject', async (req, res) => {
+    const { projectId, name, desc } = req.body;
+
+    if (!projectId || !name || desc === undefined) {
+        return res.status(400).json({ error: "필수 데이터가 누락되었습니다." });
+    }
+
+    try {
+        const [result] = await db.query(
+            `UPDATE projects SET name = ?, description = ? WHERE id = ?`,
+            [name, desc, projectId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "해당 프로젝트를 찾을 수 없습니다." });
+        }
+
+        res.status(200).json({ message: "프로젝트가 성공적으로 업데이트되었습니다." });
+    } catch (err) {
+        console.error("프로젝트 수정 오류:", err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+app.post('/api/socialLogin', async (req, res) => {
+    const {username, email, social} = req.body;
+    let made = false;
+    console.log(username);
+    console.log(email);
+    console.log(social);
+    try {
+        const [rows] = await db.query(`
+            select * from user_info where email= ? 
+        `, [email]);
+        if(rows.length > 0){
+            const [rows3] = await db.query(`
+                select * from user_info where password_hash = ?
+            `, [rows[0].password_hash])
+            if(rows3.length === 0){
+                made = true;
+            }
+            else{
+                return res.status(201).json({text : "정보가 있음"});
+            }
+        }
+        else{
+            made = true;
+        }
+        if(made){
+            const [rows2] = await db.query(`
+                INSERT INTO user_info (username, email, password_hash, is_verified, verification_code)
+                VALUES (?, ?, ?, NULL, NULL)
+            `, [username, email, social]);
+            return res.status(201).json({text : "회원가입됨"});
+        }
+    } catch (err) {
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+app.post('/api/createProject', async (req, res) => {
+    const { email, name, desc } = req.body;
+
+    console.log("email:", email, "name:", name, "desc:", desc);
+
+    if (!email || !name) {
+        return res.status(400).json({ error: "이메일과 프로젝트 이름이 필요합니다." });
+    }
+
+    try {
+        // 1. 사용자 ID 가져오기
+        const [userRows] = await db.query(
+            "SELECT id FROM user_info WHERE email = ?",
+            [email]
+        );
+
+        if (userRows.length === 0) {
+            return res.status(404).json({ error: "사용자를 찾을 수 없습니다." });
+        }
+
+        const userId = userRows[0].id;
+
+        // 2. 프로젝트 생성 (desc 포함)
+        const [projectResult] = await db.query(
+            "INSERT INTO projects (name, description, created_by) VALUES (?, ?, ?)",
+            [name, desc, userId]
+        );
+
+        const projectId = projectResult.insertId;
+
+        // 3. 프로젝트 멤버(owner)로 등록
+        await db.query(
+            "INSERT INTO project_members (project_id, user_id, role) VALUES (?, ?, 'owner')",
+            [projectId, userId]
+        );
+
+        // 4. 생성된 프로젝트 정보 반환
+        res.status(201).json({
+            message: "프로젝트가 성공적으로 생성되었습니다.",
+            project: {
+                id: projectId,
+                name,
+                desc
+            }
+        });
+
+    } catch (err) {
+        console.error("프로젝트 생성 오류:", err);
         res.status(500).json({ error: "서버 오류 발생" });
     }
 });

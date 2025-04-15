@@ -11,6 +11,12 @@ const handler = NextAuth({
     KakaoProvider({
       clientId: process.env.KAKAO_CLIENT_ID!,
       clientSecret: process.env.KAKAO_CLIENT_SECRET!,
+      authorization: {
+        url: "https://kauth.kakao.com/oauth/authorize",
+        params: {
+          scope: "profile_nickname account_email", // ← 이메일 받기 위해 꼭 포함!
+        },
+      },
     }),
   ],
   callbacks: {
