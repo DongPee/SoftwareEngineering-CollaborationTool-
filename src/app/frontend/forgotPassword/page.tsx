@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import styles from "../signup/signup.module.css";
-import { requestVerification, verifyCode } from "@/app/backend/verification";
+import { lostPasswordRequestVerification, verifyCode } from "@/app/backend/verification";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -19,7 +19,7 @@ export default function ForgotPasswordPage() {
   };
 
   const handleRequestVerification = async () => {
-    const result = await requestVerification(email);
+    const result = await lostPasswordRequestVerification(email);
     if (result.success) {
       setSubmitted(true);
       alert('인증 코드가 이메일로 전송되었습니다.');

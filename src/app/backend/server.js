@@ -46,7 +46,6 @@ async function sendVerificationEmail(email, verificationCode) {
     }
 }
 
-// 1. 인증 코드 요청 API
 app.post('/api/request-verification', async (req, res) => {
     const { email, username} = req.body;
 
@@ -56,13 +55,11 @@ app.post('/api/request-verification', async (req, res) => {
 
     try {
         const verificationCode = generateVerificationCode();
-        // 인증 코드 저장 (비밀번호 없이 저장, 기존 데이터 덮어쓰기)
         await db.query(
             'INSERT INTO user_info (username, email, verification_code, is_verified) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE verification_code = ?, is_verified = 0',
             [username, email, verificationCode, false, verificationCode]
         );
 
-        // 인증 코드 이메일 전송
         await sendVerificationEmail(email, verificationCode);
 
         res.status(200).json({ message: "인증 코드가 이메일로 전송되었습니다." });
@@ -72,7 +69,34 @@ app.post('/api/request-verification', async (req, res) => {
     }
 });
 
-// 2. 인증 코드 확인 API
+app.post('/api/lost-password-request-verification', async (req, res) => {
+    const { email} = req.body;
+
+    if (!email) {
+        return res.status(400).json({ error: "이메일을 입력해야 합니다." });
+    }
+
+    try {
+        const [rows] = await db.query('SELECT password_hash FROM user_info WHERE email = ?', [email]);
+        const { password_hash } = rows[0];
+        if (password_hash === "kakao" || password_hash === "goggle") {
+            return res.status(400).json({ message: "소셜 로그인은 비밀번호를 찾을 수 없습니다." });
+        }
+        const verificationCode = generateVerificationCode();
+        await db.query(
+            'UPDATE user_info SET verification_code = ?, is_verified = ? WHERE email = ?',
+            [verificationCode, 0, email]
+        );
+
+        await sendVerificationEmail(email, verificationCode);
+
+        res.status(200).json({ message: "인증 코드가 이메일로 전송되었습니다." });
+    } catch (err) {
+        console.error("인증 코드 요청 오류:", err);
+        res.status(500).json({ error: "인증 코드 요청 중 오류가 발생했습니다." });
+    }
+});
+
 app.post('/api/verify-code', async (req, res) => {
     const { email, verificationCode } = req.body;
 
