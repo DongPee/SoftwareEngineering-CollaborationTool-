@@ -161,7 +161,7 @@ export default function CardModal({
         </div>
 
         <button onClick={handleSave} className={styles.button}>
-          확인
+          완료
         </button>
       </div>
     </div>

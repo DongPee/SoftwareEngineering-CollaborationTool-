@@ -35,7 +35,7 @@ export default function ProjectBoard({ projectId, projectName, projectDesc }: Bo
   const [newColumnTitle, setNewColumnTitle] = useState("");
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 
-  const assigneeOptions = ["user1", "user2", "user3", "user4"];
+  const assigneeOptions = ["user0", "user1", "user2", "user3"];
 
   // 컬럼 추가
   const addColumn = () => {
