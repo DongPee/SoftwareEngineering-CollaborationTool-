@@ -48,19 +48,18 @@ async function sendVerificationEmail(email, verificationCode) {
 
 // 1. 인증 코드 요청 API
 app.post('/api/request-verification', async (req, res) => {
-    const { email } = req.body;
+    const { email, username} = req.body;
 
-    if (!email) {
-        return res.status(400).json({ error: "이메일을 입력해야 합니다." });
+    if (!email || !username) {
+        return res.status(400).json({ error: "사용자 이름과 이메일을 입력해야 합니다." });
     }
 
     try {
         const verificationCode = generateVerificationCode();
-        const tempUsername = "user_" + Math.random().toString(36).substring(2, 10);
         // 인증 코드 저장 (비밀번호 없이 저장, 기존 데이터 덮어쓰기)
         await db.query(
             'INSERT INTO user_info (username, email, verification_code, is_verified) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE verification_code = ?, is_verified = 0',
-            [tempUsername, email, verificationCode, false, verificationCode]
+            [username, email, verificationCode, false, verificationCode]
         );
 
         // 인증 코드 이메일 전송
@@ -139,20 +138,15 @@ app.post('/api/signup', async (req, res) => {
 });
 app.delete("/api/deleteProject", async (req, res) => {
     const { projectId } = req.body;
-
+    console.log(projectId);
     if (!projectId) {
         return res.status(400).json({ message: "프로젝트 ID가 필요합니다." });
     }
 
     try {
-        const result = await db.query("DELETE FROM project_members WHERE project_id = ?", [projectId]);
+        const result = await db.query("DELETE FROM projects WHERE id = ?", [projectId]);
 
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: "프로젝트를 찾을 수 없습니다." });
-        }
-        const result2 = await db.query("DELETE FROM projects WHERE id = ?", [projectId]);
-
-        if (result2.affectedRows === 0) {
             return res.status(404).json({ message: "프로젝트를 찾을 수 없습니다." });
         }
 
@@ -166,7 +160,7 @@ app.delete("/api/deleteProject", async (req, res) => {
 app.get('/api/users', async (req, res) => {
     const { email} = req.body;
     try {
-        const [rows] = await db.query('SELECT * FROM user_info where email = ?' [email]); 
+        const [rows] = await db.query('SELECT * FROM user_info where email = ?', [email]); 
         res.json(rows);
     } catch (err) {
         console.error("데이터베이스 오류:", err);
@@ -209,11 +203,10 @@ app.post('/api/showProjects', async (req, res) => {
             FROM user_info u
             JOIN project_members pm ON u.id = pm.user_id
             JOIN projects p ON pm.project_id = p.id
-            WHERE u.email = 'kmjkmjnetnet21@gmail.com';
+            WHERE u.email = ?;
         `, [email]);
 
         if (rows.length === 0) {
-            console.log("no data!!!");
             return res.status(404).json({ error: "사용자에게 연결된 프로젝트가 없습니다." });
         }
         console.log(rows)

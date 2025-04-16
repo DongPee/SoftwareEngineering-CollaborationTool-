@@ -1,24 +1,44 @@
-// 카드 모달, 댓글 컴포넌트
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "./projectBoard";
+import styles from "./CardModal.module.css";
 
 type CardModalProps = {
   card: Card;
   onSave: (updatedCard: Card) => void;
   onClose: () => void;
+  assigneeOptions?: string[];
 };
 
-export default function CardModal({ card, onSave, onClose }: CardModalProps) {
+export default function CardModal({
+  card,
+  onSave,
+  onClose,
+  assigneeOptions = ["user1", "user2", "user3"],
+}: CardModalProps) {
   const [editedDetails, setEditedDetails] = useState(card.details);
   const [newComment, setNewComment] = useState("");
-  const [comments, setComments] = useState(card.comments);
+  const [comments, setComments] = useState<string[]>(card.comments);
+  const [assignee, setAssignee] = useState(card.assignee || "");
+  const [startDate, setStartDate] = useState(card.startDate || "");
+  const [dueDate, setDueDate] = useState(card.dueDate || "");
+
+  useEffect(() => {
+    setEditedDetails(card.details);
+    setComments(card.comments);
+    setAssignee(card.assignee || "");
+    setStartDate(card.startDate || "");
+    setDueDate(card.dueDate || "");
+  }, [card]);
 
   const handleSave = () => {
     const updatedCard: Card = {
       ...card,
       details: editedDetails,
       comments,
+      assignee,
+      startDate,
+      dueDate,
     };
     onSave(updatedCard);
   };
@@ -30,53 +50,67 @@ export default function CardModal({ card, onSave, onClose }: CardModalProps) {
   };
 
   return (
-    <div className="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-      <div className="modal-content bg-white p-6 rounded shadow-lg w-96">
-        <h2 className="text-xl font-bold mb-4">{card.text}</h2>
+    <div className={styles.modal}>
+      <div className={styles.modalContent}>
+        <h2 className={styles.title}>{card.text}</h2>
 
-        {/* 상세 정보 */}
+        <label className={styles.label}>상세 정보</label>
         <textarea
-          className="w-full border mb-2 p-2"
+          className={styles.textarea}
           value={editedDetails}
           onChange={(e) => setEditedDetails(e.target.value)}
           placeholder="상세 정보를 입력하세요"
+          rows={3}
         />
 
-        {/* 저장 버튼 */}
-        <button
-          onClick={handleSave}
-          className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
+        <label className={styles.label}>담당자</label>
+        <select
+          className={styles.select}
+          value={assignee}
+          onChange={(e) => setAssignee(e.target.value)}
         >
-          저장
-        </button>
+          <option value="">할당되지 않음</option>
+          {assigneeOptions.map((name) => (
+            <option key={name} value={name}>{name}</option>
+          ))}
+        </select>
 
-        {/* 댓글 */}
-        <h3 className="text-lg mt-4 mb-2">댓글</h3>
-        <ul className="mb-2">
+        <label className={styles.label}>시작일</label>
+        <input
+          type="date"
+          className={styles.input}
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+        />
+
+        <label className={styles.label}>마감일</label>
+        <input
+          type="date"
+          className={styles.input}
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+        />
+
+        <button onClick={handleSave} className={styles.button}>저장</button>
+
+        <h3 className={styles.label}>댓글</h3>
+        <ul className={styles.commentList}>
           {comments.map((comment, index) => (
-            <li key={index} className="border-b py-1">{comment}</li>
+            <li key={index} className={styles.commentItem}>{comment}</li>
           ))}
         </ul>
-        <input
-          className="w-full border mb-2 p-2"
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          placeholder="댓글 추가"
-        />
-        <button
-          onClick={handleAddComment}
-          className="bg-green-500 text-white px-4 py-2 rounded"
-        >
-          댓글 추가
-        </button>
 
-        {/* 닫기 버튼 */}
-        <button
-          onClick={onClose}
-          className="ml-2 bg-gray-500 text-white px-4 py-2 rounded"
-        >
-          닫기
-        </button>
+        <div className={styles.commentInputWrap}>
+          <input
+            className={`${styles.input} ${styles.commentInput}`}
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="댓글 추가"
+          />
+          <button onClick={handleAddComment} className={styles.addCommentBtn}>추가</button>
+        </div>
+
+        <button onClick={onClose} className={`${styles.button} ${styles.closeBtn}`}>닫기</button>
       </div>
     </div>
   );

@@ -1,10 +1,10 @@
 "use client"; // useState 사용을 위해 client component 선언
 import { useState } from "react";
-import Sidebar from "../projectSideMenu";
-import Board from "../projectBoard";
-import Top from "../projectTop";
-import Summary from "../projectSummary";
-import Calendar from "../projectCalender";
+import Sidebar from "../projects/projectSideMenu";
+import Board from "../projects/projectBoard";
+import Top from "../projects/projectTop";
+import Summary from "../projects/projectSummary";
+import Calendar from "../projects/projectCalender";
 export default function project() {
   const [active, setActive] = useState("summary"); // active 상태 관리
   return (

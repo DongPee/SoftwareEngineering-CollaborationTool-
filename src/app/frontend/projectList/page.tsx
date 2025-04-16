@@ -38,21 +38,18 @@ export default function ProjectSelector() {
                 body: JSON.stringify({ email }),
             });
 
-            if (!response.ok) {
-                throw new Error("프로젝트 목록 불러오기 실패");
+            if (response.ok) {
+                const data = await response.json();
+
+                const loadedProjects: Project[] = data.projects.map((proj: any) => ({
+                    id: proj.project_id,
+                    name: proj.name,
+                    desc: proj.description ?? "",
+                    color: classyColors[Math.floor(Math.random() * classyColors.length)],
+                    editing: false,
+                }));
+                setProjects(loadedProjects);
             }
-
-            const data = await response.json();
-
-            const loadedProjects: Project[] = data.projects.map((proj: any) => ({
-                id: proj.project_id,
-                name: proj.name,
-                desc: proj.description ?? "",
-                color: classyColors[Math.floor(Math.random() * classyColors.length)],
-                editing: false,
-            }));
-
-            setProjects(loadedProjects);
         } catch (err) {
             console.error("서버 오류:", err);
             alert("서버 오류가 발생했습니다.");
@@ -211,6 +208,7 @@ export default function ProjectSelector() {
 
                         {newProjectName !== "" && (
                             <div className="flex flex-col items-start w-full">
+                                <label>프로젝트 이름</label>
                                 <input
                                     type="text"
                                     placeholder="새 프로젝트 이름 입력 후 Enter"
@@ -221,6 +219,7 @@ export default function ProjectSelector() {
                                     onCompositionEnd={handleCompositionEnd}
                                     className="border border-gray-300 rounded-md px-4 py-2 w-full max-w-md mb-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                                 />
+                                <label>프로젝트 설명</label>
                                 <input
                                     type="text"
                                     placeholder="새 프로젝트 설명 입력 후 Enter"

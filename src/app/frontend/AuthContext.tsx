@@ -69,6 +69,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             social : social,
           }),
         });
+
+        const data = await response2.json();
+        console.log("소셜 로그인 응답:", data);
       }
     };
     fetchSession();
