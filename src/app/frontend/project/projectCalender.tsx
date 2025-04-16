@@ -1,6 +1,11 @@
 import { useEffect, useState, useRef } from "react";
+type BoardProps = {
+  projectId : string | null;
+  projectName : string | null;
+  projectDesc : string | null;
+};
 
-const Calendar = () => {
+const Calendar = ({ projectName }: BoardProps) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [editYear, setEditYear] = useState(false);
   const [editMonth, setEditMonth] = useState(false);

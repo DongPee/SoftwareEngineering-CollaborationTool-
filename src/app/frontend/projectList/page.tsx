@@ -285,7 +285,10 @@ export default function ProjectSelector() {
                                         <p className="m-2">{project.editing ? "✓" : "✎"}</p>
                                     </button>
 
-                                    <Link href="/frontend/project">
+                                    <Link href={{
+                                        pathname: "/frontend/project",
+                                        query: { projectId: project.id , projectName : project.name, projectDesc : project.desc}, 
+                                    }}>
                                         <button className="border-2 border-black text-black text-sm rounded hover:bg-white mr-3">
                                             <p className="m-2">➡️</p>
                                         </button>

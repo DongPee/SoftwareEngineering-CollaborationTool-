@@ -46,7 +46,8 @@ async function sendVerificationEmail(email, verificationCode) {
     }
 }
 
-// 1. 인증 코드 요청 API
+
+
 app.post('/api/request-verification', async (req, res) => {
     const { email, username} = req.body;
 
@@ -56,13 +57,11 @@ app.post('/api/request-verification', async (req, res) => {
 
     try {
         const verificationCode = generateVerificationCode();
-        // 인증 코드 저장 (비밀번호 없이 저장, 기존 데이터 덮어쓰기)
         await db.query(
             'INSERT INTO user_info (username, email, verification_code, is_verified) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE verification_code = ?, is_verified = 0',
             [username, email, verificationCode, false, verificationCode]
         );
 
-        // 인증 코드 이메일 전송
         await sendVerificationEmail(email, verificationCode);
 
         res.status(200).json({ message: "인증 코드가 이메일로 전송되었습니다." });
@@ -72,7 +71,61 @@ app.post('/api/request-verification', async (req, res) => {
     }
 });
 
-// 2. 인증 코드 확인 API
+
+
+app.post('/api/changePassword', async(req, res) => {
+    const { email, password } = req.body;
+    const passwordRegex = /^(?=.*[!@#$%^&*()_+]).{8,}$/;
+    if (!email || !password) {
+        return res.status(400).json({ error: "이메일과 비밀번호를 입력해야 합니다." });
+    }
+
+    if (!passwordRegex.test(password)) {
+        return res.status(400).json({ error: "비밀번호는 최소 8자 이상이며, 특수문자를 포함해야 합니다." });
+    }
+    
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await db.query('UPDATE user_info SET password_hash = ? WHERE email = ?', [hashedPassword, email]);
+        res.status(200).json({ message: "비밀번호가 변경되었습니다. " });
+    } catch (err) {
+        console.error("비밀번호 변경 오류", err);
+        res.status(500).json({ error: "비밀번호 변경 오류" });
+    }
+});
+
+
+
+app.post('/api/lost-password-request-verification', async (req, res) => {
+    const { email} = req.body;
+
+    if (!email) {
+        return res.status(400).json({ error: "이메일을 입력해야 합니다." });
+    }
+
+    try {
+        const [rows] = await db.query('SELECT password_hash FROM user_info WHERE email = ?', [email]);
+        const { password_hash } = rows[0];
+        if (password_hash === "kakao" || password_hash === "goggle") {
+            return res.status(400).json({ message: "소셜 로그인은 비밀번호를 찾을 수 없습니다." });
+        }
+        const verificationCode = generateVerificationCode();
+        await db.query(
+            'UPDATE user_info SET verification_code = ?, is_verified = ? WHERE email = ?',
+            [verificationCode, 0, email]
+        );
+
+        await sendVerificationEmail(email, verificationCode);
+
+        res.status(200).json({ message: "인증 코드가 이메일로 전송되었습니다." });
+    } catch (err) {
+        console.error("인증 코드 요청 오류:", err);
+        res.status(500).json({ error: "인증 코드 요청 중 오류가 발생했습니다." });
+    }
+});
+
+
+
 app.post('/api/verify-code', async (req, res) => {
     const { email, verificationCode } = req.body;
 
@@ -100,6 +153,8 @@ app.post('/api/verify-code', async (req, res) => {
         res.status(500).json({ error: "인증 코드 확인 중 오류가 발생했습니다." });
     }
 });
+
+
 
 // 3. 회원가입 완료 API
 app.post('/api/signup', async (req, res) => {
@@ -136,6 +191,9 @@ app.post('/api/signup', async (req, res) => {
         res.status(500).json({ error: "회원가입 처리 중 오류가 발생했습니다." });
     }
 });
+
+
+
 app.delete("/api/deleteProject", async (req, res) => {
     const { projectId } = req.body;
     console.log(projectId);
@@ -156,6 +214,9 @@ app.delete("/api/deleteProject", async (req, res) => {
         res.status(500).json({ message: "서버 오류" });
     }
 });
+
+
+
 // 사용자 조회 API
 app.get('/api/users', async (req, res) => {
     const { email} = req.body;
@@ -167,6 +228,8 @@ app.get('/api/users', async (req, res) => {
         res.status(500).json({ error: 'Database connection error' });
     }
 });
+
+
 
 app.post('/api/tryLogin', async (req, res) => {
     const { email, password } = req.body;
@@ -195,6 +258,9 @@ app.post('/api/tryLogin', async (req, res) => {
         res.status(500).json({ error: "서버 오류 발생" });
     }
 });
+
+
+
 app.post('/api/showProjects', async (req, res) => {
     const { email } = req.body;
     try {
@@ -217,6 +283,8 @@ app.post('/api/showProjects', async (req, res) => {
         res.status(500).json({ error: "서버 오류 발생" });
     }
 });
+
+
 
 app.post('/api/updateProject', async (req, res) => {
     const { projectId, name, desc } = req.body;
@@ -241,6 +309,8 @@ app.post('/api/updateProject', async (req, res) => {
         res.status(500).json({ error: "서버 오류 발생" });
     }
 });
+
+
 
 app.post('/api/socialLogin', async (req, res) => {
     const {username, email, social} = req.body;
@@ -277,6 +347,9 @@ app.post('/api/socialLogin', async (req, res) => {
         res.status(500).json({ error: "서버 오류 발생" });
     }
 });
+
+
+
 app.post('/api/createProject', async (req, res) => {
     const { email, name, desc } = req.body;
 
@@ -313,6 +386,10 @@ app.post('/api/createProject', async (req, res) => {
             [projectId, userId]
         );
 
+        await db.query("INSERT INTO column_table (title, project_id) VALUES (?, ?)", ["할 일", projectId]);
+        await db.query("INSERT INTO column_table (title, project_id) VALUES (?, ?)", ["진행 중", projectId]);
+        await db.query("INSERT INTO column_table (title, project_id) VALUES (?, ?)", ["완료", projectId]);
+
         // 4. 생성된 프로젝트 정보 반환
         res.status(201).json({
             message: "프로젝트가 성공적으로 생성되었습니다.",
@@ -328,6 +405,80 @@ app.post('/api/createProject', async (req, res) => {
         res.status(500).json({ error: "서버 오류 발생" });
     }
 });
+
+
+
+app.post('/api/createColumn', async (req, res) => {
+    const { title, projectId } = req.body;
+
+    if (!title || title.trim() === "" || !projectId) {
+        return res.status(400).json({ error: "컬럼 타이틀과 프로젝트 ID가 필요합니다." });
+    }
+
+    try {
+        const [result] = await db.query("INSERT INTO column_table (title, project_id) VALUES (?, ?)", [title, projectId]);
+        // 4. 생성된 프로젝트 정보 반환
+        
+        res.status(201).json({
+            message: "컬럼이 생성되었습니다.",
+            project: {
+                title: title,
+                columnId : result[0].insertId
+            }
+        });
+
+    } catch (err) {
+        console.error("컬럼 생성 오류:", err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
+app.post('/api/deleteColumn', async (req, res) => {
+    const { columnId } = req.body;
+
+    if (!columnId) {
+        return res.status(400).json({ error: "columnId가 필요합니다." });
+    }
+
+    try {
+        await db.query("DELETE FROM column_table WHERE id = ?", [columnId]);
+
+        res.status(200).json({
+            message: "컬럼이 삭제되었습니다.",
+        });
+
+    } catch (err) {
+        console.error("컬럼 삭제 오류:", err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
+app.post('/api/showColumn', async (req, res) => {
+    const { projectId } = req.body;
+
+    if (!projectId) {
+        return res.status(400).json({ error: "프로젝트 ID가 필요합니다." });
+    }
+
+    try {
+        const [result] = await db.query("SELECT * FROM column_table WHERE project_id = ?", [projectId]);
+
+        res.status(200).json({
+            message: "컬럼 목록을 불러왔습니다.",
+            columns: result
+        });
+
+    } catch (err) {
+        console.error("컬럼 조회 오류:", err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
 
 app.listen(5001, () => {
     console.log('Server is running on port 5001');

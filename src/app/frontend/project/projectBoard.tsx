@@ -1,17 +1,17 @@
 "use client";
 import { useState } from "react";
 import CardModal from "./CardModal";
+type BoardProps = {
+  projectId : string | null;
+  projectName : string | null;
+  projectDesc : string | null;
+};
 
 export type Card = {
   id: number;
   text: string;
   details: string;
   comments: string[];
-  assignee?: string; // 담당자 - 드롭다운
-  startDate?: string; // 시작일
-  dueDate?: string; // 마감일
-  labels?: string[]; // 레이블 목록 (없앨까말까)
-  team?: string; // 팀 이름
 };
 
 export type Column = {
@@ -21,16 +21,16 @@ export type Column = {
   newCardText: string;
 };
 
-export default function Board() {
+export default function Board({ projectName }: BoardProps) {
   const [columns, setColumns] = useState<Column[]>([
-    { id: 1, title: "To Do", cards: [{ id: 101, text: "프로젝트 시작하기", details: "상세 설명 없음", comments: [] }], newCardText: "" },
-    { id: 2, title: "In Progress", cards: [{ id: 201, text: "Next.js 학습", details: "상세 설명 없음", comments: [] }], newCardText: "" },
-    { id: 3, title: "Done", cards: [{ id: 301, text: "기본 레이아웃 제작", details: "상세 설명 없음", comments: [] }], newCardText: "" },
+    { id: 1, title: "To Do", cards: [], newCardText: "" },
+    { id: 2, title: "In Progress", cards: [], newCardText: "" },
+    { id: 3, title: "Done", cards: [], newCardText: "" },
   ]);
 
   const [newColumnTitle, setNewColumnTitle] = useState("");
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
-  // 예외 처리 삭제함
+
 
   // 컬럼 추가
   const addColumn = () => {
@@ -84,7 +84,6 @@ export default function Board() {
       ...col,
       cards: col.cards.map(card => card.id === updatedCard.id ? updatedCard : card),
     })));
-    setSelectedCard(null);
   };
 
   const closeModal = () => setSelectedCard(null);
