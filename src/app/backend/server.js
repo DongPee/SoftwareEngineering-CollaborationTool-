@@ -69,6 +69,26 @@ app.post('/api/request-verification', async (req, res) => {
     }
 });
 
+app.post('/api/changePassword', async(req, res) => {
+    const { email, password } = req.body;
+    const passwordRegex = /^(?=.*[!@#$%^&*()_+]).{8,}$/;
+    if (!email || !password) {
+        return res.status(400).json({ error: "이메일과 비밀번호를 입력해야 합니다." });
+    }
+
+    if (!passwordRegex.test(password)) {
+        return res.status(400).json({ error: "비밀번호는 최소 8자 이상이며, 특수문자를 포함해야 합니다." });
+    }
+    
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await db.query('UPDATE user_info SET password_hash = ? WHERE email = ?', [hashedPassword, email]);
+        res.status(200).json({ message: "비밀번호가 변경되었습니다. " });
+    } catch (err) {
+        console.error("비밀번호 변경 오류", err);
+        res.status(500).json({ error: "비밀번호 변경 오류" });
+    }
+});
 app.post('/api/lost-password-request-verification', async (req, res) => {
     const { email} = req.body;
 

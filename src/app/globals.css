@@ -235,3 +235,19 @@ input{
   padding: 20px;
   margin: 0px 20px;
 }
+.modal{
+  background-color: rgba(0, 0, 0, 0.75); /*흐림 효과 75%*/
+}
+.modal-content{
+  padding: 10px;
+}
+.modal-content input{
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+.modal-content button{
+
+}

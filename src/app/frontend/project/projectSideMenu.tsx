@@ -1,13 +1,16 @@
 import Link from "next/link";
-import { getDarkMode } from "./DarkState";
+import { getDarkMode } from "../DarkState";
 import { useEffect } from "react";
 
 type SidebarProps = {
   active: string;  
   setActive: (value: string) => void;  
+  projectId : string | null;
+  projectName : string | null;
+  projectDesc : string | null;
 };
 
-const Sidebar = ({ active, setActive }: SidebarProps) => {
+const Sidebar = ({ active, setActive, projectId, projectName, projectDesc}: SidebarProps) => {
   useEffect(() => {
       document.body.classList.toggle("dark-mode", getDarkMode());
     }, []);
@@ -17,24 +20,32 @@ const Sidebar = ({ active, setActive }: SidebarProps) => {
             <h2 className="font-bold mb-6">계획</h2>
 
             <nav className="project-side-menu-nav flex gap-3">
-                <Link href="/frontend/project" onClick={() => setActive("summary")}>
+                <Link href={{pathname: "/frontend/project",
+                                query: { projectId: projectId , projectName : projectName, projectDesc : projectDesc}, 
+                            }} onClick={() => setActive("summary")}>
                   <div className={`flex items-center gap-3 rounded-2xl cursor-pointer hover:bg-blue-400 transition ${active === "summary" ? "border-2 border-blue-400" : ""}`}>
                       <span className="m-2">🌐요약</span>
                   </div>
                 </Link>
 
-                <Link href="/frontend/project" onClick={() => setActive("timeline")}>
+                <Link href={{pathname: "/frontend/project",
+                                query: { projectId: projectId , projectName : projectName, projectDesc : projectDesc}, 
+                            }} onClick={() => setActive("timeline")}>
                   <div className={`flex items-center gap-3 rounded-2xl cursor-pointer hover:bg-blue-400 transition ${active === "timeline" ? "border-2 border-blue-400" : ""}`}>
                       <span className="m-2">타임라인</span>
                   </div>
                 </Link>
 
-                <Link href="/frontend/project" onClick={() => setActive("board")}>
+                <Link href={{pathname: "/frontend/project",
+                                query: { projectId: projectId , projectName : projectName, projectDesc : projectDesc}, 
+                            }} onClick={() => setActive("board")}>
                   <div className={`flex items-center gap-3 rounded-2xl cursor-pointer hover:bg-blue-400 transition ${active === "board" ? "border-2 border-blue-400" : ""}`}>
                       <span className="m-2">보드</span>
                   </div>
                 </Link>
-                <Link href="/frontend/project" onClick={() => setActive("calender")}>
+                <Link href={{pathname: "/frontend/project",
+                              query: { projectId: projectId , projectName : projectName, projectDesc : projectDesc}, 
+                            }} onClick={() => setActive("calender")}>
                   <div className={`flex items-center gap-3 rounded-2xl cursor-pointer hover:bg-blue-400 transition ${active === "calender" ? "border-2 border-blue-400" : ""}`}>
                       <span className="m-2">캘린더</span>
                   </div>

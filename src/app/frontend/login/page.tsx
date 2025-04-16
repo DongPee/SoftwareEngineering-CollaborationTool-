@@ -1,5 +1,4 @@
 "use client";
-import { getSession } from "next-auth/react";
 import { useState, useContext } from "react";
 import { useRouter } from "next/navigation"; 
 import Image from "next/image";

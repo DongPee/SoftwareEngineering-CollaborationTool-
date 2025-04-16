@@ -1,6 +1,11 @@
 import Image from "next/image";
+type BoardProps = {
+  projectId : string | null;
+  projectName : string | null;
+  projectDesc : string | null;
+};
 
-const Summary = () => {
+const Summary = ({ projectName }: BoardProps) => {
   return (
     <div className="summary-b p-6 overflow-y-auto">
       {/* 화면 크기에 따라 레이아웃 변경 */}

@@ -1,9 +1,10 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import styles from "../signup/signup.module.css";
 import { lostPasswordRequestVerification, verifyCode } from "@/app/backend/verification";
+import { AuthContext } from "../AuthContext";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -12,10 +13,35 @@ export default function ForgotPasswordPage() {
   const [ICode, setICode] = useState('');
   const [isVerified, setIsVerified] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const auth = useContext(AuthContext);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // 실제 API 연동 예정
+    try {
+      const response = await fetch("http://localhost:5001/api/changePassword", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        console.log("비밀번호가 변경되었음", data);
+        alert("비밀번호가 변경되었습니다.");
+      } else {
+        console.error("비밀번호 변경이 실패함.", data.error);
+        alert("비밀번호 변경 실패");
+        alert(data.error);
+      }
+    } catch (err) {
+      console.error("서버 오류:", err);
+      alert("서버 오류가 발생했습니다.");
+    }
   };
 
   const handleRequestVerification = async () => {
