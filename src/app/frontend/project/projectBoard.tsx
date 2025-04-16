@@ -1,10 +1,11 @@
 "use client";
 import { useState } from "react";
 import CardModal from "./CardModal";
+
 type BoardProps = {
-  projectId : string | null;
-  projectName : string | null;
-  projectDesc : string | null;
+  projectId: string | null;
+  projectName: string | null;
+  projectDesc: string | null;
 };
 
 export type Card = {
@@ -12,6 +13,9 @@ export type Card = {
   text: string;
   details: string;
   comments: string[];
+  assignee?: string;
+  startDate?: string;
+  endDate?: string;
 };
 
 export type Column = {
@@ -21,7 +25,7 @@ export type Column = {
   newCardText: string;
 };
 
-export default function Board({ projectName }: BoardProps) {
+export default function ProjectBoard({ projectId, projectName, projectDesc }: BoardProps) {
   const [columns, setColumns] = useState<Column[]>([
     { id: 1, title: "To Do", cards: [], newCardText: "" },
     { id: 2, title: "In Progress", cards: [], newCardText: "" },
@@ -31,6 +35,7 @@ export default function Board({ projectName }: BoardProps) {
   const [newColumnTitle, setNewColumnTitle] = useState("");
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 
+  const assigneeOptions = ["user1", "user2", "user3", "user4"];
 
   // 컬럼 추가
   const addColumn = () => {
@@ -52,8 +57,11 @@ export default function Board({ projectName }: BoardProps) {
         const newCard: Card = {
           id: Date.now(),
           text: col.newCardText.trim(),
-          details: "상세 설명 없음",
+          details: "",
           comments: [],
+          assignee: "",
+          startDate: "",
+          endDate: "",
         };
         return { ...col, cards: [...col.cards, newCard], newCardText: "" };
       }
@@ -68,8 +76,9 @@ export default function Board({ projectName }: BoardProps) {
 
   // 카드 입력값 변경
   const handleCardInputChange = (e: React.ChangeEvent<HTMLInputElement>, columnId: number) => {
+    const value = e.target.value;
     setColumns(columns.map(col =>
-      col.id === columnId ? { ...col, newCardText: e.target.value } : col
+      col.id === columnId ? { ...col, newCardText: value } : col
     ));
   };
 
@@ -82,62 +91,68 @@ export default function Board({ projectName }: BoardProps) {
   const handleDetailSave = (updatedCard: Card) => {
     setColumns(columns.map(col => ({
       ...col,
-      cards: col.cards.map(card => card.id === updatedCard.id ? updatedCard : card),
+      cards: col.cards.map(card => (card.id === updatedCard.id ? updatedCard : card)),
     })));
+    setSelectedCard(null);
   };
 
   const closeModal = () => setSelectedCard(null);
 
   return (
     <div className="board">
-      {columns.map(column => (
-        <div key={column.id} className="column">
-          <h2>{column.title}</h2>
+      <h1 className="text-2xl font-bold mb-4">{projectName ?? "프로젝트 보드"}</h1>
+      <p className="text-gray-600 mb-8">{projectDesc ?? "프로젝트 설명 없음"}</p>
 
-          {column.cards.map(card => (
-            <div
-              key={card.id}
-              onClick={() => handleCardClick(card)}
-              className="card cursor-pointer"
-            >
-              {card.text}
+      <div className="columns flex gap-4">
+        {columns.map(column => (
+          <div key={column.id} className="column bg-gray-100 p-4 rounded shadow-md w-80">
+            <h2 className="text-lg font-semibold mb-2">{column.title}</h2>
+
+            {column.cards.map(card => (
+              <div
+                key={card.id}
+                onClick={() => handleCardClick(card)}
+                className="card bg-white p-2 mb-2 rounded cursor-pointer hover:bg-blue-100 transition"
+              >
+                {card.text}
+              </div>
+            ))}
+
+            {/* 카드 추가 */}
+            <div className="addCard mt-4 flex flex-col gap-2">
+              <input
+                type="text"
+                value={column.newCardText}
+                onChange={(e) => handleCardInputChange(e, column.id)}
+                placeholder="새 카드 이름"
+                className="p-2 rounded border border-gray-300"
+              />
+              <button
+                onClick={() => addCard(column.id)}
+                className="bg-blue-500 text-white py-1 px-3 rounded hover:bg-blue-600"
+              >
+                카드 추가
+              </button>
             </div>
-          ))}
-
-          {/* 카드 추가 */}
-          <div className="addCard">
-            <input
-              type="text"
-              value={column.newCardText}
-              onChange={(e) => handleCardInputChange(e, column.id)}
-              placeholder="새로운 카드 이름"
-              className="bg-white placeholder:text-gray-500 placeholder:opacity-100"
-            />
-            <button
-              onClick={() => addCard(column.id)}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md min-w-30"
-            >
-              카드 추가
-            </button>
           </div>
-        </div>
-      ))}
+        ))}
 
-      {/* 컬럼 추가 */}
-      <div className="addColumn">
-        <input
-          type="text"
-          value={newColumnTitle}
-          onChange={handleColumnInputChange}
-          placeholder="새로운 컬럼 이름"
-          className="min-w-75 min-h-70 bg-gray-200 placeholder:text-gray-500 placeholder:opacity-100"
-        />
-        <button
-          onClick={addColumn}
-          className="px-4 py-2 bg-blue-500 text-white rounded-md min-w-75 min-h-30"
-        >
-          컬럼 추가
-        </button>
+        {/* 컬럼 추가 */}
+        <div className="addColumn flex flex-col gap-2 bg-gray-50 p-4 rounded shadow-md h-fit">
+          <input
+            type="text"
+            value={newColumnTitle}
+            onChange={handleColumnInputChange}
+            placeholder="새 컬럼 이름"
+            className="p-2 rounded border border-gray-300"
+          />
+          <button
+            onClick={addColumn}
+            className="bg-green-500 text-white py-1 px-3 rounded hover:bg-green-600"
+          >
+            컬럼 추가
+          </button>
+        </div>
       </div>
 
       {/* 모달 컴포넌트 */}
@@ -146,6 +161,7 @@ export default function Board({ projectName }: BoardProps) {
           card={selectedCard}
           onSave={handleDetailSave}
           onClose={closeModal}
+          assigneeOptions={assigneeOptions}
         />
       )}
     </div>

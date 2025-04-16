@@ -115,9 +115,11 @@
     color: white;
     border: none;
     border-radius: 12px;
-    padding: 8px 14px;
+    padding: 0 14px;
+    height: 40px;
     cursor: pointer;
     transition: background 0.2s ease;
+    white-space: nowrap;
   }
   
   .addCommentBtn:hover {
@@ -127,8 +129,8 @@
   .closeBtn {
     background-color: #6b7280;
   }
-  
+
   .closeBtn:hover {
-    background-color: #4b5563;
+    background-color: #ff4e4e;
   }
   
