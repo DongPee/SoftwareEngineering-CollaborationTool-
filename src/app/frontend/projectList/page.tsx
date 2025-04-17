@@ -14,6 +14,7 @@ const classyColors = [
 ];
 
 interface Project {
+    sharing : boolean;
     id: number;
     name: string;
     desc: string;
@@ -90,6 +91,7 @@ export default function ProjectSelector() {
                 desc,
                 color: classyColors[Math.floor(Math.random() * classyColors.length)],
                 editing: false,
+                sharing : false,
             };
     
             setProjects(prev => [...prev, newProject]);

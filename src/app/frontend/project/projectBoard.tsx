@@ -9,12 +9,15 @@ type BoardProps = {
   projectDesc : string | null;
 };
 
+
 export type Card = {
   id: number;
   text: string;
   details: string;
   comments: string[];
-  columnId : number;
+  assignee?: string;
+  startDate?: string;
+  endDate?: string;
 };
 
 export type Column = {
@@ -30,6 +33,8 @@ export default function Board({ projectName, projectId }: BoardProps) {
 
   const [newColumnTitle, setNewColumnTitle] = useState("");
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+  const assigneeOptions = ["user0", "user1", "user2", "user3"];
+  
   useEffect(() => {
     if (!projectId) return;
   
@@ -226,6 +231,7 @@ export default function Board({ projectName, projectId }: BoardProps) {
           card={selectedCard}
           onSave={handleDetailSave}
           onClose={closeModal}
+          assigneeOptions={assigneeOptions}
         />
       )}
     </div>

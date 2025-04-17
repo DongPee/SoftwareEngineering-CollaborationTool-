@@ -7,7 +7,7 @@ import nodemailer from 'nodemailer';
 const app = express();
 app.use(cors({ origin: "http://localhost:3000" }));
 app.use(express.json());
-
+import { v4 as uuidv4 } from 'uuid';
 // MySQL 연결 정보
 const db = mysql.createPool({
     host: 'swep-db.chcwouumglg8.ap-northeast-2.rds.amazonaws.com',
@@ -555,6 +555,55 @@ app.post('/api/deleteCard', async (req, res) => {
 });
 
 
+
+
+app.post('/api/createInviteLInk', async (req, res) => {
+    const { projectId, inviterEmail } = req.body;
+
+    if (!projectId || !inviterEmail) {
+        return res.status(400).json({ error: "프로젝트 id나 초대코드가 유효하지 않습니다." });
+    }
+
+    try {
+        const token = uuidv4(); // short-uuid도 좋음
+        await db.query("INSERT INTO invite_tokens (token, project_id, inviter_email) VALUES (?, ?, ?)", [token, projectId, inviterEmail]);
+        
+        res.json({
+        inviteUrl: `http://localhost:3000/invite/${token}`
+});
+
+    } catch (err) {
+        console.error("생성 오류", err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
+app.post('/api/acceptInvite', async (req, res) => {
+    const { token, email} = req.body;
+    console.log("확인중~");
+    if (!token) {
+        return res.status(400).json({ error: "초대코드가 유효하지 않습니다." });
+    }
+
+    try {
+        const [rows] = await db.query("SELECT * FROM invite_tokens WHERE token = ?", [token]);
+        if (rows.length === 0) return res.status(400).json({ error: "초대 링크가 유효하지 않음" });
+
+        const projectId = rows[0].project_id;
+        const [rows2] = await db.query("select id from user_info where email=?", [email]);
+        // 프로젝트 멤버에 추가
+        await db.query("INSERT INTO project_members (project_id, user_id) VALUES (?, ?)", [projectId, rows2[0].id]);
+
+        res.json({ projectId });
+        
+
+    } catch (err) {
+        console.error("카드 삭제 오류:", err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
 
 app.listen(5001, () => {
     console.log('Server is running on port 5001');

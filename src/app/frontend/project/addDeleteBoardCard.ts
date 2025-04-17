@@ -78,3 +78,23 @@ export const deleteCards = async (columnId: number) => {
     throw err;
   }
 };
+
+export const handleInvite = async (projectId : string, inviterEmail : string) => {
+  try {
+    const response = await fetch("http://localhost:5001/api/createInviteLink", {
+      method: "POST",
+      body: JSON.stringify({ projectId, inviterEmail }),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    const data = await response.json();
+    await navigator.clipboard.writeText(data.inviteUrl);
+    console.log(data.inviteUrl);
+    alert("초대 링크가 복사되었습니다!");
+  } catch (err) {
+    console.error("카드 삭제 실패:", err);
+    throw err;
+  }
+};
