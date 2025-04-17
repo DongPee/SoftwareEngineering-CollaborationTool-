@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AuthContext } from "../AuthContext";
 import LoginPage from "../login/page";
 import styles from "../signup/signup.module.css";
+import { useRouter } from "next/navigation"; 
 
 const classyColors = [
     "bg-rose-200", "bg-sky-200", "bg-lime-200",
@@ -26,7 +27,7 @@ export default function ProjectSelector() {
     const [newProjectName, setNewProjectName] = useState("");
     const [description, setNewDescription] = useState("");
     const [isComposing, setIsComposing] = useState(false); // 한글 조합 중인지 여부
-
+    const router = useRouter(); 
     const projectList = async () => {
         const email = auth?.email ?? "";
         try {
@@ -94,7 +95,7 @@ export default function ProjectSelector() {
             setProjects(prev => [...prev, newProject]);
             setNewProjectName(""); // 프로젝트 추가 후 입력창 초기화
             setNewDescription(""); // 설명 초기화
-    
+            projectList();
         } catch (err) {
             console.error("프로젝트 생성 오류:", err);
             alert("프로젝트 생성에 실패했습니다.");
@@ -286,7 +287,7 @@ export default function ProjectSelector() {
                                     </button>
 
                                     <Link href={{
-                                        pathname: "/frontend/project",
+                                        pathname: `/frontend/${project.id ? "project" : "projectList"}`,
                                         query: { projectId: project.id , projectName : project.name, projectDesc : project.desc}, 
                                     }}>
                                         <button className="border-2 border-black text-black text-sm rounded hover:bg-white mr-3">
