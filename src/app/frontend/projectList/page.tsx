@@ -82,9 +82,9 @@ export default function ProjectSelector() {
             }
     
             const result = await response.json();
-    
+            console.log(result);
             const newProject: Project = {
-                id: result.project_id, // 서버에서 반환된 프로젝트 ID를 설정
+                id: result.id, // 서버에서 반환된 프로젝트 ID를 설정
                 name,
                 desc,
                 color: classyColors[Math.floor(Math.random() * classyColors.length)],

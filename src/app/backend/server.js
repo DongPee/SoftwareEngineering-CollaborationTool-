@@ -377,7 +377,7 @@ app.post('/api/createProject', async (req, res) => {
             "INSERT INTO projects (name, description, created_by) VALUES (?, ?, ?)",
             [name, desc, userId]
         );
-
+        console.log(projectResult);
         const projectId = projectResult.insertId;
 
         // 3. 프로젝트 멤버(owner)로 등록
@@ -418,12 +418,12 @@ app.post('/api/createColumn', async (req, res) => {
     try {
         const [result] = await db.query("INSERT INTO column_table (title, project_id) VALUES (?, ?)", [title, projectId]);
         // 4. 생성된 프로젝트 정보 반환
-        
+        console.log(result);
         res.status(201).json({
             message: "컬럼이 생성되었습니다.",
             project: {
                 title: title,
-                columnId : result[0].insertId
+                columnId : result.insertId
             }
         });
 
@@ -459,21 +459,97 @@ app.post('/api/deleteColumn', async (req, res) => {
 
 app.post('/api/showColumn', async (req, res) => {
     const { projectId } = req.body;
-
     if (!projectId) {
         return res.status(400).json({ error: "프로젝트 ID가 필요합니다." });
     }
 
     try {
         const [result] = await db.query("SELECT * FROM column_table WHERE project_id = ?", [projectId]);
-
         res.status(200).json({
             message: "컬럼 목록을 불러왔습니다.",
             columns: result
         });
-
+        
     } catch (err) {
         console.error("컬럼 조회 오류:", err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
+app.post('/api/showCard', async (req, res) => {
+    const { columnId } = req.body;
+    if (!columnId) {
+        return res.status(400).json({ error: "컬럼 ID가 필요합니다." });
+    }
+
+    try {
+        const [result] = await db.query("SELECT * FROM card_table WHERE column_id = ?", [columnId]);
+        console.log(`${columnId} cards : ${result}`);
+        console.log(result);
+        res.status(200).json({
+            message: "컬럼 목록을 불러왔습니다.",
+            cards: result
+        });
+        
+    } catch (err) {
+        console.error("컬럼 조회 오류:", err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
+app.post('/api/createCard', async (req, res) => {
+    const { title, columnId } = req.body;
+
+    if (!title || title.trim() === "" || !columnId) {
+        return res.status(400).json({ error: "카드 제목과 컬럼 ID가 필요합니다." });
+    }
+
+    try {
+        const [result] = await db.query(
+            "INSERT INTO card_table (title, column_id) VALUES (?, ?)",
+            [title, columnId]
+        );
+
+        console.log(result);
+        res.status(200).json({
+            message: "카드를 추가했습니다.",
+            result: result,
+        });
+
+    } catch (err) {
+        console.error("카드 추가 오류:", err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
+app.post('/api/deleteCard', async (req, res) => {
+    const { columnId } = req.body;
+
+    if (!columnId) {
+        return res.status(400).json({ error: "컬럼 ID가 필요합니다." });
+    }
+
+    try {
+        const [result] = await db.query(
+            "DELETE FROM card_table WHERE column_id = ?",
+            [columnId]
+        );
+
+        console.log("삭제된 카드 수:", result.affectedRows);
+
+        res.status(200).json({
+            message: "해당 컬럼의 모든 카드를 삭제했습니다.",
+            deletedCount: result.affectedRows
+        });
+
+    } catch (err) {
+        console.error("카드 삭제 오류:", err);
         res.status(500).json({ error: "서버 오류 발생" });
     }
 });

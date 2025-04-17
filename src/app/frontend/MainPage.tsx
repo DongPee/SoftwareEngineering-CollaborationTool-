@@ -25,9 +25,9 @@ const MainPage = () => {
         <Link href="/frontend/projectList">
           <motion.div
             className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition cursor-pointer text-center"
-            whileHover={{ scale: 1.2 }}
+            whileHover={{ scale: 1.3 }}
           >
-            시작하기
+            <p className="ml-5 mr-5">시작하기</p>
           </motion.div>
         </Link>
       </section>
