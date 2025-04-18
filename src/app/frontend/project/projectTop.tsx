@@ -29,7 +29,7 @@ const Top = ({ projectName, projectId }: BoardProps) => {
                   }} 
                   type="button"
                 >
-                  공유하기
+                  공유
                 </button>
             </div>
         </div>

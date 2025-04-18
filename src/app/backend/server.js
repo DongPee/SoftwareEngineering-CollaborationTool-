@@ -589,18 +589,29 @@ app.post('/api/acceptInvite', async (req, res) => {
 
     try {
         const [rows] = await db.query("SELECT * FROM invite_tokens WHERE token = ?", [token]);
-        if (rows.length === 0) return res.status(400).json({ error: "초대 링크가 유효하지 않음" });
+        if(!email) return res.status(400).json({error : "로그인 해주세요"});
+        if (rows.length === 0 ) return res.status(400).json({ error: "초대 링크가 유효하지 않음" });
+        if(rows[0].used === 1) return res.status(400).json({ error: "이 링크는 만료되었습니다." });
 
         const projectId = rows[0].project_id;
         const [rows2] = await db.query("select id from user_info where email=?", [email]);
-        // 프로젝트 멤버에 추가
+        if (!rows2.length) return res.status(404).json({ error: "해당 이메일의 유저를 찾을 수 없습니다." });
+        // 중복 추가 방지
+        const [existing] = await db.query(
+            "SELECT * FROM project_members WHERE project_id = ? AND user_id = ?",
+            [projectId, rows2[0].id]
+        );
+        
+        if (existing.length > 0) {
+            return res.status(400).json({ error: "이미 프로젝트에 참여 중입니다." });
+        }
         await db.query("INSERT INTO project_members (project_id, user_id) VALUES (?, ?)", [projectId, rows2[0].id]);
-
+        await db.query("update invite_tokens set used = ? where token = ?", [1,token]);
         res.json({ projectId });
         
 
     } catch (err) {
-        console.error("카드 삭제 오류:", err);
+        console.error(err);
         res.status(500).json({ error: "서버 오류 발생" });
     }
 });
