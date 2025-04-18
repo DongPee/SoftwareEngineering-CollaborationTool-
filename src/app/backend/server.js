@@ -582,7 +582,6 @@ app.post('/api/createInviteLInk', async (req, res) => {
 
 app.post('/api/acceptInvite', async (req, res) => {
     const { token, email} = req.body;
-    console.log("확인중~");
     if (!token) {
         return res.status(400).json({ error: "초대코드가 유효하지 않습니다." });
     }
@@ -616,6 +615,26 @@ app.post('/api/acceptInvite', async (req, res) => {
     }
 });
 
+
+app.post('/api/showProjectUsername', async (req, res) => {
+    const {projectId} = req.body;
+
+    if (!projectId) {
+        return res.status(400).json({ error: "프로젝트 Id가 없습니다." });
+    }
+
+    try {
+        const [rows] = await db.query("SELECT ui.username FROM project_members pm JOIN user_info ui ON pm.user_id = ui.id WHERE pm.project_id = ?;", [projectId]);
+        if (rows.length === 0 ) return res.status(400).json({ error: "사용자가 없음" });
+        console.log(rows);
+        res.json({ rows });
+        
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
 app.listen(5001, () => {
     console.log('Server is running on port 5001');
 });
