@@ -63,8 +63,14 @@ export default function CardModal({
   };
 
   return (
-    <div className={styles.modal}>
-      <div className={styles.modalContent}>
+    <div
+      className={styles.modal}
+      onClick={onClose}
+    >
+      <div
+        className={styles.modalContent}
+        onClick={(e) => e.stopPropagation()}
+      >
         <h2 className={styles.title}>{card.text}</h2>
 
         <label className={styles.label}>상세 설명</label>

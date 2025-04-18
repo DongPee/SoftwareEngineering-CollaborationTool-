@@ -528,7 +528,7 @@ app.post('/api/createCard', async (req, res) => {
 
 
 
-app.post('/api/deleteCard', async (req, res) => {
+app.post('/api/deleteCards', async (req, res) => {
     const { columnId } = req.body;
 
     if (!columnId) {
@@ -545,6 +545,35 @@ app.post('/api/deleteCard', async (req, res) => {
 
         res.status(200).json({
             message: "해당 컬럼의 모든 카드를 삭제했습니다.",
+            deletedCount: result.affectedRows
+        });
+
+    } catch (err) {
+        console.error("카드 삭제 오류:", err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
+
+app.post('/api/deleteCard', async (req, res) => {
+    const { columnId, cardId } = req.body;
+
+    if (!columnId || !cardId) {
+        return res.status(400).json({ error: "카드 ID가 필요합니다." });
+    }
+
+    try {
+        const [result] = await db.query(
+            "DELETE FROM card_table WHERE column_id = ? and id = ?",
+            [columnId, cardId]
+        );
+    
+
+
+        res.status(200).json({
+            message:`해당 컬럼의 ${cardId} 카드를 삭제했습니다.`,
             deletedCount: result.affectedRows
         });
 

@@ -248,6 +248,10 @@ input{
   border-radius: 5px;
   font-size: 14px;
 }
-.modal-content button{
+.addColumn{
+  border-color: var(--border-color);
+}
 
+.columnAddButton{
+  border-color: var(--border-color);
 }

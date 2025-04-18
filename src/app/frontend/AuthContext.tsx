@@ -52,7 +52,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const name = session.user.name || "";
         const email = session.user.email || "";
         const social = localStorage.getItem("isSocialLogin") || "no-social";
-        alert(`이름 : ${name}, ${email}, ${social}`);
         login(name, social, name);
         setIsLoggedIn(true);
         setUsername(name);

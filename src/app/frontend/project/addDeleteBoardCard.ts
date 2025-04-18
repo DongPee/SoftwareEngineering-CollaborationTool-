@@ -64,10 +64,30 @@ export async function createCard(title: string, columnId: number) {
   
 export const deleteCards = async (columnId: number) => {
   try {
-    const res = await fetch("http://localhost:5001/api/deleteCard", {
+    const res = await fetch("http://localhost:5001/api/deleteCards", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ columnId }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    return data;
+  } catch (err) {
+    console.error("카드 전체 삭제 실패:", err);
+    throw err;
+  }
+};
+
+
+
+
+export const deleteCard = async (columnId: number, cardId:number) => {
+  try {
+    const res = await fetch("http://localhost:5001/api/deleteCard", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ columnId, cardId}),
     });
 
     const data = await res.json();
@@ -78,6 +98,8 @@ export const deleteCards = async (columnId: number) => {
     throw err;
   }
 };
+
+
 
 export const handleInvite = async (projectId : string, inviterEmail : string) => {
   try {

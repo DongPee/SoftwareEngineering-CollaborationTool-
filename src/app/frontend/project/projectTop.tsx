@@ -24,8 +24,8 @@ const Top = ({ projectName, projectId }: BoardProps) => {
   }, []);
 
   const generateRandomFilter = (): string => {
-    const brightness = (Math.random() * 0.6 + 0.7).toFixed(2); // 0.7 ~ 1.3
-    const contrast = (Math.random() * 0.6 + 0.7).toFixed(2);   // 0.7 ~ 1.3
+    const brightness = (Math.random() * 0.6 + 0.7).toFixed(2);
+    const contrast = (Math.random() * 0.6 + 0.7).toFixed(2);
     const invert = Math.random() > 0.5 ? 1 : 0;
     return `brightness(${brightness}) contrast(${contrast}) invert(${invert})`;
   };
@@ -77,7 +77,7 @@ const Top = ({ projectName, projectId }: BoardProps) => {
           </div>
           <button id="projectNameButton" className="ml-2" type="button">•••</button>
           <button
-            className="ml-2 px-2 py-1 border rounded"
+            className="ml-2 px-2 py-1 border rounded relative group"
             onClick={() => {
               if (projectId && auth?.email) {
                 handleInvite(projectId, auth.email);
@@ -86,6 +86,9 @@ const Top = ({ projectName, projectId }: BoardProps) => {
             type="button"
           >
             공유
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+              초대 링크 복사
+            </div>
           </button>
 
           {/* 유저 프로필 목록 */}
