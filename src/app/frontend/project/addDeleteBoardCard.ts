@@ -1,3 +1,4 @@
+import { User } from "next-auth";
 export async function createColumn(title: string, projectId: number) {
   const response = await fetch("http://localhost:5001/api/createColumn", {
     method: "POST",
@@ -118,5 +119,30 @@ export const handleInvite = async (projectId : string, inviterEmail : string) =>
   } catch (err) {
     console.error("카드 삭제 실패:", err);
     throw err;
+  }
+};
+
+export const showUsers = async (projectId: string | null) => {
+  if (!projectId) return [];
+
+  try {
+    const response = await fetch("http://localhost:5001/api/showProjectUsername", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ projectId }),
+    });
+
+    const res = await response.json();
+    const result = res.rows;
+
+    if (response.ok && Array.isArray(result)) {
+      return result;  // result를 그대로 반환
+    } else {
+      console.error("응답 실패:", res.error || "알 수 없는 오류");
+      return [];
+    }
+  } catch (error) {
+    console.error("API 호출 실패:", error);
+    return [];
   }
 };

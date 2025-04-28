@@ -594,7 +594,7 @@ app.post('/api/createInviteLInk', async (req, res) => {
     }
 
     try {
-        const token = uuidv4(); // short-uuid도 좋음
+        const token = uuidv4();
         await db.query("INSERT INTO invite_tokens (token, project_id, inviter_email) VALUES (?, ?, ?)", [token, projectId, inviterEmail]);
         
         res.json({
@@ -655,7 +655,6 @@ app.post('/api/showProjectUsername', async (req, res) => {
     try {
         const [rows] = await db.query("SELECT ui.username FROM project_members pm JOIN user_info ui ON pm.user_id = ui.id WHERE pm.project_id = ?;", [projectId]);
         if (rows.length === 0 ) return res.status(400).json({ error: "사용자가 없음" });
-        console.log(rows);
         res.json({ rows });
         
 
@@ -664,6 +663,123 @@ app.post('/api/showProjectUsername', async (req, res) => {
         res.status(500).json({ error: "서버 오류 발생" });
     }
 });
+
+
+
+app.post('/api/addComment', async (req, res) => {
+    const { cardId, content, email} = req.body;
+    console.log(cardId);
+    console.log(content);
+    console.log(email);
+    if (!cardId || !content || !email) {
+      return res.status(400).json({ error: "cardId 또는 내용 또는 사용자가 없습니다." });
+    }
+  
+    try {
+        const [userResult] = await db.query("SELECT id, username, email FROM user_info WHERE email = ?", [email]);
+    
+        if (userResult.length === 0) {
+            console.log("no data");
+            throw new Error("해당 email에 해당하는 사용자가 없습니다.");
+        }
+        const authorId = userResult[0].id;
+        const author = userResult[0].username;
+        const author_email = userResult[0].email;
+        console.log(userResult);
+        const [result] = await db.query(
+            "INSERT INTO comment_table (content, cards_id, author, author_username, author_email) VALUES (?, ?, ?, ?, ?)",
+            [content, cardId, authorId, author, author_email]
+        );
+  
+      res.json({ id: result.insertId, author : author, author_email : author_email }); 
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
+app.post('/api/deleteComment', async (req, res) => {
+    const { commentId } = req.body;
+  
+    if (!commentId) {
+        return res.status(400).json({ error: "commentId가 없습니다." });
+    }
+  
+    try {
+        const [result] = await db.query(
+            "delete from comment_table where id = ?", 
+            [commentId]
+        );
+      
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "댓글을 찾을 수 없습니다." });
+        }
+
+        res.json({ message: "댓글이 삭제되었습니다." });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
+app.post('/api/showComment', async (req, res) => {
+    const { cardId } = req.body;
+
+    if (!cardId) {
+        return res.status(400).json({ error: "cardId가 없습니다." });
+    }
+
+    try {
+        const [rows] = await db.query("SELECT id, content FROM comment_table WHERE cards_id = ?", [cardId]);
+
+        const comments = rows.map(row => ({
+            id: row.id,
+            content: row.content
+        }));
+        res.json({ comments });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
+app.post('/api/getComments', async (req, res) => {
+    const { commentIds } = req.body;
+    // commentIds가 없거나 빈 배열일 경우 오류 처리
+    if (!commentIds || commentIds.length === 0) {
+      return ;
+    }
+  
+    try {
+      // 여러 commentId에 해당하는 댓글을 조회
+      const [rows] = await db.query(
+        'SELECT content, author_username, author_email FROM comment_table WHERE id IN (?)',
+        [commentIds]
+      );
+      // 댓글 데이터 가공
+      const comments = rows.map(row => ({
+        text: row.content,
+        author: row.author_username,
+        author_email : row.author_email
+      }));
+  
+      console.log("댓글 데이터:", comments);
+      res.json(comments);  // 댓글 데이터 배열을 그대로 반환
+    } catch (err) {
+      console.error('댓글 조회 중 오류 발생:', err);
+      res.status(500).json({ error: '서버 오류 발생' });
+    }
+  });
+  
+
+
+
 app.listen(5001, () => {
     console.log('Server is running on port 5001');
 });

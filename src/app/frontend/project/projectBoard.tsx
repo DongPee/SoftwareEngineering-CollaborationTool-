@@ -2,6 +2,7 @@
 import { useState, useEffect, use} from "react";
 import CardModal from "./CardModal";
 import { createColumn, deleteColumn, createCard, deleteCards, deleteCard} from "./addDeleteBoardCard";
+import users from "./projectTop";
 
 type BoardProps = {
   projectId : string | null;
@@ -9,12 +10,12 @@ type BoardProps = {
   projectDesc : string | null;
 };
 
-
 export type Card = {
   id: number;
   text: string;
   details: string;
   comments: string[];
+  commentsId : number[];
   assignee?: string;
   startDate?: string;
   endDate?: string;
@@ -32,9 +33,7 @@ export default function Board({ projectName, projectId }: BoardProps) {
   const [addColumnToggle, setColumnToggle] = useState(false);
   const [addCardToggle, setCardToggle] = useState(false);
   const [newColumnTitle, setNewColumnTitle] = useState("");
-  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
-  const assigneeOptions = ["user0", "user1", "user2", "user3"];
-  
+  const [selectedCard, setSelectedCard] = useState<Card | null>(null); 
   useEffect(() => {
     if (!projectId) return;
   
@@ -53,7 +52,6 @@ export default function Board({ projectName, projectId }: BoardProps) {
         if (response.ok) {
           const loadedColumns: Column[] = await Promise.all(
             data.columns.map(async (col: any) => {
-              // 각 컬럼에 대한 카드 불러오기
               const cardRes = await fetch("http://localhost:5001/api/showCard", {
                 method: "POST",
                 headers: {
@@ -61,20 +59,46 @@ export default function Board({ projectName, projectId }: BoardProps) {
                 },
                 body: JSON.stringify({ columnId: col.id }),
               });
-  
+          
               const cardData = await cardRes.json();
-              const cards = cardRes.ok && cardData.cards ? cardData.cards.map((card: any) => ({
-                id: card.id,
-                text: card.title,
-                details: card.description ?? "",
-                comments: [],
-                columnId: card.column_id, 
-              })) : [];
-  
+          
+              const cards = cardRes.ok && cardData.cards
+                ? await Promise.all(
+                    cardData.cards.map(async (card: any) => {
+                      const commentRes = await fetch("http://localhost:5001/api/showComment", {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ cardId: card.id }),
+                      });
+
+                      const commentData = await commentRes.json();
+
+                      const commentsId = commentRes.ok && commentData.comments
+                        ? commentData.comments.map((comment: any) => Number(comment.id))
+                        : [];
+
+                      const comments = commentRes.ok && commentData.comments
+                        ? commentData.comments.map((comment: any) => comment.content)
+                        : [];
+
+                      return {
+                        id: card.id,
+                        text: card.title,
+                        details: card.description ?? "",
+                        commentsId: commentsId, 
+                        comments: comments,      
+                        columnId: card.column_id,
+                      };
+                    })
+                  )
+                : [];
+          
               return {
                 id: col.id,
                 title: col.title,
-                cards: cards,  // 카드 추가됨!
+                cards: cards,
                 newCardText: "",
               };
             })
@@ -172,10 +196,10 @@ export default function Board({ projectName, projectId }: BoardProps) {
           {/* 카드 추가 */}
           {!addCardToggle ? (
             <div
-              className="w-10 h-10 columnAddButton rounded-full border-2 flex items-center justify-center cursor-pointer"
+              className="w-10 h-10 columnAddButton rounded-full border-2 flex items-center justify-center cursor-pointer text-3xl font-bold"
               onClick={() => setCardToggle(prev => !prev)}
             >
-              ➕
+              +
             </div>
           ) : (
             <div className="addCard">
@@ -198,7 +222,8 @@ export default function Board({ projectName, projectId }: BoardProps) {
                   if (!newCard) return;
                   const cardWithColumnId = {
                     ...newCard,
-                    columnId: column.id, 
+                    columnId: column.id,
+                    commentsId : [],
                   };
                   setColumns(columns.map(col => 
                     col.id === column.id
@@ -222,10 +247,10 @@ export default function Board({ projectName, projectId }: BoardProps) {
       ))}
       {!addColumnToggle ? (
         <div
-          className="w-10 h-10 columnAddButton rounded-full border-2 flex items-center justify-center cursor-pointer"
+          className="w-10 h-10 columnAddButton rounded-full border-2 flex items-center justify-center cursor-pointer text-3xl font-bold"
           onClick={() => setColumnToggle(prev => !prev)}
         >
-          ➕
+          +
         </div>
       ) : (
         <div className="addColumn min-h-40 flex flex-col gap-2">
@@ -282,7 +307,7 @@ export default function Board({ projectName, projectId }: BoardProps) {
           card={selectedCard}
           onSave={handleDetailSave}
           onClose={closeModal}
-          assigneeOptions={assigneeOptions}
+          projectId={projectId}
         />
       )}
     </div>

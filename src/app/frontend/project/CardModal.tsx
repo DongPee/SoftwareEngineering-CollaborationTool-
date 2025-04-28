@@ -1,28 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect, useContext} from "react";
 import styles from "./CardModal.module.css";
 import type { Card } from "./projectBoard";
-
+import { showUsers } from "./addDeleteBoardCard";
+import { AuthContext } from "../AuthContext";
+import { lostPasswordRequestVerification } from "@/app/backend/verification";
 type CardModalProps = {
   card: Card;
   onSave: (card: Card) => void;
   onClose: () => void;
-  assigneeOptions: string[];
+  projectId: string | null;
 };
 
 export default function CardModal({
   card,
   onSave,
   onClose,
-  assigneeOptions,
+  projectId,
 }: CardModalProps) {
   const [details, setDetails] = useState(card.details);
   const [assignee, setAssignee] = useState(card.assignee || "");
   const [startDate, setStartDate] = useState(card.startDate || "");
   const [endDate, setEndDate] = useState(card.endDate || "");
-  const [comments, setComments] = useState<string[]>(card.comments);
+  const [comments, setComments] = useState<{ text: string; author: string; author_email : string;}[]>([]); // 댓글 내용과 작성자 정보를 관리
+  const [commentsId, setCommentsId] = useState<number[]>(card.commentsId || []); // 댓글 ID
   const [newComment, setNewComment] = useState("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingText, setEditingText] = useState("");
+  const [assigneeOptions, setAssigneeOptions] = useState<string[]>([]);
+  const auth = useContext(AuthContext);
 
   const handleSave = () => {
     const updatedCard: Card = {
@@ -31,31 +36,121 @@ export default function CardModal({
       assignee,
       startDate,
       endDate,
-      comments,
+      commentsId,
     };
     onSave(updatedCard);
   };
 
-  const handleAddComment = () => {
+  useEffect(() => {
+    const fetchUsernames = async () => {
+      const options = await showUsers(projectId);
+      const userList = options.map((user: { username: string }) => user.username);
+      setAssigneeOptions(userList);
+    };
+
+    const fetchComments = async () => {
+      try {
+        const response = await fetch("http://localhost:5001/api/getComments", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            commentIds: commentsId,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json(); // 댓글과 작성자 정보
+          setComments(data); // { text: string, author: string } 형식으로 댓글 데이터 설정
+        } else {
+          console.error("댓글 불러오기 실패");
+        }
+      } catch (error) {
+        console.error("댓글 불러오기 오류:", error);
+      }
+    };
+
+    fetchUsernames();
+    fetchComments();
+  }, [projectId, commentsId]);
+
+  const handleAddComment = async () => {
     if (newComment.trim()) {
-      setComments((prevComments) => [...prevComments, newComment.trim()]);
-      setNewComment("");
+      const author = localStorage.getItem("email") || auth?.email;
+      if (!author) {
+        console.error("작성자 이메일이 없습니다.");
+        return;
+      }
+      try {
+        const response = await fetch("http://localhost:5001/api/addComment", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            cardId: card.id,
+            content: newComment.trim(),
+            email : author,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("댓글 추가 실패");
+        }
+
+        const data = await response.json(); // { id: 생성된 ID, author: 작성자 }
+        const newCommentData = {
+          text: newComment.trim(),
+          author: data.author,
+          author_email:data.author_email,
+        };
+
+        console.log("댓글 추가 성공:", data);
+
+        // 댓글 내용과 작성자 추가
+        setComments((prevComments) => [...prevComments, newCommentData]);
+        setCommentsId((prevCommentsId) => [...prevCommentsId, data.id]);
+        setNewComment(""); // 입력창 초기화
+      } catch (error) {
+        console.error("댓글 추가 오류:", error);
+      }
     }
   };
 
-  const handleDeleteComment = (index: number) => {
-    setComments((prevComments) => prevComments.filter((_, i) => i !== index));
+  const handleDeleteComment = async (index: number) => {
+    const commentId = commentsId[index];
+    if (commentId) {
+      try {
+        const response = await fetch("http://localhost:5001/api/deleteComment", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ commentId }),
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setComments((prevComments) => prevComments.filter((_, i) => i !== index));
+          setCommentsId((prevCommentsId) => prevCommentsId.filter((_, i) => i !== index));
+        } else {
+          console.error("댓글 삭제 실패:", data.error);
+        }
+      } catch (err) {
+        console.error("서버 오류 발생:", err);
+      }
+    }
   };
 
   const handleEditComment = (index: number) => {
     setEditingIndex(index);
-    setEditingText(comments[index]);
+    setEditingText(comments[index].text);
   };
 
   const handleSaveEditedComment = () => {
     if (editingIndex !== null && editingText.trim()) {
       const updated = [...comments];
-      updated[editingIndex] = editingText.trim();
+      updated[editingIndex].text = editingText.trim();
       setComments(updated);
       setEditingIndex(null);
       setEditingText("");
@@ -63,14 +158,8 @@ export default function CardModal({
   };
 
   return (
-    <div
-      className={styles.modal}
-      onClick={onClose}
-    >
-      <div
-        className={styles.modalContent}
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className={styles.modal} onClick={onClose}>
+      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <h2 className={styles.title}>{card.text}</h2>
 
         <label className={styles.label}>상세 설명</label>
@@ -111,11 +200,17 @@ export default function CardModal({
           onChange={(e) => setEndDate(e.target.value)}
         />
 
-        {comments.length > 0 && (
+          {comments.length > 0 && (
           <>
             <label className={styles.label}>댓글</label>
             <div className={styles.commentList}>
-              {comments.map((comment, index) => (
+            {comments.map((comment, index) => {
+              console.log(comment);
+              const currentUser = localStorage.getItem("email") || auth?.email; // 현재 로그인한 사용자 email
+              const isAuthor = comment.author_email === currentUser; // 작성자와 비교
+              console.log(comment.author_email);
+              console.log(isAuthor);
+              return (
                 <div key={index} className={styles.commentItem}>
                   {editingIndex === index ? (
                     <div className={styles.commentInputWrap}>
@@ -124,32 +219,34 @@ export default function CardModal({
                         onChange={(e) => setEditingText(e.target.value)}
                         className={`${styles.input} ${styles.commentInput}`}
                       />
-                      <button
-                        onClick={handleSaveEditedComment}
-                        className={styles.addCommentBtn}
-                      >
+                      <button onClick={handleSaveEditedComment} className={styles.addCommentBtn}>
                         저장
                       </button>
                     </div>
                   ) : (
                     <div className={styles.commentInputWrap}>
-                      <span style={{ flexGrow: 1 }}>{comment}</span>
-                      <button
-                        onClick={() => handleEditComment(index)}
-                        className={styles.addCommentBtn}
-                      >
-                        수정
-                      </button>
-                      <button
-                        onClick={() => handleDeleteComment(index)}
-                        className={`${styles.addCommentBtn} ${styles.closeBtn}`}
-                      >
-                        삭제
-                      </button>
+                      <span style={{ flexGrow: 1 }}>
+                        {comment.text} - <strong>{comment.author}</strong>
+                      </span>
+
+                      {isAuthor && (
+                        <>
+                          <button onClick={() => handleEditComment(index)} className={styles.addCommentBtn}>
+                            수정
+                          </button>
+                          <button
+                            onClick={() => handleDeleteComment(index)}
+                            className={`${styles.addCommentBtn} ${styles.closeBtn}`}
+                          >
+                            삭제
+                          </button>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
-              ))}
+              );
+            })}
             </div>
           </>
         )}

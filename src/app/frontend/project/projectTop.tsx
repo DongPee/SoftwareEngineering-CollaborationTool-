@@ -2,7 +2,7 @@ import { getDarkMode } from "../DarkState";
 import { useEffect, useContext, useState } from "react";
 import { handleInvite } from "./addDeleteBoardCard";
 import { AuthContext } from "../AuthContext";
-
+import { showUsers } from "./addDeleteBoardCard";
 type BoardProps = {
   projectId: string | null;
   projectName: string | null;
@@ -30,43 +30,23 @@ const Top = ({ projectName, projectId }: BoardProps) => {
     return `brightness(${brightness}) contrast(${contrast}) invert(${invert})`;
   };
 
+
   useEffect(() => {
-    if (projectId) {
-      const fetchUsernames = async () => {
-        try {
-          const response = await fetch("http://localhost:5001/api/showProjectUsername", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ projectId }),
-          });
+    const fetchUsernames = async () => {
+      const options = await showUsers(projectId);
+      const userListWithFilters = options.map((user: { username: string }) => ({
+        username: user.username,
+        filter: generateRandomFilter(),
+      }));
 
-          const res = await response.json();
-          const result = res.rows;
-          if (response.ok && Array.isArray(result)) {
-            console.log("참여자 목록:", result);
+      setUsers(userListWithFilters);
+    };
 
-            // 사용자마다 랜덤 filter 추가
-            const userListWithFilters = result.map((user: { username: string }) => ({
-              username: user.username,
-              filter: generateRandomFilter(),
-            }));
-
-            setUsers(userListWithFilters);
-          } else {
-            console.error("응답 실패:", result.error || "알 수 없는 오류");
-          }
-        } catch (error) {
-          console.error("API 호출 실패:", error);
-        }
-      };
-
-      fetchUsernames();
-    }
+    fetchUsernames();
   }, [projectId]);
-
   const visibleUsers = showAll ? users : users.slice(0, 3);
   const remainingUserCount = users.length - 3;
-
+  
   return (
     <div className="project-info">
       <div className="min-w-45 p-6 mr-5 gap-4">

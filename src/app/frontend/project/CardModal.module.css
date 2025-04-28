@@ -1,4 +1,5 @@
 .modal {
+    color: var(--text-color);
     position: fixed;
     inset: 0;
     background-color: rgba(0, 0, 0, 0.3);
@@ -7,130 +8,124 @@
     justify-content: center;
     align-items: center;
     z-index: 50;
-  }
-  
-  .modalContent {
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 480px;
-    padding: 24px;
-    animation: fadeIn 0.25s ease-out;
-  }
-  
-  @keyframes fadeIn {
-    0% {
-      transform: translateY(10px);
-      opacity: 0;
-    }
-    100% {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-  
-  .title {
-    font-size: 22px;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 16px;
-  }
-  
-  .label {
-    display: block;
-    font-size: 13px;
-    color: #555;
-    margin-bottom: 6px;
-  }
-  
-  .input,
-  .select,
-  .textarea {
-    width: 100%;
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    padding: 10px 12px;
-    margin-bottom: 16px;
-    font-size: 14px;
-    outline: none;
-  }
-  
-  .input:focus,
-  .select:focus,
-  .textarea:focus {
-    border-color: #60a5fa;
-    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
-  }
-  
-  .button {
-    display: block;
-    width: 100%;
-    background-color: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 12px;
-    padding: 10px 0;
-    margin-bottom: 20px;
-    cursor: pointer;
-    transition: background 0.2s ease;
-  }
-  
-  .button:hover {
-    background-color: #2563eb;
-  }
-  
-  .commentList {
-    max-height: 120px;
-    overflow-y: auto;
-    background: #fafafa;
-    border: 1px solid #eee;
-    border-radius: 12px;
-    padding: 12px;
-    margin-bottom: 16px;
-  }
-  
-  .commentItem {
-    font-size: 13px;
-    color: #444;
-    border-bottom: 1px solid #eee;
-    padding: 6px 0;
-  }
-  
-  .commentItem:last-child {
-    border-bottom: none;
-  }
-  
-  .commentInputWrap {
-    display: flex;
-    gap: 8px;
-  }
-  
-  .commentInput {
-    flex-grow: 1;
-  }
-  
-  .addCommentBtn {
-    background-color: #22c55e;
-    color: white;
-    border: none;
-    border-radius: 12px;
-    padding: 0 14px;
-    height: 40px;
-    cursor: pointer;
-    transition: background 0.2s ease;
-    white-space: nowrap;
-  }
-  
-  .addCommentBtn:hover {
-    background-color: #16a34a;
-  }
-  
-  .closeBtn {
-    background-color: #6b7280;
-  }
+}
 
-  .closeBtn:hover {
-    background-color: #ff4545;
+.modalContent {
+  background: var(--bg-color);
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 480px;
+  padding: 24px;
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
   }
-  
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.title {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.label {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  outline: none;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--border-color);
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
+}
+
+.button {
+  display: block;
+  width: 100%;
+  background-color: #3b82f6;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 0;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.button:hover {
+  background-color: #2563eb;
+}
+
+.commentList {
+  max-height: 120px;
+  overflow-y: auto;
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.commentItem {
+  font-size: 13px;
+  border-bottom: 1px solid #eee;
+  padding: 6px 0;
+}
+
+.commentItem:last-child {
+  border-bottom: none;
+}
+
+.commentInputWrap {
+  display: flex;
+  gap: 8px;
+}
+
+.commentInput {
+  flex-grow: 1;
+}
+
+.addCommentBtn {
+  background-color: #22c55e;
+  border: none;
+  border-radius: 12px;
+  padding: 0 14px;
+  height: 40px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+}
+
+.addCommentBtn:hover {
+  background-color: #16a34a;
+}
+
+.closeBtn {
+  background-color: #6b7280;
+}
+
+.closeBtn:hover {
+  background-color: #ff4545;
+}

@@ -254,4 +254,5 @@ input{
 
 .columnAddButton{
   border-color: var(--border-color);
+  color: var(--text-color);
 }
