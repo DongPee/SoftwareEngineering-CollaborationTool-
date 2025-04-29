@@ -81,7 +81,7 @@
 .commentList {
   max-height: 120px;
   overflow-y: auto;
-  background: #fafafa;
+  background: var(--bg-color);
   border: 1px solid #eee;
   border-radius: 12px;
   padding: 12px;

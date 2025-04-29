@@ -3,7 +3,6 @@ import styles from "./CardModal.module.css";
 import type { Card } from "./projectBoard";
 import { showUsers } from "./addDeleteBoardCard";
 import { AuthContext } from "../AuthContext";
-import { lostPasswordRequestVerification } from "@/app/backend/verification";
 type CardModalProps = {
   card: Card;
   onSave: (card: Card) => void;
@@ -18,7 +17,7 @@ export default function CardModal({
   projectId,
 }: CardModalProps) {
   const [details, setDetails] = useState(card.details);
-  const [assignee, setAssignee] = useState(card.assignee || "");
+  const [assignee, setAssignee] = useState<{ assignee : string; id : number; }>();
   const [startDate, setStartDate] = useState(card.startDate || "");
   const [endDate, setEndDate] = useState(card.endDate || "");
   const [comments, setComments] = useState<{ text: string; author: string; author_email : string;}[]>([]); // 댓글 내용과 작성자 정보를 관리
@@ -26,28 +25,113 @@ export default function CardModal({
   const [newComment, setNewComment] = useState("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingText, setEditingText] = useState("");
-  const [assigneeOptions, setAssigneeOptions] = useState<string[]>([]);
+  const [assigneeOptions, setAssigneeOptions] = useState<{ assignee : string; id : number; }[]>([]);
   const auth = useContext(AuthContext);
+  const handleSave = async () => {
+    if(assignee){
+      try {
+        const response = await fetch("http://localhost:5001/api/setCardManager", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            cardId: card.id,
+            assignee : assignee.id,
+          }),
+        });
 
-  const handleSave = () => {
+        if (!response.ok) {
+          throw new Error("날짜 설정 실패");
+        }
+      } catch (error) {
+        console.error("댓글 추가 오류:", error);
+      }
+    }
+    try {
+      const response = await fetch("http://localhost:5001/api/setCard_desc", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cardId: card.id,
+          card_desc : details,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("날짜 설정 실패");
+      }
+    } catch (error) {
+      console.error("댓글 추가 오류:", error);
+    }
+    if (!startDate || !endDate || !card.id) {
+      console.error("날짜 또는 card.id가 없음");
+      return;
+    }
+    try {
+      const response = await fetch("http://localhost:5001/api/setStartEndDate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cardId: card.id,
+          startDate : startDate,
+          endDate : endDate,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("날짜 설정 실패");
+      }
+    } catch (error) {
+      console.error("댓글 추가 오류:", error);
+    }
+  
     const updatedCard: Card = {
       ...card,
       details,
-      assignee,
       startDate,
       endDate,
       commentsId,
     };
     onSave(updatedCard);
+    onClose();
   };
 
   useEffect(() => {
     const fetchUsernames = async () => {
       const options = await showUsers(projectId);
-      const userList = options.map((user: { username: string }) => user.username);
+      const userList = options.map((user: { username: string, id: number}) => ({assignee : user.username, id : user.id}));
       setAssigneeOptions(userList);
     };
+    const fetchCardManagerStartEndDate = async () =>{
+      try {
+        const response = await fetch("http://localhost:5001/api/getDescCardManagerStartEndDate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            cardId: card.id,
+          }),
+        });
 
+        if (response.ok) {
+          const data = await response.json();
+          setDetails(data.card_desc ?? "");
+          setAssignee({assignee : data.username, id : data.manager});
+          setStartDate(data.startDate.slice(0, 10));
+          setEndDate(data.endDate.slice(0, 10));
+        } else {
+          console.error("댓글 불러오기 실패");
+        }
+      } catch (error) {
+        console.error("댓글 불러오기 오류:", error);
+      }
+    };
     const fetchComments = async () => {
       try {
         const response = await fetch("http://localhost:5001/api/getComments", {
@@ -61,8 +145,8 @@ export default function CardModal({
         });
 
         if (response.ok) {
-          const data = await response.json(); // 댓글과 작성자 정보
-          setComments(data); // { text: string, author: string } 형식으로 댓글 데이터 설정
+          const data = await response.json(); 
+          setComments(data); 
         } else {
           console.error("댓글 불러오기 실패");
         }
@@ -70,7 +154,7 @@ export default function CardModal({
         console.error("댓글 불러오기 오류:", error);
       }
     };
-
+    fetchCardManagerStartEndDate();
     fetchUsernames();
     fetchComments();
   }, [projectId, commentsId]);
@@ -99,7 +183,7 @@ export default function CardModal({
           throw new Error("댓글 추가 실패");
         }
 
-        const data = await response.json(); // { id: 생성된 ID, author: 작성자 }
+        const data = await response.json(); 
         const newCommentData = {
           text: newComment.trim(),
           author: data.author,
@@ -108,10 +192,9 @@ export default function CardModal({
 
         console.log("댓글 추가 성공:", data);
 
-        // 댓글 내용과 작성자 추가
         setComments((prevComments) => [...prevComments, newCommentData]);
         setCommentsId((prevCommentsId) => [...prevCommentsId, data.id]);
-        setNewComment(""); // 입력창 초기화
+        setNewComment(""); 
       } catch (error) {
         console.error("댓글 추가 오류:", error);
       }
@@ -173,13 +256,17 @@ export default function CardModal({
         <label className={styles.label}>담당자</label>
         <select
           className={styles.select}
-          value={assignee}
-          onChange={(e) => setAssignee(e.target.value)}
-        >
+          value={assignee?.id ?? ""}
+          onChange={(e) => {
+            const selectedId = Number(e.target.value);
+            const selectedUser = assigneeOptions.find(user => user.id === selectedId);
+            setAssignee(selectedUser);
+          }}
+          >
           <option value="">선택 안 함</option>
           {assigneeOptions.map((option) => (
-            <option key={option} value={option}>
-              {option}
+            <option key={option.id} value={option.id}>
+              {option.assignee}
             </option>
           ))}
         </select>

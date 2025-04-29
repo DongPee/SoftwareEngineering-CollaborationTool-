@@ -13,7 +13,8 @@ const db = mysql.createPool({
     host: 'swep-db.chcwouumglg8.ap-northeast-2.rds.amazonaws.com',
     user: 'swepusername',
     password: 'swep0515!',
-    database: 'swepdb'
+    database: 'swepdb',
+    timezone: 'Z'
 });
 
 // 랜덤 인증 코드 생성 함수
@@ -653,7 +654,7 @@ app.post('/api/showProjectUsername', async (req, res) => {
     }
 
     try {
-        const [rows] = await db.query("SELECT ui.username FROM project_members pm JOIN user_info ui ON pm.user_id = ui.id WHERE pm.project_id = ?;", [projectId]);
+        const [rows] = await db.query("SELECT ui.username, ui.id FROM project_members pm JOIN user_info ui ON pm.user_id = ui.id WHERE pm.project_id = ?;", [projectId]);
         if (rows.length === 0 ) return res.status(400).json({ error: "사용자가 없음" });
         res.json({ rows });
         
@@ -777,6 +778,102 @@ app.post('/api/getComments', async (req, res) => {
     }
   });
   
+
+
+app.post('/api/setStartEndDate', async (req, res) => {
+    const { cardId, startDate, endDate} = req.body;
+    console.log(cardId);
+    console.log(startDate);
+    console.log(endDate);
+    if (!cardId || !startDate || !endDate) {
+        return res.status(400).json({ error: "cardId 또는 시작일이 없습니다." });
+    }
+
+    try {
+        console.log("시작일자");
+        console.log(startDate);
+        console.log("마감일자");
+        console.log(endDate);
+        const [rows] = await db.query("update card_table set startDate = ?, endDate = ? WHERE id = ?", [startDate, endDate, cardId]);
+        res.json({ rows });
+        console.log(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
+app.post('/api/setCardManager', async (req, res) => {
+    const { cardId, assignee} = req.body;
+    if (!cardId || !assignee) {
+        return res.status(400).json({ error: "cardId 또는 담당자가 없습니다." });
+    }
+
+    try {
+        const [rows] = await db.query("update card_table set manager = ? WHERE id = ?", [assignee, cardId]);
+        res.json({ rows });
+        console.log(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
+app.post('/api/getDescCardManagerStartEndDate', async (req, res) => {
+    const { cardId } = req.body;
+    if (!cardId ) {
+        return res.status(400).json({ error: "cardId가 없습니다." });
+    }
+    try {
+        const [rows] = await db.query(
+            "SELECT manager, startDate, endDate, card_desc FROM card_table WHERE id = ?", 
+            [cardId]
+        );
+        if (rows.length === 0) {
+            throw new Error("해당 카드에 해당하는 데이터가 없습니다.");
+        }
+        const { manager, startDate, endDate, card_desc } = rows[0];
+
+        const [rows2] = await db.query(
+            "SELECT username FROM user_info WHERE id = ?", 
+            [manager]
+        );
+        if (rows.length === 0) {
+            throw new Error("사용자 정보가 없습니다.");
+        }
+        const username = rows2.length > 0 ? rows2[0].username : null;
+        res.json({ manager, startDate, endDate, username, card_desc});
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
+
+app.post('/api/setCard_desc', async (req, res) => {
+    const { cardId, card_desc} = req.body;
+    
+    if (!cardId ) {
+        return res.status(400).json({ error: "cardId 또는 담당자가 없습니다." });
+    }
+    const safeDesc = card_desc ?? "";
+    try {
+        const [rows] = await db.query("update card_table set card_desc = ? WHERE id = ?", [safeDesc, cardId]);
+        res.json({ rows });
+        console.log(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
 
 
 

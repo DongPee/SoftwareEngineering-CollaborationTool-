@@ -2,7 +2,6 @@
 import { useState, useEffect, use} from "react";
 import CardModal from "./CardModal";
 import { createColumn, deleteColumn, createCard, deleteCards, deleteCard} from "./addDeleteBoardCard";
-import users from "./projectTop";
 
 type BoardProps = {
   projectId : string | null;

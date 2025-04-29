@@ -136,7 +136,7 @@ export const showUsers = async (projectId: string | null) => {
     const result = res.rows;
 
     if (response.ok && Array.isArray(result)) {
-      return result;  // result를 그대로 반환
+      return result; 
     } else {
       console.error("응답 실패:", res.error || "알 수 없는 오류");
       return [];
