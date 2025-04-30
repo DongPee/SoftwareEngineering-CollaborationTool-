@@ -25,6 +25,7 @@ export type Column = {
   title: string;
   cards: Card[];
   newCardText: string;
+  addCardToggle : boolean;
 };
 
 export default function Board({ projectName, projectId }: BoardProps) {
@@ -192,11 +193,18 @@ export default function Board({ projectName, projectId }: BoardProps) {
               </button>
             </div>
           ))}
-          {/* 카드 추가 */}
-          {!addCardToggle ? (
+          {!column.addCardToggle ? (
             <div
               className="w-10 h-10 columnAddButton rounded-full border-2 flex items-center justify-center cursor-pointer text-3xl font-bold"
-              onClick={() => setCardToggle(prev => !prev)}
+              onClick={() => {
+                setColumns(prevColumns =>
+                  prevColumns.map(col =>
+                    col.id === column.id
+                      ? { ...col, addCardToggle: true }
+                      : col
+                  )
+                );
+              }}
             >
               +
             </div>
@@ -211,7 +219,15 @@ export default function Board({ projectName, projectId }: BoardProps) {
             />
             <button
               className="w-1/5 px-4 py-2 bg-red-500 text-white rounded-md"
-              onClick={() => setCardToggle(prev => !prev)}
+              onClick={() => {
+                setColumns(prevColumns =>
+                  prevColumns.map(col =>
+                    col.id === column.id
+                      ? { ...col, addCardToggle: false , newCardText : ""}
+                      : col
+                  )
+                );
+              }}
             >
               취소
             </button>
@@ -263,7 +279,10 @@ export default function Board({ projectName, projectId }: BoardProps) {
           <div className="flex-row">
             <button
               className="w-1/2 px-4 py-2 bg-red-500 text-white rounded-full"
-              onClick={() => setColumnToggle(prev => !prev)}
+              onClick={() => {
+                setColumnToggle(prev => !prev);
+                setNewColumnTitle(""); // 컬럼 이름 입력값 초기화
+              }}
             >
               취소
             </button>
@@ -282,6 +301,7 @@ export default function Board({ projectName, projectId }: BoardProps) {
                       ...newCol,
                       cards: [],
                       newCardText: "",
+                      addCardToggle : false,
                     },
                   ]);
                   setNewColumnTitle(""); // 입력창 초기화
@@ -299,8 +319,6 @@ export default function Board({ projectName, projectId }: BoardProps) {
       )}
       
       
-
-      {/* 모달 컴포넌트 */}
       {selectedCard && (
         <CardModal
           card={selectedCard}

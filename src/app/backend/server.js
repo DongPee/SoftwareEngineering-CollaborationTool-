@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 import nodemailer from 'nodemailer';
 
 const app = express();
-app.use(cors({ origin: "http://localhost:3000" }));
+app.use(cors());//{ origin: "http://localhost:3000" }
 app.use(express.json());
 import { v4 as uuidv4 } from 'uuid';
 // MySQL 연결 정보
@@ -752,18 +752,16 @@ app.post('/api/showComment', async (req, res) => {
 
 app.post('/api/getComments', async (req, res) => {
     const { commentIds } = req.body;
-    // commentIds가 없거나 빈 배열일 경우 오류 처리
     if (!commentIds || commentIds.length === 0) {
-      return ;
+        console.log("데이터 없음");
+        res.json([]);
+        return ;
     }
-  
     try {
-      // 여러 commentId에 해당하는 댓글을 조회
       const [rows] = await db.query(
         'SELECT content, author_username, author_email FROM comment_table WHERE id IN (?)',
         [commentIds]
       );
-      // 댓글 데이터 가공
       const comments = rows.map(row => ({
         text: row.content,
         author: row.author_username,
@@ -771,7 +769,7 @@ app.post('/api/getComments', async (req, res) => {
       }));
   
       console.log("댓글 데이터:", comments);
-      res.json(comments);  // 댓글 데이터 배열을 그대로 반환
+      res.json(comments); 
     } catch (err) {
       console.error('댓글 조회 중 오류 발생:', err);
       res.status(500).json({ error: '서버 오류 발생' });
@@ -782,11 +780,8 @@ app.post('/api/getComments', async (req, res) => {
 
 app.post('/api/setStartEndDate', async (req, res) => {
     const { cardId, startDate, endDate} = req.body;
-    console.log(cardId);
-    console.log(startDate);
-    console.log(endDate);
-    if (!cardId || !startDate || !endDate) {
-        return res.status(400).json({ error: "cardId 또는 시작일이 없습니다." });
+    if (!cardId) {
+        return res.status(400).json({ error: "cardId가 없습니다." });
     }
 
     try {
@@ -807,14 +802,16 @@ app.post('/api/setStartEndDate', async (req, res) => {
 
 app.post('/api/setCardManager', async (req, res) => {
     const { cardId, assignee} = req.body;
-    if (!cardId || !assignee) {
-        return res.status(400).json({ error: "cardId 또는 담당자가 없습니다." });
+    console.log(assignee);
+    if (!cardId) {
+        return res.status(401).json({ error: "cardId 또는 담당자가 없습니다." });
     }
 
     try {
         const [rows] = await db.query("update card_table set manager = ? WHERE id = ?", [assignee, cardId]);
-        res.json({ rows });
+        console.log("Setcard!!");
         console.log(rows);
+        res.json({ rows });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "서버 오류 발생" });

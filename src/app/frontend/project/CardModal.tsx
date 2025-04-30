@@ -28,26 +28,25 @@ export default function CardModal({
   const [assigneeOptions, setAssigneeOptions] = useState<{ assignee : string; id : number; }[]>([]);
   const auth = useContext(AuthContext);
   const handleSave = async () => {
-    if(assignee){
-      try {
-        const response = await fetch("http://localhost:5001/api/setCardManager", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            cardId: card.id,
-            assignee : assignee.id,
-          }),
-        });
+    try {
+      const response = await fetch("http://localhost:5001/api/setCardManager", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cardId: card.id,
+          assignee: assignee !== undefined ? assignee.id : null,
+        }),
+      });
 
-        if (!response.ok) {
-          throw new Error("날짜 설정 실패");
-        }
-      } catch (error) {
-        console.error("댓글 추가 오류:", error);
+      if (!response.ok) {
+        throw new Error("날짜 설정 실패");
       }
+    } catch (error) {
+      console.error("댓글 추가 오류:", error);
     }
+    
     try {
       const response = await fetch("http://localhost:5001/api/setCard_desc", {
         method: "POST",
@@ -66,7 +65,7 @@ export default function CardModal({
     } catch (error) {
       console.error("댓글 추가 오류:", error);
     }
-    if (!startDate || !endDate || !card.id) {
+    if (!card.id) {
       console.error("날짜 또는 card.id가 없음");
       return;
     }
@@ -78,9 +77,9 @@ export default function CardModal({
         },
         body: JSON.stringify({
           cardId: card.id,
-          startDate : startDate,
-          endDate : endDate,
-        }),
+          startDate: startDate === "" ? null : startDate,
+          endDate: endDate === "" ? null : endDate,
+        })
       });
 
       if (!response.ok) {
@@ -102,10 +101,12 @@ export default function CardModal({
   };
 
   useEffect(() => {
+    if (!card?.id) return;
+    let isMounted = true;
     const fetchUsernames = async () => {
       const options = await showUsers(projectId);
       const userList = options.map((user: { username: string, id: number}) => ({assignee : user.username, id : user.id}));
-      setAssigneeOptions(userList);
+      if(isMounted){setAssigneeOptions(userList);}
     };
     const fetchCardManagerStartEndDate = async () =>{
       try {
@@ -118,13 +119,15 @@ export default function CardModal({
             cardId: card.id,
           }),
         });
-
+        
         if (response.ok) {
           const data = await response.json();
-          setDetails(data.card_desc ?? "");
-          setAssignee({assignee : data.username, id : data.manager});
-          setStartDate(data.startDate.slice(0, 10));
-          setEndDate(data.endDate.slice(0, 10));
+          if(isMounted){
+            setDetails(data.card_desc ?? "");
+            setAssignee({assignee : data.username, id : data.manager});
+            setStartDate(data.startDate ? data.startDate.slice(0, 10) : "");
+            setEndDate(data.endDate ? data.endDate.slice(0, 10) : "");
+          }
         } else {
           console.error("댓글 불러오기 실패");
         }
@@ -133,6 +136,10 @@ export default function CardModal({
       }
     };
     const fetchComments = async () => {
+      if (commentsId.length === 0) {
+        setComments([]);
+        return;
+      }
       try {
         const response = await fetch("http://localhost:5001/api/getComments", {
           method: "POST",
@@ -146,7 +153,7 @@ export default function CardModal({
 
         if (response.ok) {
           const data = await response.json(); 
-          setComments(data); 
+          if(isMounted){setComments(data);}
         } else {
           console.error("댓글 불러오기 실패");
         }
@@ -157,7 +164,10 @@ export default function CardModal({
     fetchCardManagerStartEndDate();
     fetchUsernames();
     fetchComments();
-  }, [projectId, commentsId]);
+    return () => {
+      isMounted = false;
+    };
+  }, [card.id]);
 
   const handleAddComment = async () => {
     if (newComment.trim()) {
@@ -270,7 +280,7 @@ export default function CardModal({
             </option>
           ))}
         </select>
-
+        
         <label className={styles.label}>시작일</label>
         <input
           type="date"
@@ -292,11 +302,8 @@ export default function CardModal({
             <label className={styles.label}>댓글</label>
             <div className={styles.commentList}>
             {comments.map((comment, index) => {
-              console.log(comment);
-              const currentUser = localStorage.getItem("email") || auth?.email; // 현재 로그인한 사용자 email
-              const isAuthor = comment.author_email === currentUser; // 작성자와 비교
-              console.log(comment.author_email);
-              console.log(isAuthor);
+              const currentUser = localStorage.getItem("email") || auth?.email;
+              const isAuthor = comment.author_email === currentUser;
               return (
                 <div key={index} className={styles.commentItem}>
                   {editingIndex === index ? (
