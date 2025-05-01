@@ -42,21 +42,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUsername(null);
     setIsSocialLogin(null); 
     setEmail(null);
+    deleteLoginToken(localStorage.getItem("email"));
     localStorage.removeItem("username");
     localStorage.removeItem("isSocialLogin");
     localStorage.removeItem("email");
+    localStorage.removeItem("loginToken");
     signOut({ redirect: false });
   };
+  const deleteLoginToken = async (em : string | null) => {
+    if(!em){
+      console.log("이메일이 없음");
+      return;
+    }
+    try {
+      const response = await fetch("http://localhost:5001/api/deleteLoginToken", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          em
+        }),
+      });
 
+      const data = await response.json();
+      if (response.ok) {
+        console.log("삭제완료");
+      } else {
+        alert("로그인 토큰 삭제 실패");
+        alert(data.error);
+      }
+    } catch (err) {
+      console.error("서버 오류:", err);
+      alert("서버 오류가 발생했습니다.");
+    }
+  };
   useEffect(() => {
     const fetchSession = async () => {
       const session = await getSession();
       if (session?.user) {
+        console.log("로그인주웅");
         const name = session.user.name || "";
         const email = session.user.email || "";
         const social = localStorage.getItem("isSocialLogin") || "no-social";
         login(name, social, email)
-        setIsSocialLogin(localStorage.getItem("isSocialLogin"));
         const response2 = await fetch("http://localhost:5001/api/socialLogin", {
           method: "POST",
           headers: {

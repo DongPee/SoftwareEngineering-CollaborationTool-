@@ -610,6 +610,74 @@ app.post('/api/createInviteLInk', async (req, res) => {
 
 
 
+
+app.post('/api/createLoginToken', async (req, res) => {
+    const { email } = req.body;
+    const token = uuidv4();
+    try {
+        const [rows] = await db.query(
+            `INSERT INTO login_tokens (email, token, expires_at)
+             VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))`,
+            [email, token]
+          );
+        res.json({token : token});
+    } catch (err) {
+        console.error("로그인토큰 저장 오류", err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
+app.post('/api/tokenLogin', async (req, res) => {
+    const { reEmail, token } = req.body;
+    
+    if (!reEmail || !token) {
+        return res.status(400).json({ error: "다시 로그인해주세요."});
+    }
+
+    try {
+        // 이메일로 유저 조회
+        const [rows] = await db.query('SELECT * FROM login_tokens WHERE token = ? AND email = ? AND expires_at > NOW();', [token, reEmail]);
+
+        if (rows.length === 0) {
+            return res.status(401).json({ error: "토큰 만료" });
+        }
+        const [rows2] = await db.query('SELECT username FROM user_info WHERE email = ?', [reEmail]);
+
+        if(rows2.length === 0){
+            
+            return res.status(401).json({error : "사용자 정보가 없음"});
+        }
+        await db.query('delete from login_tokens where expires_at < NOW()');
+        res.status(200).json({ message: "로그인 성공!", username : rows2[0].username, email : reEmail});
+    } catch (err) {
+        console.error("로그인 오류:", err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
+app.post('/api/deleteLoginToken', async (req, res) => {
+    const { em } = req.body;
+    
+    if (!em) {
+        return res.status(400).json({ error: "이메일이 없습니다."});
+    }
+
+    try {
+        await db.query('DELETE FROM login_tokens WHERE email = ?', [em]);
+        res.status(200).json({ message: "삭제 성공!",});
+    } catch (err) {
+        console.error("로그인 오류:", err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
+
 app.post('/api/acceptInvite', async (req, res) => {
     const { token, email} = req.body;
     if (!token) {
@@ -785,13 +853,8 @@ app.post('/api/setStartEndDate', async (req, res) => {
     }
 
     try {
-        console.log("시작일자");
-        console.log(startDate);
-        console.log("마감일자");
-        console.log(endDate);
         const [rows] = await db.query("update card_table set startDate = ?, endDate = ? WHERE id = ?", [startDate, endDate, cardId]);
         res.json({ rows });
-        console.log(rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "서버 오류 발생" });
@@ -802,15 +865,11 @@ app.post('/api/setStartEndDate', async (req, res) => {
 
 app.post('/api/setCardManager', async (req, res) => {
     const { cardId, assignee} = req.body;
-    console.log(assignee);
     if (!cardId) {
         return res.status(401).json({ error: "cardId 또는 담당자가 없습니다." });
     }
-
     try {
         const [rows] = await db.query("update card_table set manager = ? WHERE id = ?", [assignee, cardId]);
-        console.log("Setcard!!");
-        console.log(rows);
         res.json({ rows });
     } catch (err) {
         console.error(err);
