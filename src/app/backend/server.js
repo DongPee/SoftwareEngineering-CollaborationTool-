@@ -1,10 +1,33 @@
 import express from 'express';
 import mysql from 'mysql2/promise';
 import cors from 'cors';
+import http from 'http';
 import bcrypt from 'bcryptjs';
 import nodemailer from 'nodemailer';
-
+import { Server } from 'socket.io';
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"]
+    }
+  });
+io.on('connection', (socket) => {
+console.log('클라이언트 연결됨:', socket.id);
+
+socket.on('message', (data) => {
+    console.log('받은 메시지:', data);
+    io.emit('message', data);
+});
+
+socket.on('isChanged', () => {
+    io.emit('isChanged');
+});
+socket.on('disconnect', () => {
+    console.log('클라이언트 연결 해제:', socket.id);
+});
+});
 app.use(cors());//{ origin: "http://localhost:3000" }
 app.use(express.json());
 import { v4 as uuidv4 } from 'uuid';
@@ -932,7 +955,11 @@ app.post('/api/setCard_desc', async (req, res) => {
 
 
 
-
+server.listen(5001, () => {
+    console.log('Server is running on port 5001');
+  });
+/*
 app.listen(5001, () => {
     console.log('Server is running on port 5001');
 });
+*/

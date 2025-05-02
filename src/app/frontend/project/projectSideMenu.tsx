@@ -50,6 +50,13 @@ const Sidebar = ({ active, setActive, projectId, projectName, projectDesc}: Side
                       <span className="m-2">캘린더</span>
                   </div>
                 </Link>
+                <Link href={{pathname: "/frontend/project",
+                              query: { projectId: projectId , projectName : projectName, projectDesc : projectDesc}, 
+                            }} onClick={() => setActive("chat")}>
+                  <div className={`flex items-center gap-3 rounded-2xl cursor-pointer hover:bg-blue-400 transition ${active === "chat" ? "border-2 border-blue-400" : ""}`}>
+                      <span className="m-2">채팅</span>
+                  </div>
+                </Link>
             </nav>
         </div>
         
