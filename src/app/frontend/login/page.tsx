@@ -17,8 +17,71 @@ export default function LoginPage() {
       router.push("/");
     }
   }, [auth?.isLoggedIn]);
+  useEffect(() =>{
+    const reEmail = localStorage.getItem("email");
+    const token = localStorage.getItem("loginToken");
+    if(reEmail && token){
+      rememberLogin(reEmail, token);
+    }
+  });
+  const rememberLogin = async (reEmail : string, token : string) => {
+    console.log(reEmail);
+    console.log(token);
+    console.log("출력끝");
+    try {
+      const response = await fetch("http://localhost:5001/api/tokenLogin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          reEmail,
+          token,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        auth?.login(data.username, "none", data.email);
+      }
+    } catch (err) {
+      console.error("서버 오류:", err);
+      alert("서버 오류가 발생했습니다.");
+    }
+  }
+  const remember = async () => {
+    try {
+      const response = await fetch("http://localhost:5001/api/createLoginToken", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        localStorage.setItem("loginToken", data.token);
+      } else {
+        alert("로그인 토큰 저장 실패");
+        alert(data.error);
+      }
+    } catch (err) {
+      console.error("서버 오류:", err);
+      alert("서버 오류가 발생했습니다.");
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("로그인중");
+    console.log(rememberMe);
+    console.log(email);
+    if(rememberMe && email){
+      remember();
+    }
     try {
       const response = await fetch("http://localhost:5001/api/tryLogin", {
         method: "POST",
@@ -30,7 +93,6 @@ export default function LoginPage() {
           password,
         }),
       });
-
       const data = await response.json();
       if (response.ok) {
         auth?.login(data.username, "none", data.email);

@@ -2,7 +2,8 @@
 import { useState, useEffect, use} from "react";
 import CardModal from "./CardModal";
 import { createColumn, deleteColumn, createCard, deleteCards, deleteCard} from "./addDeleteBoardCard";
-
+import { io } from 'socket.io-client';
+const socket = io('http://localhost:5001');
 type BoardProps = {
   projectId: string | null;
   projectName: string | null;
@@ -31,91 +32,97 @@ export type Column = {
 export default function Board({ projectName, projectId }: BoardProps) {
   const [columns, setColumns] = useState<Column[]>([]);
   const [addColumnToggle, setColumnToggle] = useState(false);
-  const [addCardToggle, setCardToggle] = useState(false);
   const [newColumnTitle, setNewColumnTitle] = useState("");
   const [selectedCard, setSelectedCard] = useState<Card | null>(null); 
-  useEffect(() => {
-    if (!projectId) return;
-  
-    const fetchColumnsAndCards = async () => {
-      try {
-        const response = await fetch("http://localhost:5001/api/showColumn", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ projectId }),
-        });
-  
-        const data = await response.json();
-  
-        if (response.ok) {
-          const loadedColumns: Column[] = await Promise.all(
-            data.columns.map(async (col: any) => {
-              const cardRes = await fetch("http://localhost:5001/api/showCard", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ columnId: col.id }),
-              });
-          
-              const cardData = await cardRes.json();
-          
-              const cards = cardRes.ok && cardData.cards
-                ? await Promise.all(
-                    cardData.cards.map(async (card: any) => {
-                      const commentRes = await fetch("http://localhost:5001/api/showComment", {
-                        method: "POST",
-                        headers: {
-                          "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({ cardId: card.id }),
-                      });
+  const fetchColumnsAndCards = async () => {
+    if (!projectId) return;  
+    try {
+      const response = await fetch("http://localhost:5001/api/showColumn", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ projectId }),
+      });
 
-                      const commentData = await commentRes.json();
+      const data = await response.json();
 
-                      const commentsId = commentRes.ok && commentData.comments
-                        ? commentData.comments.map((comment: any) => Number(comment.id))
-                        : [];
+      if (response.ok) {
+        const loadedColumns: Column[] = await Promise.all(
+          data.columns.map(async (col: any) => {
+            const cardRes = await fetch("http://localhost:5001/api/showCard", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ columnId: col.id }),
+            });
+        
+            const cardData = await cardRes.json();
+        
+            const cards = cardRes.ok && cardData.cards
+              ? await Promise.all(
+                  cardData.cards.map(async (card: any) => {
+                    const commentRes = await fetch("http://localhost:5001/api/showComment", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({ cardId: card.id }),
+                    });
 
-                      const comments = commentRes.ok && commentData.comments
-                        ? commentData.comments.map((comment: any) => comment.content)
-                        : [];
+                    const commentData = await commentRes.json();
 
-                      return {
-                        id: card.id,
-                        text: card.title,
-                        details: card.description ?? "",
-                        commentsId: commentsId, 
-                        comments: comments,      
-                        columnId: card.column_id,
-                      };
-                    })
-                  )
-                : [];
-          
-              return {
-                id: col.id,
-                title: col.title,
-                cards: cards,
-                newCardText: "",
-              };
-            })
-          );
-  
-          setColumns(loadedColumns);
-        } else {
-          console.error("컬럼 로드 실패:", data.error);
-        }
-      } catch (err) {
-        console.error("컬럼 로드 중 오류:", err);
+                    const commentsId = commentRes.ok && commentData.comments
+                      ? commentData.comments.map((comment: any) => Number(comment.id))
+                      : [];
+
+                    const comments = commentRes.ok && commentData.comments
+                      ? commentData.comments.map((comment: any) => comment.content)
+                      : [];
+
+                    return {
+                      id: card.id,
+                      text: card.title,
+                      details: card.description ?? "",
+                      commentsId: commentsId, 
+                      comments: comments,      
+                      columnId: card.column_id,
+                    };
+                  })
+                )
+              : [];
+        
+            return {
+              id: col.id,
+              title: col.title,
+              cards: cards,
+              newCardText: "",
+            };
+          })
+        );
+
+        setColumns(loadedColumns);
+      } else {
+        console.error("컬럼 로드 실패:", data.error);
       }
-    };
-  
+    } catch (err) {
+      console.error("컬럼 로드 중 오류:", err);
+    }
+  };
+
+  useEffect(() => {
     fetchColumnsAndCards();
   }, [projectId]);
-
+  useEffect(()=> {
+    console.log("hehe");
+    socket.on('isChanged', () => {
+      fetchColumnsAndCards();
+    });
+    return () => {
+      socket.off('isChanged');
+    };
+  }, []);
   
 
   // 카드 클릭 > 모달 오픈
@@ -160,6 +167,7 @@ export default function Board({ projectName, projectId }: BoardProps) {
                 setColumns(prev =>
                   prev.filter((col) => col.id !== column.id)
                 );
+                socket.emit('isChanged');
               }}
               className="px-2 py-1 bg-red-500 text-white rounded"
             >
@@ -188,6 +196,7 @@ export default function Board({ projectName, projectId }: BoardProps) {
                       return col;
                     })
                   );
+                  socket.emit('isChanged');
                 }}
                 className="px-2 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
               >
@@ -252,6 +261,7 @@ export default function Board({ projectName, projectId }: BoardProps) {
                       : col
                   ));
                 });
+                socket.emit('isChanged');
               }}
               className="px-4 py-2 bg-blue-500 text-white rounded-md w-1/5"
             >
@@ -306,6 +316,7 @@ export default function Board({ projectName, projectId }: BoardProps) {
                       addCardToggle : false,
                     },
                   ]);
+                  socket.emit('isChanged');
                   setNewColumnTitle(""); // 입력창 초기화
                 } else {
                   console.error("프로젝트 ID가 없습니다.");

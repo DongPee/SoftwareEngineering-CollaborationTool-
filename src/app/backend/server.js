@@ -1,10 +1,36 @@
 import express from 'express';
 import mysql from 'mysql2/promise';
 import cors from 'cors';
+import http from 'http';
 import bcrypt from 'bcryptjs';
 import nodemailer from 'nodemailer';
-
+import { Server } from 'socket.io';
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"]
+    }
+  });
+io.on('connection', (socket) => {
+    socket.on('message', (msg) => {
+        io.emit('message', msg);
+    });
+
+    socket.on('isChanged', () => {
+        io.emit('isChanged');
+    });
+
+    socket.on('isModalChanged', () => {
+        io.emit('isModalChanged');
+    });
+
+    socket.on('disconnect', () => {
+        console.log('클라이언트 연결 해제:', socket.id);
+    });
+});
+
 app.use(cors());//{ origin: "http://localhost:3000" }
 app.use(express.json());
 import { v4 as uuidv4 } from 'uuid';
@@ -610,6 +636,74 @@ app.post('/api/createInviteLInk', async (req, res) => {
 
 
 
+
+app.post('/api/createLoginToken', async (req, res) => {
+    const { email } = req.body;
+    const token = uuidv4();
+    try {
+        const [rows] = await db.query(
+            `INSERT INTO login_tokens (email, token, expires_at)
+             VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))`,
+            [email, token]
+          );
+        res.json({token : token});
+    } catch (err) {
+        console.error("로그인토큰 저장 오류", err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
+app.post('/api/tokenLogin', async (req, res) => {
+    const { reEmail, token } = req.body;
+    
+    if (!reEmail || !token) {
+        return res.status(400).json({ error: "다시 로그인해주세요."});
+    }
+
+    try {
+        // 이메일로 유저 조회
+        const [rows] = await db.query('SELECT * FROM login_tokens WHERE token = ? AND email = ? AND expires_at > NOW();', [token, reEmail]);
+
+        if (rows.length === 0) {
+            return res.status(401).json({ error: "토큰 만료" });
+        }
+        const [rows2] = await db.query('SELECT username FROM user_info WHERE email = ?', [reEmail]);
+
+        if(rows2.length === 0){
+            
+            return res.status(401).json({error : "사용자 정보가 없음"});
+        }
+        await db.query('delete from login_tokens where expires_at < NOW()');
+        res.status(200).json({ message: "로그인 성공!", username : rows2[0].username, email : reEmail});
+    } catch (err) {
+        console.error("로그인 오류:", err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
+app.post('/api/deleteLoginToken', async (req, res) => {
+    const { em } = req.body;
+    
+    if (!em) {
+        return res.status(400).json({ error: "이메일이 없습니다."});
+    }
+
+    try {
+        await db.query('DELETE FROM login_tokens WHERE email = ?', [em]);
+        res.status(200).json({ message: "삭제 성공!",});
+    } catch (err) {
+        console.error("로그인 오류:", err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
+
 app.post('/api/acceptInvite', async (req, res) => {
     const { token, email} = req.body;
     if (!token) {
@@ -669,9 +763,6 @@ app.post('/api/showProjectUsername', async (req, res) => {
 
 app.post('/api/addComment', async (req, res) => {
     const { cardId, content, email} = req.body;
-    console.log(cardId);
-    console.log(content);
-    console.log(email);
     if (!cardId || !content || !email) {
       return res.status(400).json({ error: "cardId 또는 내용 또는 사용자가 없습니다." });
     }
@@ -691,7 +782,7 @@ app.post('/api/addComment', async (req, res) => {
             "INSERT INTO comment_table (content, cards_id, author, author_username, author_email) VALUES (?, ?, ?, ?, ?)",
             [content, cardId, authorId, author, author_email]
         );
-  
+        console.log(result);
       res.json({ id: result.insertId, author : author, author_email : author_email }); 
     } catch (err) {
       console.error(err);
@@ -727,45 +818,26 @@ app.post('/api/deleteComment', async (req, res) => {
 
 
 
-app.post('/api/showComment', async (req, res) => {
-    const { cardId } = req.body;
-
-    if (!cardId) {
-        return res.status(400).json({ error: "cardId가 없습니다." });
-    }
-
-    try {
-        const [rows] = await db.query("SELECT id, content FROM comment_table WHERE cards_id = ?", [cardId]);
-
-        const comments = rows.map(row => ({
-            id: row.id,
-            content: row.content
-        }));
-        res.json({ comments });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "서버 오류 발생" });
-    }
-});
-
-
-
 app.post('/api/getComments', async (req, res) => {
-    const { commentIds } = req.body;
-    if (!commentIds || commentIds.length === 0) {
-        console.log("데이터 없음");
+    const { cardId } = req.body;
+    if (!cardId) {
         res.json([]);
         return ;
     }
     try {
       const [rows] = await db.query(
-        'SELECT content, author_username, author_email FROM comment_table WHERE id IN (?)',
-        [commentIds]
+        'SELECT content, author_username, author_email, id FROM comment_table WHERE cards_id = ?',
+        [cardId]
       );
+      if(rows.length === 0){
+        res.json([]);
+        return;
+      }
       const comments = rows.map(row => ({
         text: row.content,
         author: row.author_username,
-        author_email : row.author_email
+        author_email : row.author_email,
+        id : row.id
       }));
   
       console.log("댓글 데이터:", comments);
@@ -785,13 +857,8 @@ app.post('/api/setStartEndDate', async (req, res) => {
     }
 
     try {
-        console.log("시작일자");
-        console.log(startDate);
-        console.log("마감일자");
-        console.log(endDate);
         const [rows] = await db.query("update card_table set startDate = ?, endDate = ? WHERE id = ?", [startDate, endDate, cardId]);
         res.json({ rows });
-        console.log(rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "서버 오류 발생" });
@@ -802,15 +869,11 @@ app.post('/api/setStartEndDate', async (req, res) => {
 
 app.post('/api/setCardManager', async (req, res) => {
     const { cardId, assignee} = req.body;
-    console.log(assignee);
     if (!cardId) {
         return res.status(401).json({ error: "cardId 또는 담당자가 없습니다." });
     }
-
     try {
         const [rows] = await db.query("update card_table set manager = ? WHERE id = ?", [assignee, cardId]);
-        console.log("Setcard!!");
-        console.log(rows);
         res.json({ rows });
     } catch (err) {
         console.error(err);
@@ -873,7 +936,55 @@ app.post('/api/setCard_desc', async (req, res) => {
 
 
 
-
-app.listen(5001, () => {
-    console.log('Server is running on port 5001');
+app.post('/api/setChat', (req, res) => {
+    const { user_id, content } = req.body;
+    db.query(
+        'INSERT INTO chat_messages (user_id, content) VALUES (?, ?)',
+        [user_id, content],
+        (err, result) => {
+            if (err) return res.status(500).send(err);
+            res.json({ id: result.insertId });
+        }
+    );
 });
+  
+
+
+app.post('/api/getChat', (req, res) => {
+    db.query(
+        `SELECT c.id, c.content, c.created_at, u.username AS sender
+        FROM chat_messages c
+        JOIN user_info u ON c.user_id = u.id
+        ORDER BY c.created_at ASC`,
+        (err, results) => {
+            if (err) return res.status(500).send(err);
+            res.json(results);
+        }
+    );
+});
+
+
+
+app.post('/api/getUserId', async (req, res) => {
+    const { email } = req.body;
+    
+    if (!email ) {
+        return res.status(400).json({ error: "email이 없습니다." });
+    }
+    try {
+        const [rows] = await db.query("select id from user_info WHERE email = ?", [email]);
+        if(rows.length === 0){
+            return res.json({error : "데이터가 없음!"});
+        }
+        res.json({ id : rows[0].id });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+  
+server.listen(5001, () => {
+    console.log('Server is running on port 5001');
+  });
