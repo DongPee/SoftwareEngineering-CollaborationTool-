@@ -13,6 +13,7 @@ interface AuthContextType {
   logout: () => void;
   setIsSocialLogin: (value: string) => void;
   setEmail: (email : string) => void
+  getEmail: () => string | null;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -32,7 +33,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setEmail(finalEmail);
     localStorage.setItem("email", finalEmail);
   };
-
+  const getEmail = () => {
+    return localStorage.getItem("email") || email; 
+  };
   // 로그아웃 함수
   const logout = () => {
     setIsLoggedIn(false);
@@ -52,11 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const name = session.user.name || "";
         const email = session.user.email || "";
         const social = localStorage.getItem("isSocialLogin") || "no-social";
-        alert(`이름 : ${name}, ${email}, ${social}`);
-        login(name, social, name);
-        setIsLoggedIn(true);
-        setUsername(name);
-        setEmail(email);
+        login(name, social, email)
         setIsSocialLogin(localStorage.getItem("isSocialLogin"));
         const response2 = await fetch("http://localhost:5001/api/socialLogin", {
           method: "POST",
@@ -78,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, username, isSocialLogin, login, logout, setIsSocialLogin, email, setEmail}}>
+    <AuthContext.Provider value={{ isLoggedIn, username, isSocialLogin, login, logout, setIsSocialLogin, email, setEmail, getEmail}}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useRouter } from "next/navigation"; 
 import Image from "next/image";
 import Link from "next/link";
@@ -12,7 +12,11 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const auth = useContext(AuthContext);
   const router = useRouter(); 
-
+  useEffect(() => {
+    if (auth?.isLoggedIn) {
+      router.push("/");
+    }
+  }, [auth?.isLoggedIn]);
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -29,13 +33,8 @@ export default function LoginPage() {
 
       const data = await response.json();
       if (response.ok) {
-        console.log("로그인 성공!", data);
-        alert("로그인 성공");
         auth?.login(data.username, "none", data.email);
-
-        router.push("/");
       } else {
-        console.error("로그인 실패:", data.error);
         alert("로그인 실패");
         alert(data.error);
       }
@@ -53,7 +52,6 @@ const handleGoogleLogin = async () => {
   } else{
     auth?.login("", "goggle", "");
   }
-  router.push("/"); 
 };
 const handleKakaoLogin = async () => {
   const response = await signIn("kakao", { redirect: false });
@@ -63,7 +61,6 @@ const handleKakaoLogin = async () => {
   }else{
     auth?.login("", "kakao", "");
   }
-  router.push("/");
 };
   return (
     <div className={styles.container}>

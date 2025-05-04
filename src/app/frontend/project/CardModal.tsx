@@ -1,61 +1,249 @@
-import { useState } from "react";
+import { useState, useEffect, useContext} from "react";
 import styles from "./CardModal.module.css";
 import type { Card } from "./projectBoard";
-
+import { showUsers } from "./addDeleteBoardCard";
+import { AuthContext } from "../AuthContext";
 type CardModalProps = {
   card: Card;
   onSave: (card: Card) => void;
   onClose: () => void;
-  assigneeOptions: string[];
+  projectId: string | null;
 };
 
 export default function CardModal({
   card,
   onSave,
   onClose,
-  assigneeOptions,
+  projectId,
 }: CardModalProps) {
   const [details, setDetails] = useState(card.details);
-  const [assignee, setAssignee] = useState(card.assignee || "");
+  const [assignee, setAssignee] = useState<{ assignee : string; id : number; }>();
   const [startDate, setStartDate] = useState(card.startDate || "");
   const [endDate, setEndDate] = useState(card.endDate || "");
-  const [comments, setComments] = useState<string[]>(card.comments);
+  const [comments, setComments] = useState<{ text: string; author: string; author_email : string;}[]>([]); // 댓글 내용과 작성자 정보를 관리
+  const [commentsId, setCommentsId] = useState<number[]>(card.commentsId || []); // 댓글 ID
   const [newComment, setNewComment] = useState("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingText, setEditingText] = useState("");
+  const [assigneeOptions, setAssigneeOptions] = useState<{ assignee : string; id : number; }[]>([]);
+  const auth = useContext(AuthContext);
+  const handleSave = async () => {
+    try {
+      const response = await fetch("http://localhost:5001/api/setCardManager", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cardId: card.id,
+          assignee: assignee !== undefined ? assignee.id : null,
+        }),
+      });
 
-  const handleSave = () => {
+      if (!response.ok) {
+        throw new Error("날짜 설정 실패");
+      }
+    } catch (error) {
+      console.error("댓글 추가 오류:", error);
+    }
+    
+    try {
+      const response = await fetch("http://localhost:5001/api/setCard_desc", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cardId: card.id,
+          card_desc : details,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("날짜 설정 실패");
+      }
+    } catch (error) {
+      console.error("댓글 추가 오류:", error);
+    }
+    if (!card.id) {
+      console.error("날짜 또는 card.id가 없음");
+      return;
+    }
+    try {
+      const response = await fetch("http://localhost:5001/api/setStartEndDate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cardId: card.id,
+          startDate: startDate === "" ? null : startDate,
+          endDate: endDate === "" ? null : endDate,
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("날짜 설정 실패");
+      }
+    } catch (error) {
+      console.error("댓글 추가 오류:", error);
+    }
+  
     const updatedCard: Card = {
       ...card,
       details,
-      assignee,
       startDate,
       endDate,
-      comments,
+      commentsId,
     };
     onSave(updatedCard);
+    onClose();
   };
 
-  const handleAddComment = () => {
+  useEffect(() => {
+    if (!card?.id) return;
+    let isMounted = true;
+    const fetchUsernames = async () => {
+      const options = await showUsers(projectId);
+      const userList = options.map((user: { username: string, id: number}) => ({assignee : user.username, id : user.id}));
+      if(isMounted){setAssigneeOptions(userList);}
+    };
+    const fetchCardManagerStartEndDate = async () =>{
+      try {
+        const response = await fetch("http://localhost:5001/api/getDescCardManagerStartEndDate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            cardId: card.id,
+          }),
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if(isMounted){
+            setDetails(data.card_desc ?? "");
+            setAssignee({assignee : data.username, id : data.manager});
+            setStartDate(data.startDate ? data.startDate.slice(0, 10) : "");
+            setEndDate(data.endDate ? data.endDate.slice(0, 10) : "");
+          }
+        } else {
+          console.error("댓글 불러오기 실패");
+        }
+      } catch (error) {
+        console.error("댓글 불러오기 오류:", error);
+      }
+    };
+    const fetchComments = async () => {
+      if (commentsId.length === 0) {
+        setComments([]);
+        return;
+      }
+      try {
+        const response = await fetch("http://localhost:5001/api/getComments", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            commentIds: commentsId,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json(); 
+          if(isMounted){setComments(data);}
+        } else {
+          console.error("댓글 불러오기 실패");
+        }
+      } catch (error) {
+        console.error("댓글 불러오기 오류:", error);
+      }
+    };
+    fetchCardManagerStartEndDate();
+    fetchUsernames();
+    fetchComments();
+    return () => {
+      isMounted = false;
+    };
+  }, [card.id]);
+
+  const handleAddComment = async () => {
     if (newComment.trim()) {
-      setComments((prevComments) => [...prevComments, newComment.trim()]);
-      setNewComment("");
+      const author = localStorage.getItem("email") || auth?.email;
+      if (!author) {
+        console.error("작성자 이메일이 없습니다.");
+        return;
+      }
+      try {
+        const response = await fetch("http://localhost:5001/api/addComment", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            cardId: card.id,
+            content: newComment.trim(),
+            email : author,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("댓글 추가 실패");
+        }
+
+        const data = await response.json(); 
+        const newCommentData = {
+          text: newComment.trim(),
+          author: data.author,
+          author_email:data.author_email,
+        };
+
+        console.log("댓글 추가 성공:", data);
+
+        setComments((prevComments) => [...prevComments, newCommentData]);
+        setCommentsId((prevCommentsId) => [...prevCommentsId, data.id]);
+        setNewComment(""); 
+      } catch (error) {
+        console.error("댓글 추가 오류:", error);
+      }
     }
   };
 
-  const handleDeleteComment = (index: number) => {
-    setComments((prevComments) => prevComments.filter((_, i) => i !== index));
+  const handleDeleteComment = async (index: number) => {
+    const commentId = commentsId[index];
+    if (commentId) {
+      try {
+        const response = await fetch("http://localhost:5001/api/deleteComment", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ commentId }),
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setComments((prevComments) => prevComments.filter((_, i) => i !== index));
+          setCommentsId((prevCommentsId) => prevCommentsId.filter((_, i) => i !== index));
+        } else {
+          console.error("댓글 삭제 실패:", data.error);
+        }
+      } catch (err) {
+        console.error("서버 오류 발생:", err);
+      }
+    }
   };
 
   const handleEditComment = (index: number) => {
     setEditingIndex(index);
-    setEditingText(comments[index]);
+    setEditingText(comments[index].text);
   };
 
   const handleSaveEditedComment = () => {
     if (editingIndex !== null && editingText.trim()) {
       const updated = [...comments];
-      updated[editingIndex] = editingText.trim();
+      updated[editingIndex].text = editingText.trim();
       setComments(updated);
       setEditingIndex(null);
       setEditingText("");
@@ -63,8 +251,8 @@ export default function CardModal({
   };
 
   return (
-    <div className={styles.modal}>
-      <div className={styles.modalContent}>
+    <div className={styles.modal} onClick={onClose}>
+      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <h2 className={styles.title}>{card.text}</h2>
 
         <label className={styles.label}>상세 설명</label>
@@ -78,17 +266,21 @@ export default function CardModal({
         <label className={styles.label}>담당자</label>
         <select
           className={styles.select}
-          value={assignee}
-          onChange={(e) => setAssignee(e.target.value)}
-        >
+          value={assignee?.id ?? ""}
+          onChange={(e) => {
+            const selectedId = Number(e.target.value);
+            const selectedUser = assigneeOptions.find(user => user.id === selectedId);
+            setAssignee(selectedUser);
+          }}
+          >
           <option value="">선택 안 함</option>
           {assigneeOptions.map((option) => (
-            <option key={option} value={option}>
-              {option}
+            <option key={option.id} value={option.id}>
+              {option.assignee}
             </option>
           ))}
         </select>
-
+        
         <label className={styles.label}>시작일</label>
         <input
           type="date"
@@ -105,11 +297,14 @@ export default function CardModal({
           onChange={(e) => setEndDate(e.target.value)}
         />
 
-        {comments.length > 0 && (
+          {comments.length > 0 && (
           <>
             <label className={styles.label}>댓글</label>
             <div className={styles.commentList}>
-              {comments.map((comment, index) => (
+            {comments.map((comment, index) => {
+              const currentUser = localStorage.getItem("email") || auth?.email;
+              const isAuthor = comment.author_email === currentUser;
+              return (
                 <div key={index} className={styles.commentItem}>
                   {editingIndex === index ? (
                     <div className={styles.commentInputWrap}>
@@ -118,32 +313,34 @@ export default function CardModal({
                         onChange={(e) => setEditingText(e.target.value)}
                         className={`${styles.input} ${styles.commentInput}`}
                       />
-                      <button
-                        onClick={handleSaveEditedComment}
-                        className={styles.addCommentBtn}
-                      >
+                      <button onClick={handleSaveEditedComment} className={styles.addCommentBtn}>
                         저장
                       </button>
                     </div>
                   ) : (
                     <div className={styles.commentInputWrap}>
-                      <span style={{ flexGrow: 1 }}>{comment}</span>
-                      <button
-                        onClick={() => handleEditComment(index)}
-                        className={styles.addCommentBtn}
-                      >
-                        수정
-                      </button>
-                      <button
-                        onClick={() => handleDeleteComment(index)}
-                        className={`${styles.addCommentBtn} ${styles.closeBtn}`}
-                      >
-                        삭제
-                      </button>
+                      <span style={{ flexGrow: 1 }}>
+                        {comment.text} - <strong>{comment.author}</strong>
+                      </span>
+
+                      {isAuthor && (
+                        <>
+                          <button onClick={() => handleEditComment(index)} className={styles.addCommentBtn}>
+                            수정
+                          </button>
+                          <button
+                            onClick={() => handleDeleteComment(index)}
+                            className={`${styles.addCommentBtn} ${styles.closeBtn}`}
+                          >
+                            삭제
+                          </button>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
-              ))}
+              );
+            })}
             </div>
           </>
         )}

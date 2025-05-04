@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, use} from "react";
 import CardModal from "./CardModal";
+import { createColumn, deleteColumn, createCard, deleteCards, deleteCard} from "./addDeleteBoardCard";
 
 type BoardProps = {
   projectId: string | null;
@@ -13,6 +14,7 @@ export type Card = {
   text: string;
   details: string;
   comments: string[];
+  commentsId : number[];
   assignee?: string;
   startDate?: string;
   endDate?: string;
@@ -23,51 +25,98 @@ export type Column = {
   title: string;
   cards: Card[];
   newCardText: string;
+  addCardToggle : boolean;
 };
 
-export default function ProjectBoard({ projectId, projectName, projectDesc }: BoardProps) {
-  const [columns, setColumns] = useState<Column[]>([
-    { id: 1, title: "To Do", cards: [], newCardText: "" },
-    { id: 2, title: "In Progress", cards: [], newCardText: "" },
-    { id: 3, title: "Done", cards: [], newCardText: "" },
-  ]);
-
+export default function Board({ projectName, projectId }: BoardProps) {
+  const [columns, setColumns] = useState<Column[]>([]);
+  const [addColumnToggle, setColumnToggle] = useState(false);
+  const [addCardToggle, setCardToggle] = useState(false);
   const [newColumnTitle, setNewColumnTitle] = useState("");
-  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+  const [selectedCard, setSelectedCard] = useState<Card | null>(null); 
+  useEffect(() => {
+    if (!projectId) return;
+  
+    const fetchColumnsAndCards = async () => {
+      try {
+        const response = await fetch("http://localhost:5001/api/showColumn", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ projectId }),
+        });
+  
+        const data = await response.json();
+  
+        if (response.ok) {
+          const loadedColumns: Column[] = await Promise.all(
+            data.columns.map(async (col: any) => {
+              const cardRes = await fetch("http://localhost:5001/api/showCard", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ columnId: col.id }),
+              });
+          
+              const cardData = await cardRes.json();
+          
+              const cards = cardRes.ok && cardData.cards
+                ? await Promise.all(
+                    cardData.cards.map(async (card: any) => {
+                      const commentRes = await fetch("http://localhost:5001/api/showComment", {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ cardId: card.id }),
+                      });
 
-  const assigneeOptions = ["user0", "user1", "user2", "user3"];
+                      const commentData = await commentRes.json();
 
-  // 컬럼 추가
-  const addColumn = () => {
-    if (!newColumnTitle.trim()) return;
-    const newColumn: Column = {
-      id: Date.now(),
-      title: newColumnTitle.trim(),
-      cards: [],
-      newCardText: "",
-    };
-    setColumns([...columns, newColumn]);
-    setNewColumnTitle("");
-  };
+                      const commentsId = commentRes.ok && commentData.comments
+                        ? commentData.comments.map((comment: any) => Number(comment.id))
+                        : [];
 
-  // 카드 추가
-  const addCard = (columnId: number) => {
-    setColumns(columns.map(col => {
-      if (col.id === columnId && col.newCardText.trim()) {
-        const newCard: Card = {
-          id: Date.now(),
-          text: col.newCardText.trim(),
-          details: "",
-          comments: [],
-          assignee: "",
-          startDate: "",
-          endDate: "",
-        };
-        return { ...col, cards: [...col.cards, newCard], newCardText: "" };
+                      const comments = commentRes.ok && commentData.comments
+                        ? commentData.comments.map((comment: any) => comment.content)
+                        : [];
+
+                      return {
+                        id: card.id,
+                        text: card.title,
+                        details: card.description ?? "",
+                        commentsId: commentsId, 
+                        comments: comments,      
+                        columnId: card.column_id,
+                      };
+                    })
+                  )
+                : [];
+          
+              return {
+                id: col.id,
+                title: col.title,
+                cards: cards,
+                newCardText: "",
+              };
+            })
+          );
+  
+          setColumns(loadedColumns);
+        } else {
+          console.error("컬럼 로드 실패:", data.error);
+        }
+      } catch (err) {
+        console.error("컬럼 로드 중 오류:", err);
       }
-      return col;
-    }));
-  };
+    };
+  
+    fetchColumnsAndCards();
+  }, [projectId]);
+
+  
 
   // 카드 클릭 > 모달 오픈
   const handleCardClick = (card: Card) => {
@@ -100,68 +149,184 @@ export default function ProjectBoard({ projectId, projectName, projectDesc }: Bo
 
   return (
     <div className="board">
-      <h1 className="text-2xl font-bold mb-4">{projectName ?? "프로젝트 보드"}</h1>
-      <p className="text-gray-600 mb-8">{projectDesc ?? "프로젝트 설명 없음"}</p>
-
-      <div className="columns flex gap-4">
-        {columns.map(column => (
-          <div key={column.id} className="column bg-gray-100 p-4 rounded shadow-md w-80">
-            <h2 className="text-lg font-semibold mb-2">{column.title}</h2>
-
-            {column.cards.map(card => (
-              <div
-                key={card.id}
-                onClick={() => handleCardClick(card)}
-                className="card bg-white p-2 mb-2 rounded cursor-pointer hover:bg-blue-100 transition"
-              >
-                {card.text}
-              </div>
-            ))}
-
-            {/* 카드 추가 */}
-            <div className="addCard mt-4 flex flex-col gap-2">
-              <input
-                type="text"
-                value={column.newCardText}
-                onChange={(e) => handleCardInputChange(e, column.id)}
-                placeholder="새 카드 이름"
-                className="p-2 rounded border border-gray-300"
-              />
+      {columns.map(column => (
+        <div key={column.id} className="column">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold">{column.title}</h2>
+            <button
+              onClick={async () => {
+                await deleteCards(column.id);
+                await deleteColumn(column.id);
+                setColumns(prev =>
+                  prev.filter((col) => col.id !== column.id)
+                );
+              }}
+              className="px-2 py-1 bg-red-500 text-white rounded"
+            >
+              <p className="ml-2 mr-2">삭제</p>
+            </button>
+          </div>
+          {column.cards && column.cards.map(card => (
+            <div
+              key={card.id}
+              onClick={() => handleCardClick(card)}
+              className="card cursor-pointer justify-between flex flex-row"
+            >
+              <h2>{card.text}</h2>
               <button
-                onClick={() => addCard(column.id)}
-                className="bg-blue-500 text-white py-1 px-3 rounded hover:bg-blue-600"
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  await deleteCard(column.id, card.id);
+                  setColumns(prev =>
+                    prev.map(col => {
+                      if (col.id === column.id) {
+                        return {
+                          ...col,
+                          cards: col.cards.filter(c => c.id !== card.id),
+                        };
+                      }
+                      return col;
+                    })
+                  );
+                }}
+                className="px-2 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
               >
-                카드 추가
+                삭제
               </button>
             </div>
+          ))}
+          {!column.addCardToggle ? (
+            <div
+              className="w-10 h-10 columnAddButton rounded-full border-2 flex items-center justify-center cursor-pointer text-3xl font-bold"
+              onClick={() => {
+                setColumns(prevColumns =>
+                  prevColumns.map(col =>
+                    col.id === column.id
+                      ? { ...col, addCardToggle: true }
+                      : col
+                  )
+                );
+              }}
+            >
+              +
+            </div>
+          ) : (
+            <div className="addCard">
+            <input
+              type="text"
+              value={column.newCardText}
+              onChange={(e) => handleCardInputChange(e, column.id)}
+              placeholder="새로운 카드 이름"
+              className="w-3/5 bg-white placeholder:text-gray-500 placeholder:opacity-100"
+            />
+            <button
+              className="w-1/5 px-4 py-2 bg-red-500 text-white rounded-md"
+              onClick={() => {
+                setColumns(prevColumns =>
+                  prevColumns.map(col =>
+                    col.id === column.id
+                      ? { ...col, addCardToggle: false , newCardText : ""}
+                      : col
+                  )
+                );
+              }}
+            >
+              취소
+            </button>
+            <button
+              onClick={() => {
+                createCard(column.newCardText, column.id).then((newCard) => {
+                  if (!newCard) return;
+                  const cardWithColumnId = {
+                    ...newCard,
+                    columnId: column.id,
+                    commentsId : [],
+                  };
+                  setColumns(columns.map(col => 
+                    col.id === column.id
+                      ? {
+                          ...col,
+                          cards: [...col.cards, cardWithColumnId],
+                          newCardText: "",
+                        }
+                      : col
+                  ));
+                });
+              }}
+              className="px-4 py-2 bg-blue-500 text-white rounded-md w-1/5"
+            >
+              추가
+            </button>
           </div>
-        ))}
-
-        {/* 컬럼 추가 */}
-        <div className="addColumn flex flex-col gap-2 bg-gray-50 p-4 rounded shadow-md h-fit">
+          )}
+          
+        </div>
+      ))}
+      {!addColumnToggle ? (
+        <div
+          className="w-10 h-10 columnAddButton rounded-full border-2 flex items-center justify-center cursor-pointer text-3xl font-bold"
+          onClick={() => setColumnToggle(prev => !prev)}
+        >
+          +
+        </div>
+      ) : (
+        <div className="addColumn min-h-40 flex flex-col gap-2">
           <input
             type="text"
             value={newColumnTitle}
             onChange={handleColumnInputChange}
-            placeholder="새 컬럼 이름"
-            className="p-2 rounded border border-gray-300"
+            placeholder="새로운 컬럼 이름"
+            className="border-2 rounded-lg min-h-20 placeholder:text-gray-500 placeholder:opacity-100"
           />
-          <button
-            onClick={addColumn}
-            className="bg-green-500 text-white py-1 px-3 rounded hover:bg-green-600"
-          >
-            컬럼 추가
-          </button>
-        </div>
-      </div>
+          <div className="flex-row">
+            <button
+              className="w-1/2 px-4 py-2 bg-red-500 text-white rounded-full"
+              onClick={() => {
+                setColumnToggle(prev => !prev);
+                setNewColumnTitle(""); // 컬럼 이름 입력값 초기화
+              }}
+            >
+              취소
+            </button>
+            <button
+              onClick={async () => {
+                if (projectId) {
+                  const newCol = await createColumn(newColumnTitle, parseInt(projectId));
 
-      {/* 모달 컴포넌트 */}
+                  if (!newCol) {
+                    console.error("컬럼 생성 실패");
+                    return;
+                  }
+                  setColumns([
+                    ...columns,
+                    {
+                      ...newCol,
+                      cards: [],
+                      newCardText: "",
+                      addCardToggle : false,
+                    },
+                  ]);
+                  setNewColumnTitle(""); // 입력창 초기화
+                } else {
+                  console.error("프로젝트 ID가 없습니다.");
+                }
+              }}
+              className="w-1/2 px-4 py-2 bg-blue-500 text-white rounded-full"
+            >
+              컬럼 추가
+            </button>
+          </div>
+          
+        </div>
+      )}
+      
+      
       {selectedCard && (
         <CardModal
           card={selectedCard}
           onSave={handleDetailSave}
           onClose={closeModal}
-          assigneeOptions={assigneeOptions}
+          projectId={projectId}
         />
       )}
     </div>
