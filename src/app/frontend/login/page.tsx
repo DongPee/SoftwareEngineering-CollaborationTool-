@@ -112,7 +112,7 @@ const handleGoogleLogin = async () => {
   if (response?.error) {
     console.error("로그인 오류:", response.error);
   } else{
-    auth?.login("", "goggle", "");
+    auth?.login("", "google", "");
   }
 };
 const handleKakaoLogin = async () => {
