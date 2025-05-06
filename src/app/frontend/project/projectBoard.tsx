@@ -14,8 +14,6 @@ export type Card = {
   id: number;
   text: string;
   details: string;
-  comments: string[];
-  commentsId : number[];
   assignee?: string;
   startDate?: string;
   endDate?: string;
@@ -63,30 +61,11 @@ export default function Board({ projectName, projectId }: BoardProps) {
             const cards = cardRes.ok && cardData.cards
               ? await Promise.all(
                   cardData.cards.map(async (card: any) => {
-                    const commentRes = await fetch("http://localhost:5001/api/showComment", {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify({ cardId: card.id }),
-                    });
-
-                    const commentData = await commentRes.json();
-
-                    const commentsId = commentRes.ok && commentData.comments
-                      ? commentData.comments.map((comment: any) => Number(comment.id))
-                      : [];
-
-                    const comments = commentRes.ok && commentData.comments
-                      ? commentData.comments.map((comment: any) => comment.content)
-                      : [];
-
+                    
                     return {
                       id: card.id,
                       text: card.title,
-                      details: card.description ?? "",
-                      commentsId: commentsId, 
-                      comments: comments,      
+                      details: card.description ?? "",    
                       columnId: card.column_id,
                     };
                   })
@@ -115,7 +94,6 @@ export default function Board({ projectName, projectId }: BoardProps) {
     fetchColumnsAndCards();
   }, [projectId]);
   useEffect(()=> {
-    console.log("hehe");
     socket.on('isChanged', () => {
       fetchColumnsAndCards();
     });

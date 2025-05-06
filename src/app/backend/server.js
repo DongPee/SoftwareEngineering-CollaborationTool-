@@ -936,31 +936,63 @@ app.post('/api/setCard_desc', async (req, res) => {
 
 
 
-app.post('/api/setChat', (req, res) => {
-    const { user_id, content } = req.body;
-    db.query(
-        'INSERT INTO chat_messages (user_id, content) VALUES (?, ?)',
-        [user_id, content],
-        (err, result) => {
-            if (err) return res.status(500).send(err);
-            res.json({ id: result.insertId });
+app.post('/api/setChat', async (req, res) => {
+    const { user, content } = req.body;
+
+    if (!user || !content) {
+        return res.status(400).json({ error: "user(email) 또는 content가 없습니다." });
+    }
+    try {
+        const [result2] = await db.query(
+            'SELECT id, username FROM user_info WHERE email = ?', [user]
+        );
+        if (result2.length === 0) {
+            return res.status(400).json({ error: 'email이 존재하지 않음' });
         }
-    );
+        const userId = result2[0].id;
+        const username = result2[0].username;
+        const [result] = await db.query(
+            'INSERT INTO chat_messages (user_id, content) VALUES (?, ?)',
+            [userId, content]
+        );
+        const insertId = result.insertId;
+        const [result3] = await db.query(
+            'SELECT id, content, created_at FROM chat_messages WHERE id = ?', [insertId]
+        );
+        if (result3.length === 0) {
+            return res.status(400).json({ error: 'message가 존재하지 않음' });
+        }
+        const message = {
+            id: result3[0].id,
+            text: result3[0].content,
+            created_at: result3[0].created_at,
+            sender: username,
+        };
+        res.json(message);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
 });
   
 
 
-app.post('/api/getChat', (req, res) => {
-    db.query(
-        `SELECT c.id, c.content, c.created_at, u.username AS sender
-        FROM chat_messages c
-        JOIN user_info u ON c.user_id = u.id
-        ORDER BY c.created_at ASC`,
-        (err, results) => {
-            if (err) return res.status(500).send(err);
-            res.json(results);
+app.post('/api/getChat', async (req, res) => {
+    try {
+        const [rows] = await db.query(
+                `SELECT c.id, c.content, CONVERT_TZ(c.created_at, '+00:00', '+09:00') AS created_at, u.username AS sender
+                FROM chat_messages c
+                JOIN user_info u ON c.user_id = u.id
+                ORDER BY c.created_at ASC`);
+        if (rows.length === 0) {
+            return res.json([]);
         }
-    );
+        res.json(rows);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
 });
 
 
