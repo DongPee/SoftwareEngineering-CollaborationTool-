@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "./AuthContext";
 import Link from "next/link";
 import { getDarkMode, setDarkMode } from "./DarkState";
-import UserDropdown from "./userProfile";
+import UserDropdown from "./UserDropdown";
 
 const Header = () => {
   const auth = useContext(AuthContext);
