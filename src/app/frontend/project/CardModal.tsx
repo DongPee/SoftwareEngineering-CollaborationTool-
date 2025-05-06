@@ -1,8 +1,10 @@
-import { useState, useEffect, useContext} from "react";
+import { useState, useEffect, useContext, useRef} from "react";
 import styles from "./CardModal.module.css";
 import type { Card } from "./projectBoard";
 import { showUsers } from "./addDeleteBoardCard";
 import { AuthContext } from "../AuthContext";
+import { io } from 'socket.io-client';
+const socket = io('http://localhost:5001');
 type CardModalProps = {
   card: Card;
   onSave: (card: Card) => void;
@@ -20,13 +22,13 @@ export default function CardModal({
   const [assignee, setAssignee] = useState<{ assignee : string; id : number; }>();
   const [startDate, setStartDate] = useState(card.startDate || "");
   const [endDate, setEndDate] = useState(card.endDate || "");
-  const [comments, setComments] = useState<{ text: string; author: string; author_email : string;}[]>([]); // 댓글 내용과 작성자 정보를 관리
-  const [commentsId, setCommentsId] = useState<number[]>(card.commentsId || []); // 댓글 ID
+  const [comments, setComments] = useState<{ text: string; author: string; author_email : string; id : number}[]>([]); // 댓글 내용과 작성자 정보를 관리
   const [newComment, setNewComment] = useState("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingText, setEditingText] = useState("");
   const [assigneeOptions, setAssigneeOptions] = useState<{ assignee : string; id : number; }[]>([]);
   const auth = useContext(AuthContext);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
   const handleSave = async () => {
     try {
       const response = await fetch("http://localhost:5001/api/setCardManager", {
@@ -94,81 +96,92 @@ export default function CardModal({
       details,
       startDate,
       endDate,
-      commentsId,
     };
     onSave(updatedCard);
+    socket.emit('isModalChanged');
     onClose();
   };
-
+  const fetchUsernames = async (isMounted : boolean) => {
+    const options = await showUsers(projectId);
+    const userList = options.map((user: { username: string, id: number}) => ({assignee : user.username, id : user.id}));
+    if(isMounted){setAssigneeOptions(userList);}
+  };
+  const fetchCardManagerStartEndDate = async (isMounted : boolean) =>{
+    try {
+      const response = await fetch("http://localhost:5001/api/getDescCardManagerStartEndDate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cardId: card.id,
+        }),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if(isMounted){
+          setDetails(data.card_desc ?? "");
+          setAssignee({assignee : data.username, id : data.manager});
+          setStartDate(data.startDate ? data.startDate.slice(0, 10) : "");
+          setEndDate(data.endDate ? data.endDate.slice(0, 10) : "");
+        }
+      } else {
+        console.error("댓글 불러오기 실패");
+      }
+    } catch (error) {
+      console.error("댓글 불러오기 오류:", error);
+    }
+  };
+  const fetchComments = async (isMounted : boolean) => {
+    try {
+      const response = await fetch("http://localhost:5001/api/getComments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cardId : card.id,
+        }),
+      });
+      console.log(response);
+      if (response.ok) {
+        const data = await response.json(); 
+        if(isMounted){setComments(data);}
+      } else {
+        console.error("댓글 불러오기 실패");
+      }
+    } catch (error) {
+      console.error("댓글 불러오기 오류:", error);
+    }
+  };
   useEffect(() => {
-    if (!card?.id) return;
     let isMounted = true;
-    const fetchUsernames = async () => {
-      const options = await showUsers(projectId);
-      const userList = options.map((user: { username: string, id: number}) => ({assignee : user.username, id : user.id}));
-      if(isMounted){setAssigneeOptions(userList);}
-    };
-    const fetchCardManagerStartEndDate = async () =>{
-      try {
-        const response = await fetch("http://localhost:5001/api/getDescCardManagerStartEndDate", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            cardId: card.id,
-          }),
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          if(isMounted){
-            setDetails(data.card_desc ?? "");
-            setAssignee({assignee : data.username, id : data.manager});
-            setStartDate(data.startDate ? data.startDate.slice(0, 10) : "");
-            setEndDate(data.endDate ? data.endDate.slice(0, 10) : "");
-          }
-        } else {
-          console.error("댓글 불러오기 실패");
-        }
-      } catch (error) {
-        console.error("댓글 불러오기 오류:", error);
-      }
-    };
-    const fetchComments = async () => {
-      if (commentsId.length === 0) {
-        setComments([]);
-        return;
-      }
-      try {
-        const response = await fetch("http://localhost:5001/api/getComments", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            commentIds: commentsId,
-          }),
-        });
-
-        if (response.ok) {
-          const data = await response.json(); 
-          if(isMounted){setComments(data);}
-        } else {
-          console.error("댓글 불러오기 실패");
-        }
-      } catch (error) {
-        console.error("댓글 불러오기 오류:", error);
-      }
-    };
-    fetchCardManagerStartEndDate();
-    fetchUsernames();
-    fetchComments();
+    if (!card?.id) return;
+    fetchCardManagerStartEndDate(isMounted);
+    fetchUsernames(isMounted);
+    fetchComments(isMounted);
     return () => {
       isMounted = false;
     };
   }, [card.id]);
-
+  useEffect(() => {
+    let isMounted = true;
+    const handleModalChange = () => {
+      if (!card?.id) return;
+      fetchCardManagerStartEndDate(isMounted);
+      fetchUsernames(isMounted);
+      fetchComments(isMounted);
+    };
+    socket.on('isModalChanged', handleModalChange);
+    return () => {
+      isMounted = false;
+      socket.off('isModalChanged', handleModalChange);
+    };
+  }, []);
+  useEffect(() => {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [comments]);
   const handleAddComment = async () => {
     if (newComment.trim()) {
       const author = localStorage.getItem("email") || auth?.email;
@@ -198,13 +211,14 @@ export default function CardModal({
           text: newComment.trim(),
           author: data.author,
           author_email:data.author_email,
+          id : data.id,
         };
 
         console.log("댓글 추가 성공:", data);
 
         setComments((prevComments) => [...prevComments, newCommentData]);
-        setCommentsId((prevCommentsId) => [...prevCommentsId, data.id]);
         setNewComment(""); 
+        socket.emit('isModalChanged');
       } catch (error) {
         console.error("댓글 추가 오류:", error);
       }
@@ -212,7 +226,7 @@ export default function CardModal({
   };
 
   const handleDeleteComment = async (index: number) => {
-    const commentId = commentsId[index];
+    const commentId = comments[index].id;
     if (commentId) {
       try {
         const response = await fetch("http://localhost:5001/api/deleteComment", {
@@ -225,7 +239,7 @@ export default function CardModal({
         const data = await response.json();
         if (response.ok) {
           setComments((prevComments) => prevComments.filter((_, i) => i !== index));
-          setCommentsId((prevCommentsId) => prevCommentsId.filter((_, i) => i !== index));
+          socket.emit('isModalChanged');
         } else {
           console.error("댓글 삭제 실패:", data.error);
         }
@@ -341,6 +355,7 @@ export default function CardModal({
                 </div>
               );
             })}
+            <div ref={bottomRef} />
             </div>
           </>
         )}

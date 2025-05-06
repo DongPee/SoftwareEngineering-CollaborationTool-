@@ -18,6 +18,7 @@ body {
   --bg-color: #ffffff;
   --text-color: #333;
   --border-color: #d1d5db;
+  --chat-bg-color : #dddddd;
   --column-bg-color: rgb(234, 234, 234);
   --column-box-shadow: rgba(0,0,0,1);
   --card-bg-color : #fff;
@@ -31,6 +32,7 @@ body {
 
 .dark-mode {
   --bg-color: #444444;
+  --chat-bg-color : #666666;
   --text-color: #ffffff;
   --border-color: #dddddd;
   --column-bg-color: rgb(50, 50, 50);
