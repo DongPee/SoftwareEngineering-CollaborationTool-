@@ -116,9 +116,15 @@ body {
 .darkMode-button {
   right: 100px;
 }
+.darkMode-button:hover {
+  background-color: #fe7411;
+}
 
 .profile-button {
   right: 10px;
+}
+.profile-button:hover {
+  background-color: #fe7411;
 }
 
 .login-button {
@@ -135,6 +141,9 @@ body {
   right: 10px;
   top: 50%;
   transform: translateY(-50%);
+}
+.login-button:hover {
+  background-color: #fe7411;
 }
 
 .login:hover {

@@ -9,6 +9,7 @@ import Calendar from "./projectCalender";
 import Chat from "./projectChat";
 import { useSearchParams } from "next/navigation";
 import { AuthContext } from "../AuthContext";
+import ProjectTimeline from './projectTimeline';
 
 export default function project() {
   const [active, setActive] = useState("summary"); // active 상태 관리
@@ -33,7 +34,7 @@ export default function project() {
         <Top projectId={projectId} projectName={projectName} projectDesc={projectDesc} />
         <h1 className="m-3">{active === "summary" ? "요약" : active === "timeline" ? "타임라인" : active === "board" ? "보드" : active === "calender" ? "캘린더" : "채팅"}</h1>
         {active === "summary" && <Summary projectId={projectId} projectName={projectName} projectDesc={projectDesc} />}
-        {active === "timeline" && <h2>두 번째 페이지</h2>}
+        {active === "timeline" && <ProjectTimeline projectId={projectId}/>}
         {active === "board" && <Board projectId={projectId} projectName={projectName} projectDesc={projectDesc} />}
         {active === "calender" && <Calendar projectId={projectId} projectName={projectName} projectDesc={projectDesc} />}
         {active === "chat" && <Chat />}
