@@ -1,8 +1,8 @@
 // src/app/layout.tsx
 "use client";
 
-import { AuthContext, AuthProvider } from "./frontend/AuthContext";
-import Header from "./frontend/header"
+import { AuthContext, AuthProvider } from "./AuthContext";
+import Header from "./header"
 import "./globals.css";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
