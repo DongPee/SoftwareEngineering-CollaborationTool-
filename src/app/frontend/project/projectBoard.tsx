@@ -1,13 +1,13 @@
-"use client";
-import { useState, useEffect, use} from "react";
+import { useState, useEffect } from "react";
 import CardModal from "./CardModal";
-import { createColumn, deleteColumn, createCard, deleteCards, deleteCard} from "./addDeleteBoardCard";
+import { createColumn, deleteColumn, createCard, deleteCards, deleteCard } from "./addDeleteBoardCard";
 import { io } from 'socket.io-client';
 const socket = io('http://localhost:5001');
+
 type BoardProps = {
-  projectId : string | null;
-  projectName : string | null;
-  projectDesc : string | null;
+  projectId: string | null;
+  projectName: string | null;
+  projectDesc: string | null;
 };
 
 export type Card = {
@@ -17,6 +17,7 @@ export type Card = {
   assignee?: string;
   startDate?: string;
   endDate?: string;
+  columnId: number;
 };
 
 export type Column = {
@@ -24,16 +25,17 @@ export type Column = {
   title: string;
   cards: Card[];
   newCardText: string;
-  addCardToggle : boolean;
+  addCardToggle: boolean;
 };
 
 export default function Board({ projectName, projectId }: BoardProps) {
   const [columns, setColumns] = useState<Column[]>([]);
   const [addColumnToggle, setColumnToggle] = useState(false);
   const [newColumnTitle, setNewColumnTitle] = useState("");
-  const [selectedCard, setSelectedCard] = useState<Card | null>(null); 
+  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+
   const fetchColumnsAndCards = async () => {
-    if (!projectId) return;  
+    if (!projectId) return;
     try {
       const response = await fetch("http://localhost:5001/api/showColumn", {
         method: "POST",
@@ -55,23 +57,22 @@ export default function Board({ projectName, projectId }: BoardProps) {
               },
               body: JSON.stringify({ columnId: col.id }),
             });
-        
+
             const cardData = await cardRes.json();
-        
+
             const cards = cardRes.ok && cardData.cards
               ? await Promise.all(
                   cardData.cards.map(async (card: any) => {
-                    
                     return {
                       id: card.id,
                       text: card.title,
-                      details: card.description ?? "",    
+                      details: card.description ?? "",
                       columnId: card.column_id,
                     };
                   })
                 )
               : [];
-        
+
             return {
               id: col.id,
               title: col.title,
@@ -93,7 +94,8 @@ export default function Board({ projectName, projectId }: BoardProps) {
   useEffect(() => {
     fetchColumnsAndCards();
   }, [projectId]);
-  useEffect(()=> {
+
+  useEffect(() => {
     socket.on('isChanged', () => {
       fetchColumnsAndCards();
     });
@@ -101,7 +103,6 @@ export default function Board({ projectName, projectId }: BoardProps) {
       socket.off('isChanged');
     };
   }, []);
-  
 
   // 카드 클릭 > 모달 오픈
   const handleCardClick = (card: Card) => {
@@ -127,22 +128,68 @@ export default function Board({ projectName, projectId }: BoardProps) {
       cards: col.cards.map(card => card.id === updatedCard.id ? updatedCard : card),
     })));
   };
+  
 
   const closeModal = () => setSelectedCard(null);
+
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, card: Card) => {
+    e.dataTransfer.setData("cardId", card.id.toString());
+    e.currentTarget.classList.add("dragging");
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  };
+  const handleDragEnd = (e: React.DragEvent<HTMLDivElement>) => {
+    e.currentTarget.classList.remove("dragging");
+  };
+  
+  
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>, column: Column) => {
+    e.preventDefault();
+    const cardId = parseInt(e.dataTransfer.getData("cardId"));
+    
+    const card = columns.flatMap(col => col.cards).find(c => c.id === cardId);
+
+    if (card) {
+      try {
+        const response = await fetch("http://localhost:5001/api/dragCard", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            cardId: card.id,
+            columnId: column.id,
+          }),
+        });
+  
+        if (!response.ok) {
+          throw new Error("카드 옮기기 실패");
+        }
+      } catch (error) {
+        console.error("카드 옮기기 에러", error);
+      }
+      socket.emit('isChanged');
+    }
+  };
 
   return (
     <div className="board">
       {columns.map(column => (
-        <div key={column.id} className="column">
+        <div
+          key={column.id}
+          className="column"
+          onDragOver={handleDragOver}
+          onDrop={(e) => handleDrop(e, column)}
+        >
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold">{column.title}</h2>
             <button
               onClick={async () => {
                 await deleteCards(column.id);
                 await deleteColumn(column.id);
-                setColumns(prev =>
-                  prev.filter((col) => col.id !== column.id)
-                );
+                setColumns(prev => prev.filter((col) => col.id !== column.id));
                 socket.emit('isChanged');
               }}
               className="px-2 py-1 bg-red-500 text-white rounded"
@@ -153,6 +200,9 @@ export default function Board({ projectName, projectId }: BoardProps) {
           {column.cards && column.cards.map(card => (
             <div
               key={card.id}
+              draggable
+              onDragStart={(e) => handleDragStart(e, card)}
+              onDragEnd={handleDragEnd}
               onClick={() => handleCardClick(card)}
               className="card cursor-pointer justify-between flex flex-row"
             >
@@ -250,7 +300,7 @@ export default function Board({ projectName, projectId }: BoardProps) {
       ))}
       {!addColumnToggle ? (
         <div
-          className="w-10 h-10 columnAddButton rounded-full border-2 flex items-center justify-center cursor-pointer text-3xl font-bold"
+          className="min-w-10 h-10 columnAddButton rounded-full border-2 flex items-center justify-center cursor-pointer text-3xl font-bold"
           onClick={() => setColumnToggle(prev => !prev)}
         >
           +

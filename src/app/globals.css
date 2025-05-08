@@ -1,25 +1,16 @@
 @import "tailwindcss";
 
-::-webkit-scrollbar {
-  width: 8px;
+/* 기본 세팅 */
+* {
+  padding: 0;
+  box-sizing: border-box;
 }
 
-::-webkit-scrollbar-thumb {
-  background-color: #ccc;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-track {
-  background-color: #f1f1f1;
-}
-
-/* 다크모드용 스크롤바 스타일 */
-.dark-mode ::-webkit-scrollbar-thumb {
-  background-color: #555;
-}
-
-.dark-mode ::-webkit-scrollbar-track {
-  background-color: #222;
+body {
+  height: 100vh;
+  font-family: sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 :root {
@@ -55,22 +46,111 @@
   --bg-mainPage-function : #504e4d;
 }
 
-.projectMain{
-  height: calc(100% - 64px);
+/* 스크롤 */
+::-webkit-scrollbar {
+  width: 8px;
 }
-* {
-  margin: 10;
-  padding: 0;
-  box-sizing: border-box;
+::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
+}
+.dark-mode ::-webkit-scrollbar-thumb {
+  background-color: #555;
+}
+.dark-mode ::-webkit-scrollbar-track {
+  background-color: #222;
 }
 
-body {
-  height:100vh;
-  font-family: sans-serif;
-  background-color: var(--bg-color);
+/* 레이아웃 */
+.header-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  height: 62px;
+  padding: 10px;
+  background: var(--bg-color);
   color: var(--text-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
 }
 
+.header-bottom-line {
+  width: 100%;
+  height: 2px;
+  background-color: var(--border-color);
+}
+
+/* 버튼 스타일 */
+.title-button {
+  font-size: 30px;
+  color: var(--text-color);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.darkMode-button,
+.profile-button {
+  background: rgb(255, 134, 53);
+  padding: 10px;
+  width: 80px;
+  min-height: 40px;
+  border-radius: 10px;
+  font-size: 1.2em;
+  color: var(--text-color);
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.darkMode-button {
+  right: 100px;
+}
+.darkMode-button:hover {
+  background-color: #fe7411;
+}
+
+.profile-button {
+  right: 10px;
+}
+.profile-button:hover {
+  background-color: #fe7411;
+}
+
+.login-button {
+  background: rgb(255, 134, 53);
+  padding: 10px;
+  width: 80px;
+  min-height: 40px;
+  border-radius: 10px;
+  font-size: 1.2em;
+  color: var(--text-color);
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.login-button:hover {
+  background-color: #fe7411;
+}
+
+.login:hover {
+  background-color: #AAA;
+  cursor: pointer;
+}
+
+/* 보드, 컬럼 */
 .board {
   display: flex;
   gap: 20px;
@@ -89,7 +169,8 @@ body {
   overflow-y: auto;
 }
 
-.card {
+/* 카드 */
+.card, .card-selected {
   background: var(--card-bg-color);
   padding: 10px;
   border-radius: 6px;
@@ -98,163 +179,113 @@ body {
 }
 .card-selected {
   background: rgb(50, 255, 47);
-  padding: 10px;
-  border-radius: 6px;
-  box-shadow: 0 2px 4px var(--column-box-shadow);
-  margin-bottom: 10px;
 }
 .card:hover {
   background-color: #AAA;
   cursor: pointer;
 }
 
-.darkMode-button{
-  background: rgb(255, 134, 53);
-  padding: 10px;
-  width: 80px;
-  min-height: 40px;
-  border-radius: 10px;
-  font-size: 1.2em;
-  position: absolute;
-  right: 200px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-.login:hover{
-  background-color: #AAA; 
-  cursor:pointer;
-}
-
-
-.header {
-  padding: 10px;
-  background: var(--bg-color);
-  color: var(--text-color);
-  text-align: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  border-bottom: 2px solid var(--border-color);
-}
-
-.title-button {
-  margin: 0;
-  font-size: 30px;
-  padding: 0;
-  color: var(--text-color);
-}
-
-.user-status {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-weight: bold;
-  color: var(--text-color);
-  cursor: pointer;
-}
-
-.login-button{
-  background: rgb(255, 134, 53);
-  padding: 10px;
-  width: 80px;
-  min-height: 40px;
-  border-radius: 10px;
-  font-size: 1.2em;
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.summary-b{
+/* 기타 */
+.summary-b {
   background: var(--bg-color);
   color : var(--text-color);
 }
-
-.summary-top, .summary-middle{
+.summary-top, .summary-middle {
   border: 2px solid var(--border-color);
   background: var(--bg-color);
   color : var(--text-color);
   border-radius: 8px;
 }
-.summary-middle{
-  height:300px;
+.summary-middle {
+  height: 300px;
   overflow-y: auto;
 }
-.summary-middle h1{
+.summary-middle h1 {
   margin: 10px 0px 10px 10px;
 }
-.project-info{
+.summaryImages {
+  filter: var(--summaryImages-filter);
+}
+
+.project-info {
   border-bottom: 2px solid var(--border-color);
   background: var(--bg-color);
   color : var(--text-color);
 }
-.project-side-menu{
+.project-side-menu {
   border-right: 2px solid var(--border-color);
   background: var(--bg-color);
   color : var(--text-color);
-  overflow-y : auto;
+  overflow-y: auto;
   width: 240px;
   min-width: 120px;
 }
-.allContent{
-  display : flex;
+
+.allContent {
+  display: flex;
 }
-.project-side-menu-nav{
+.project-side-menu-nav {
   flex-direction: column;
 }
+
+/* 반응형 */
 @media (max-width: 600px) {
   .project-side-menu {
     width: 100%;
-    border : none;
+    border: none;
     border-bottom: 2px solid var(--border-color);
     overflow-x: auto;
     flex-grow: 1;
   }
-  .allContent{
-    display : block;
+  .allContent {
+    display: block;
   }
-  .project-side-menu-nav{
+  .project-side-menu-nav {
     flex-direction: row;
   }
 }
-.summaryImages{
-  filter :var(--summaryImages-filter);
-}
-input{
+
+/* 입력창, 모달 */
+input {
   background: var(--bg-color);
   color : var(--text-color);
 }
-.mainPage{
-  background: var(--bg-color);
-  color : var(--text-color);
+.modal {
+  background-color: rgba(0, 0, 0, 0.75);
 }
-.mainPage-function{
-  background: var(--bg-mainPage-function);
-  color : var(--text-color);
-  padding: 20px;
-  margin: 0px 20px;
-}
-.modal{
-  background-color: rgba(0, 0, 0, 0.75); /*흐림 효과 75%*/
-}
-.modal-content{
+.modal-content {
   padding: 10px;
 }
-.modal-content input{
+.modal-content input {
   width: 100%;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 14px;
 }
-.addColumn{
-  border-color: var(--border-color);
+
+.projectMain {
+  height: calc(100% - 64px);
+}
+.mainPage {
+  background: var(--bg-color);
+  color : var(--text-color);
+}
+.mainPage-function {
+  background: var(--bg-mainPage-function);
+  color : var(--text-color);
+  padding: 20px;
+  margin: 0px 20px;
 }
 
-.columnAddButton{
+.addColumn {
+  border-color: var(--border-color);
+}
+.columnAddButton {
   border-color: var(--border-color);
   color: var(--text-color);
+}
+.dragging {
+  opacity: 0.5;
+  z-index: 1000; 
 }

@@ -18,7 +18,7 @@ const Top = ({ projectName, projectId }: BoardProps) => {
   const auth = useContext(AuthContext);  
   const [users, setUsers] = useState<User[]>([]);
   const [showAll, setShowAll] = useState(false);
-
+  const [buttonToggle, setButtonToggle] = useState(false);
   useEffect(() => {
     document.body.classList.toggle("dark-mode", getDarkMode());
   }, []);
@@ -55,8 +55,18 @@ const Top = ({ projectName, projectId }: BoardProps) => {
             <h3 className="font-bold mb-2">프로젝트</h3>
             <h1 className="text-2xl inline-block mr-2">{projectName}</h1>
           </div>
-          <button id="projectNameButton" className="ml-2" type="button">•••</button>
           <button
+            id="projectNameButton"
+            className="ml-2"
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              setButtonToggle(!buttonToggle);
+            }
+          }>•••</button>
+          {buttonToggle && (
+            <>
+            <button
             className="ml-2 px-2 py-1 border rounded relative group"
             onClick={() => {
               if (projectId && auth?.email) {
@@ -71,7 +81,6 @@ const Top = ({ projectName, projectId }: BoardProps) => {
             </div>
           </button>
 
-          {/* 유저 프로필 목록 */}
           <div className="flex ml-4 space-x-1">
             {visibleUsers.map((user, index) => (
               <div key={index} className="relative group">
@@ -96,6 +105,9 @@ const Top = ({ projectName, projectId }: BoardProps) => {
               </button>
             )}
           </div>
+            </>
+          )}
+          
         </div>
       </div>
     </div>

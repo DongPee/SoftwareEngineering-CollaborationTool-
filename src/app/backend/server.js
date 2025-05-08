@@ -1017,6 +1017,23 @@ app.post('/api/getUserId', async (req, res) => {
 
 
   
+app.post('/api/dragCard', async (req, res) => {
+    const { cardId, columnId } = req.body;
+    
+    if (!cardId || !columnId ) {
+        return res.status(400).json({ error: "카드id 또는 컬럼id가 없습니다." });
+    }
+    try {
+        const [rows] = await db.query("update card_table set column_id = ? where id = ?", [columnId, cardId]);
+        res.json({message : "카드 옮기기 성공"});
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
 server.listen(5001, () => {
     console.log('Server is running on port 5001');
   });
