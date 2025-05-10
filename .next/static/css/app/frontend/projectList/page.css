@@ -1,0 +1,144 @@
+/*!*************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[3]!./src/app/frontend/signup/signup.module.css ***!
+  \*************************************************************************************************************************************************************************************************************************************************************************************/
+.signup_container__G06NE {
+    height: calc(100% * 14 / 15);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--bg-color);
+    overflow-y: auto;
+  }
+  @media (max-height: 800px) {
+    .signup_container__G06NE {
+      align-items: flex-start; 
+      padding-top: 2rem;
+    }
+  }
+  .signup_signupBox___6Kia {
+    background: var(--bg-login-color);
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+  
+  .signup_title__WtTVD {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--text-color);
+    margin-bottom: 20px;
+  }
+  
+  .signup_form__d1BMI {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .signup_inputGroup__iUdEy {
+    text-align: left;
+    margin-bottom: 15px;
+  }
+  
+  .signup_inputGroup__iUdEy label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-inputGroupLabel-color);
+    margin-bottom: 5px;
+  }
+  
+  .signup_inputGroup__iUdEy input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+  }
+  
+  .signup_submitButton__7Bofa {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  .signup_submitButton__7Bofa:hover {
+    background-color: #0056b3;
+  }
+  .signup_idenButtonContainer__mfDr_ {
+    display: flex; /* 가로로 배치 */
+    justify-content: space-between; /* 버튼 간의 간격을 자동으로 설정 */
+    align-items: center; /* 수직 정렬을 가운데로 설정 */
+  }
+
+  .signup_idenButton__M3yIl {
+      width: 48%; /* 버튼의 너비를 조정해서 간격을 조금 두기 */
+      padding: 10px;
+      margin:1%;
+      background-color: #DDDDDD;
+      color: black;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s;
+
+  }
+  
+  .signup_idenButton__M3yIl:hover {
+    background-color: #0056b3;
+    color: white;
+  }
+
+  .signup_loginText__xi0tW {
+    font-size: 14px;
+    color: #666;
+    margin-top: 15px;
+  }
+  
+  .signup_loginLink__kP0dB {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  
+  .signup_loginLink__kP0dB:hover {
+    text-decoration: underline;
+  } 
+  
+  .signup_socialLogin__iyeZP{
+    font-size: var(--text-sm);
+    line-height: var(--tw-leading, var(--text-sm--line-height));
+    margin-block: calc(var(--spacing) * 4);
+    text-align: center;
+    color : var(--text-socialLogin-color);
+  }
+  .signup_helpLogin__TjWIM, .signup_createAccount__HfFPc{
+    color : var(--text-help-login-color);
+  }
+  .signup_helpLogin__TjWIM:hover, .signup_createAccount__HfFPc:hover{
+    text-decoration-line: underline;
+  }
+  .signup_loginText__xi0tW{
+    color : var(--text-color);
+  }
+  .signup_projectName___eA_Q {
+    width: 30%;
+    overflow-y: scroll;
+    color: black;
+  }
+  
+  .signup_projectName___eA_Q::-webkit-scrollbar {
+    display: none;
+  }
+  .signup_projectListColor__LcRUq{
+    filter :var(--projectColor);
+  }

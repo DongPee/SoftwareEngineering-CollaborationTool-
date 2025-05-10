@@ -1,0 +1,26 @@
+{
+  "pages": {
+    "/frontend/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/frontend/layout.css",
+      "static/chunks/app/frontend/layout.js"
+    ],
+    "/frontend/projectList/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/frontend/projectList/page.css",
+      "static/chunks/app/frontend/projectList/page.js"
+    ],
+    "/api/auth/[...nextauth]/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/auth/[...nextauth]/route.js"
+    ],
+    "/frontend/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/frontend/page.js"
+    ]
+  }
+}
