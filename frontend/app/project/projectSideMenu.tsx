@@ -58,6 +58,7 @@ const Sidebar = ({ active, setActive, projectId, projectName, projectDesc}: Side
                       <span className="m-2">채팅</span>
                   </div>
                 </Link>
+                
             </nav>
         </div>
         

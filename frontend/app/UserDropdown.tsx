@@ -42,7 +42,7 @@ const UserDropdown = ({ onLogout, close }: Props) => {
         </div>
       </div>
       <div className="space-y-3">
-        <Link href="/frontend/profile">
+        <Link href="/profile">
           <button className="w-1/2 px-5 py-5 text-sm text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition rounded-xl">
             내 프로필
           </button>

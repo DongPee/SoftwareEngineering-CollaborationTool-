@@ -626,7 +626,7 @@ app.post('/api/createInviteLInk', async (req, res) => {
         await db.query("INSERT INTO invite_tokens (token, project_id, inviter_email) VALUES (?, ?, ?)", [token, projectId, inviterEmail]);
         
         res.json({
-        inviteUrl: `http://localhost:3000/invite/${token}`
+        inviteUrl: `http://43.203.124.34:3000/invite/${token}`
 });
 
     } catch (err) {
