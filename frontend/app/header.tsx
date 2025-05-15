@@ -3,6 +3,7 @@ import { AuthContext } from "./AuthContext";
 import Link from "next/link";
 import { getDarkMode, setDarkMode } from "./DarkState";
 import UserDropdown from "./UserDropdown";
+import styles from "./header.module.css";
 
 const Header = () => {
   const auth = useContext(AuthContext);
@@ -26,7 +27,9 @@ const Header = () => {
     <div className="header-wrapper  h-16 min-h-16">
       <header className="header">
         <Link href="/">
-          <button type="button" className="title-button">Ollert</button>
+          <button type="button" className="title-button">
+            Ollert
+          </button>
         </Link>
 
         <div className="right-box">
@@ -56,5 +59,3 @@ const Header = () => {
 };
 
 export default Header;
-
-

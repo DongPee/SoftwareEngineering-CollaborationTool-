@@ -17,33 +17,37 @@ body {
   --bg-color: #ffffff;
   --text-color: #333;
   --border-color: #d1d5db;
-  --chat-bg-color : #dddddd;
+  --chat-bg-color: #dddddd;
   --column-bg-color: rgb(234, 234, 234);
-  --column-box-shadow: rgba(0,0,0,1);
-  --card-bg-color : #fff;
-  --bg-login-color : #fafafa;
-  --text-socialLogin-color : #4a5565;
-  --text-help-login-color : #155dfc;
-  --text-inputGroupLabel-color : #555;
-  --summaryImages-filter : none;
-  --bg-mainPage-function : #f3f4f6;
+  --column-box-shadow: rgba(0, 0, 0, 1);
+  --card-bg-color: #fff;
+  --bg-login-color: #fafafa;
+  --text-socialLogin-color: #4a5565;
+  --text-help-login-color: #155dfc;
+  --text-inputGroupLabel-color: #555;
+  --summaryImages-filter: none;
+  --bg-mainPage-function: #f3f4f6;
+  --header-btn-bg-color: rgb(239, 239, 239);
+  --header-btn-bg-hover: #d9d9d9;
 }
 
 .dark-mode {
-  --bg-color: #444444;
-  --chat-bg-color : #666666;
+  --bg-color: #282828;
+  --chat-bg-color: #666666;
   --text-color: #ffffff;
-  --border-color: #dddddd;
+  --border-color: #8a8a8a;
   --column-bg-color: rgb(50, 50, 50);
-  --column-box-shadow: rgba(255,255,255,1);
-  --card-bg-color : #000;
-  --bg-login-color : #555555;
-  --text-socialLogin-color : #b5aa9a;
-  --text-help-login-color : #eaa203;
-  --text-inputGroupLabel-color : #ccc;
-  --summaryImages-filter : invert(1) brightness(2) contrast(0.47);
-  --projectColor : brightness(0.7) contrast(2);
-  --bg-mainPage-function : #504e4d;
+  --column-box-shadow: rgba(255, 255, 255, 1);
+  --card-bg-color: #000;
+  --bg-login-color: #323232;
+  --text-socialLogin-color: #b5aa9a;
+  --text-help-login-color: #ffae00;
+  --text-inputGroupLabel-color: #ccc;
+  --summaryImages-filter: invert(1) brightness(2) contrast(0.47);
+  --projectColor: brightness(0.7) contrast(2);
+  --bg-mainPage-function: #504e4d;
+  --header-btn-bg-color: #343434;
+  --header-btn-bg-hover: #4a4a4a;
 }
 
 /* 스크롤 */
@@ -95,59 +99,74 @@ body {
   border: none;
   cursor: pointer;
 }
+.darkMode-button,
+.profile-button,
+.login-button {
+  --btn-h: 40px; /* 기본 버튼 높이 */
+  height: var(--btn-h); /* 버튼 높이 고정 */
+  padding: 0 0.9rem; /* 좌우 패딩만 고정 */
+  font-size: calc(var(--btn-h) * 0.4); /* 버튼 높이의 50% */
+  line-height: 1; /* 텍스트가 버튼 중앙 정렬되도록 */
+  white-space: nowrap;
+  border-radius: 0.625rem; /* 10px */
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
 
+/* 색상/배경 */
 .darkMode-button,
 .profile-button {
-  background: rgb(255, 134, 53);
-  padding: 10px;
-  width: 80px;
-  min-height: 40px;
-  border-radius: 10px;
-  font-size: 1.2em;
+  background: var(--header-btn-bg-color);
   color: var(--text-color);
-  border: none;
-  cursor: pointer;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
 }
-
-.darkMode-button {
-  right: 100px;
-}
-.darkMode-button:hover {
-  background-color: #fe7411;
-}
-
-.profile-button {
-  right: 10px;
-}
-.profile-button:hover {
-  background-color: #fe7411;
-}
-
 .login-button {
-  background: rgb(255, 134, 53);
-  padding: 10px;
-  width: 80px;
-  min-height: 40px;
-  border-radius: 10px;
-  font-size: 1.2em;
+  background: var(--header-btn-bg-color);
   color: var(--text-color);
-  border: none;
-  cursor: pointer;
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-.login-button:hover {
-  background-color: #fe7411;
 }
 
-.login:hover {
-  background-color: #AAA;
-  cursor: pointer;
+/* 위치 */
+.darkMode-button {
+  right: 110px;
+}
+.profile-button,
+.login-button {
+  right: 30px;
+}
+
+/* 호버 */
+.darkMode-button:hover,
+.profile-button:hover,
+.login-button:hover {
+  background-color: var(--header-btn-bg-hover);
+}
+
+/* 반응형: 화면 너비에 따라 --btn-h 조정 */
+@media (max-width: 640px) {
+  /* 모바일 */
+  .darkMode-button,
+  .profile-button,
+  .login-button {
+    --btn-h: 33px; /* 모바일에선 버튼을 좀 작게 */
+  }
+  .darkMode-button {
+    right: 90px;
+  }
+  .profile-button,
+  .login-button {
+    right: 15px;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* 데스크탑 */
+  .darkMode-button,
+  .profile-button,
+  .login-button {
+    --btn-h: 40px; /* 데스크탑에선 버튼을 좀 더 크게 */
+  }
 }
 
 /* 보드, 컬럼 */
@@ -170,7 +189,8 @@ body {
 }
 
 /* 카드 */
-.card, .card-selected {
+.card,
+.card-selected {
   background: var(--card-bg-color);
   padding: 10px;
   border-radius: 6px;
@@ -181,19 +201,20 @@ body {
   background: rgb(50, 255, 47);
 }
 .card:hover {
-  background-color: #AAA;
+  background-color: #aaa;
   cursor: pointer;
 }
 
 /* 기타 */
 .summary-b {
   background: var(--bg-color);
-  color : var(--text-color);
+  color: var(--text-color);
 }
-.summary-top, .summary-middle {
+.summary-top,
+.summary-middle {
   border: 2px solid var(--border-color);
   background: var(--bg-color);
-  color : var(--text-color);
+  color: var(--text-color);
   border-radius: 8px;
 }
 .summary-middle {
@@ -210,12 +231,12 @@ body {
 .project-info {
   border-bottom: 2px solid var(--border-color);
   background: var(--bg-color);
-  color : var(--text-color);
+  color: var(--text-color);
 }
 .project-side-menu {
   border-right: 2px solid var(--border-color);
   background: var(--bg-color);
-  color : var(--text-color);
+  color: var(--text-color);
   overflow-y: auto;
   width: 240px;
   min-width: 120px;
@@ -248,7 +269,7 @@ body {
 /* 입력창, 모달 */
 input {
   background: var(--bg-color);
-  color : var(--text-color);
+  color: var(--text-color);
 }
 .modal {
   background-color: rgba(0, 0, 0, 0.75);
@@ -269,11 +290,11 @@ input {
 }
 .mainPage {
   background: var(--bg-color);
-  color : var(--text-color);
+  color: var(--text-color);
 }
 .mainPage-function {
   background: var(--bg-mainPage-function);
-  color : var(--text-color);
+  color: var(--text-color);
   padding: 20px;
   margin: 0px 20px;
 }
@@ -287,5 +308,5 @@ input {
 }
 .dragging {
   opacity: 0.5;
-  z-index: 1000; 
+  z-index: 1000;
 }

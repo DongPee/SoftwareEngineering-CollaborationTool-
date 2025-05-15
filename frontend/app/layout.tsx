@@ -1,13 +1,12 @@
 // src/app/layout.tsx
 "use client";
 
-import {AuthProvider } from "./AuthContext";
-import Header from "./header"
+import { AuthProvider } from "./AuthContext";
+import Header from "./header";
 import "./globals.css";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    
     <AuthProvider>
       <html lang="ko">
         <body>
@@ -18,4 +17,3 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     </AuthProvider>
   );
 }
-
