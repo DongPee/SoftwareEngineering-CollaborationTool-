@@ -1,7 +1,8 @@
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import type { Card } from "../cardContext";
 import CardModal from "./CardModal";
+import { CardContext } from '../cardContext';
 
 type BoardProps = {
   projectId : string | null;
@@ -11,6 +12,7 @@ type BoardProps = {
 
 const Summary = ({projectId}: BoardProps) => {
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+  const cardCon = useContext(CardContext);
 
   return (
     <div className="summary-b p-6 overflow-y-auto">

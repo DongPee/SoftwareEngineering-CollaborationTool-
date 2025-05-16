@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useContext} from "react";
 import { CardContext } from "../cardContext";
 import type { Card } from "../cardContext";
 import CardModal from "./CardModal";
+
 type BoardProps = {
   projectId : string | null;
   projectName : string | null;
@@ -99,8 +100,7 @@ const Calendar = ({projectId}: BoardProps) => {
   }, [editYear, editMonth]);
 
   const calendarDays = generateCalendar();
-  console.log(cardCon.columns);
-  console.log(cardCon.cards);
+
   return (
     <div
       ref={calendarRef}
