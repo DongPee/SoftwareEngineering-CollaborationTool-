@@ -28,7 +28,7 @@ export default function Project() {
   }, [auth?.isLoggedIn]);
   useEffect(() =>{
     cardCon.setProjectId(projectId);
-    console.log(projectId);
+    cardCon.fetchCardsByProject(projectId);
   }, [projectId]);
   return (
     <div className="allContent h-full">
