@@ -1,19 +1,25 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useContext} from "react";
+import { CardContext } from "../cardContext";
+import type { Card } from "../cardContext";
+import CardModal from "./CardModal";
 type BoardProps = {
   projectId : string | null;
   projectName : string | null;
   projectDesc : string | null;
 };
 
-const Calendar = ({}: BoardProps) => {
+const Calendar = ({projectId}: BoardProps) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [editYear, setEditYear] = useState(false);
   const [editMonth, setEditMonth] = useState(false);
   const [tempYear, setTempYear] = useState(currentDate.getFullYear());
   const [tempMonth, setTempMonth] = useState(currentDate.getMonth() + 1);
+  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+  
   const isScrolling = useRef(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const calendarRef = useRef<HTMLDivElement | null>(null);
+  const cardCon = useContext(CardContext);
 
   // 스크롤 이벤트 수동 등록 (preventDefault 작동 보장)
   useEffect(() => {
@@ -93,7 +99,8 @@ const Calendar = ({}: BoardProps) => {
   }, [editYear, editMonth]);
 
   const calendarDays = generateCalendar();
-
+  console.log(cardCon.columns);
+  console.log(cardCon.cards);
   return (
     <div
       ref={calendarRef}
@@ -157,6 +164,13 @@ const Calendar = ({}: BoardProps) => {
           </div>
         ))}
       </div>
+      {selectedCard && (
+        <CardModal
+          card={selectedCard}
+          setSelectedCard={setSelectedCard}
+          projectId={projectId}
+        />
+      )}
     </div>
   );
 };

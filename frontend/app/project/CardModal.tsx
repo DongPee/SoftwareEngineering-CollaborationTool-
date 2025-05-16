@@ -1,21 +1,13 @@
 import { useState, useEffect, useContext, useRef} from "react";
 import styles from "./CardModal.module.css";
-import type { Card } from "./projectBoard";
 import { showUsers } from "./addDeleteBoardCard";
 import { AuthContext } from "../AuthContext";
 import { io } from 'socket.io-client';
+import type { CardModalProps, Card} from "../cardContext";
 const socket = io('http://43.203.124.34:5001');
-type CardModalProps = {
-  card: Card;
-  onSave: (card: Card) => void;
-  onClose: () => void;
-  projectId: string | null;
-};
-
 export default function CardModal({
   card,
-  onSave,
-  onClose,
+  setSelectedCard,
   projectId,
 }: CardModalProps) {
   const [details, setDetails] = useState(card.details);
@@ -97,9 +89,8 @@ export default function CardModal({
       startDate,
       endDate,
     };
-    onSave(updatedCard);
     socket.emit('isModalChanged');
-    onClose();
+    setSelectedCard(null);
   };
   const fetchUsernames = async (isMounted : boolean) => {
     const options = await showUsers(projectId);
@@ -265,7 +256,7 @@ export default function CardModal({
   };
 
   return (
-    <div className={styles.modal} onClick={onClose}>
+    <div className={styles.modal} onClick={ () => setSelectedCard(null)}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <h2 className={styles.title}>{card.text}</h2>
 

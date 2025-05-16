@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext} from "react";
 import CardModal from "./CardModal";
 import { createColumn, deleteColumn, createCard, deleteCards, deleteCard } from "./addDeleteBoardCard";
 import { io } from 'socket.io-client';
+import { CardContext } from "../cardContext";
+import type { CardType, ColumnType, Card, Column} from "../cardContext";
 const socket = io('http://43.203.124.34:5001');
 
 type BoardProps = {
@@ -10,49 +12,12 @@ type BoardProps = {
   projectDesc: string | null;
 };
 
-export type Card = {
-  id: number;
-  text: string;
-  details: string;
-  assignee?: string;
-  startDate?: string;
-  endDate?: string;
-  columnId: number;
-};
-
-export type Column = {
-  id: number;
-  title: string;
-  cards: Card[];
-  newCardText: string;
-  addCardToggle: boolean;
-};
-interface Col {
-  id: number;
-  title: string;
-  position: number;
-  created_at: string;  // 또는 Date 타입으로 받을 수도 있습니다
-  project_id: number;
-}
-interface Ca {
-  id: number;
-  title: string;
-  description?: string | null;
-  due_date?: string | null;      // 또는 Date
-  position?: number | null;
-  created_at?: string | null;    // 또는 Date
-  column_id: number;
-  manager?: number | null;
-  startDate?: string | null;     // 또는 Date
-  endDate?: string | null;       // 또는 Date
-  card_desc?: string | null;
-}
 export default function Board({ projectId }: BoardProps) {
   const [columns, setColumns] = useState<Column[]>([]);
   const [addColumnToggle, setColumnToggle] = useState(false);
   const [newColumnTitle, setNewColumnTitle] = useState("");
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
-
+  const cardCon = useContext(CardContext);
   const fetchColumnsAndCards = async () => {
     if (!projectId) return;
     try {
@@ -68,7 +33,7 @@ export default function Board({ projectId }: BoardProps) {
 
       if (response.ok) {
         const loadedColumns: Column[] = await Promise.all(
-          data.columns.map(async (col: Col) => {
+          data.columns.map(async (col: ColumnType) => {
             const cardRes = await fetch("http://43.203.124.34:5001/api/showCard", {
               method: "POST",
               headers: {
@@ -81,7 +46,7 @@ export default function Board({ projectId }: BoardProps) {
 
             const cards = cardRes.ok && cardData.cards
               ? await Promise.all(
-                  cardData.cards.map(async (card: Ca) => {
+                  cardData.cards.map(async (card: CardType) => {
                     return {
                       id: card.id,
                       text: card.title,
@@ -102,6 +67,7 @@ export default function Board({ projectId }: BoardProps) {
         );
 
         setColumns(loadedColumns);
+        
       } else {
         console.error("컬럼 로드 실패:", data.error);
       }
@@ -116,6 +82,7 @@ export default function Board({ projectId }: BoardProps) {
 
   useEffect(() => {
     socket.on('isChanged', () => {
+      cardCon.fetchCardsByProject(projectId);
       fetchColumnsAndCards();
     });
     return () => {
@@ -140,16 +107,6 @@ export default function Board({ projectId }: BoardProps) {
     setNewColumnTitle(e.target.value);
   };
 
-  // 모달 저장
-  const handleDetailSave = (updatedCard: Card) => {
-    setColumns(columns.map(col => ({
-      ...col,
-      cards: col.cards.map(card => card.id === updatedCard.id ? updatedCard : card),
-    })));
-  };
-  
-
-  const closeModal = () => setSelectedCard(null);
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, card: Card) => {
     e.dataTransfer.setData("cardId", card.id.toString());
@@ -380,8 +337,7 @@ export default function Board({ projectId }: BoardProps) {
       {selectedCard && (
         <CardModal
           card={selectedCard}
-          onSave={handleDetailSave}
-          onClose={closeModal}
+          setSelectedCard={setSelectedCard}
           projectId={projectId}
         />
       )}

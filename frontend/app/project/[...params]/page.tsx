@@ -11,12 +11,13 @@ import Summary from "../projectSummary";
 import Calendar from "../projectCalender";
 import Chat from "../projectChat";
 import ProjectTimeline from "../projectTimeline";
+import { CardContext } from "../../cardContext";
 
 export default function Project() {
   const [active, setActive] = useState("summary");
   const router = useRouter();
-  const params = useParams(); // App Router용
-
+  const params = useParams();
+  const cardCon = useContext(CardContext);
   const [projectId, projectName, projectDesc] = params.params || [];
   const auth = useContext(AuthContext);
 
@@ -25,7 +26,10 @@ export default function Project() {
       router.push("/");
     }
   }, [auth?.isLoggedIn]);
-
+  useEffect(() =>{
+    cardCon.setProjectId(projectId);
+    console.log(projectId);
+  }, [projectId]);
   return (
     <div className="allContent h-full">
       <div>

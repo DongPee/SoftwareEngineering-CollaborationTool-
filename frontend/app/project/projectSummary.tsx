@@ -1,11 +1,17 @@
 import Image from "next/image";
+import { useState } from "react";
+import type { Card } from "../cardContext";
+import CardModal from "./CardModal";
+
 type BoardProps = {
   projectId : string | null;
   projectName : string | null;
   projectDesc : string | null;
 };
 
-const Summary = ({}: BoardProps) => {
+const Summary = ({projectId}: BoardProps) => {
+  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+
   return (
     <div className="summary-b p-6 overflow-y-auto">
       {/* 화면 크기에 따라 레이아웃 변경 */}
@@ -58,6 +64,13 @@ const Summary = ({}: BoardProps) => {
           </div>
         </div>
       </div>
+      {selectedCard && (
+        <CardModal
+          card={selectedCard}
+          setSelectedCard={setSelectedCard}
+          projectId={projectId}
+        />
+      )}
     </div>
   );
 };
