@@ -3,7 +3,7 @@ from flask_cors import CORS
 import spacy
 from openai import OpenAI
 client = OpenAI(
-  api_key=""
+  api_key="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"
 )
 app = Flask(__name__)
 
