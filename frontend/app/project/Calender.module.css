@@ -1,0 +1,87 @@
+.calendarWrapper {
+  width: 90%;
+  margin: auto;
+  user-select: none;
+  overflow-x: auto;
+  padding-bottom: 2rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.navButton {
+  background: #e5e7eb;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.navButton:hover {
+  background: #d1d5db;
+}
+
+.calendarTitle {
+  font-weight: bold;
+  font-size: 1.3rem;
+}
+
+.grid7 {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+}
+
+.dayLabel {
+  text-align: center;
+  font-weight: bold;
+  padding: 6px 0;
+  background: #f3f4f6;
+  border-bottom: 1px solid #d1d5db;
+}
+
+.calendarCell {
+  background: #fff;
+  min-height: 90px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  position: relative;
+  padding: 4px;
+  overflow: visible;
+}
+
+.dayNumber {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  text-align: left;
+  color: #4b5563;
+}
+
+.cardBar {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  height: 22px;
+  line-height: 22px;
+  background-color: #bfdbfe;
+  color: #1e3a8a;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.cardBar:hover {
+  background-color: #93c5fd;
+}

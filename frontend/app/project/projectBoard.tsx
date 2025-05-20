@@ -75,8 +75,17 @@ export default function Board({ projectId }: BoardProps) {
   };
 
   useEffect(() => {
+  const handleChange = () => {
+    cardCon.fetchCardsByProject(projectId);
     fetchColumnsAndCards();
-  }, [projectId]);
+  };
+
+  socket.on('isChanged', handleChange);
+
+  return () => {
+    socket.off('isChanged', handleChange);
+  };
+}, [projectId]);
 
   useEffect(() => {
     const handleChange = () => {
@@ -85,11 +94,8 @@ export default function Board({ projectId }: BoardProps) {
     };
 
     socket.on("isChanged", handleChange);
-
-    return () => {
-      socket.off('isChanged', handleChange);
-    };
-  }, [projectId]);
+    return () => socket.off("isChanged", handleChange);
+  }, [cardCon, projectId]);
 
   const handleCardClick = (card: Card) => setSelectedCard(card);
 
@@ -238,7 +244,6 @@ export default function Board({ projectId }: BoardProps) {
                           : col
                       )
                     );
-
                     socket.emit("isChanged");
                   });
                 }}

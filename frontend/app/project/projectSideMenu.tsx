@@ -26,7 +26,7 @@ const Sidebar = ({ active, setActive }: SidebarProps) => {
               active === "summary" ? "border-2 border-blue-400" : ""
             }`}
           >
-            <span className="m-2">🌐 요약</span>
+            <span className="m-2">🌐요약</span>
           </button>
 
           <button
@@ -35,7 +35,7 @@ const Sidebar = ({ active, setActive }: SidebarProps) => {
               active === "timeline" ? "border-2 border-blue-400" : ""
             }`}
           >
-            <span className="m-2">타임라인</span>
+            <span className="m-2">📅타임라인</span>
           </button>
 
           <button

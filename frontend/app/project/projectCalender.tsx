@@ -1,117 +1,86 @@
-// components/projectCalender.tsx
+'use client';
 import { useEffect, useState, useRef, useContext } from "react";
 import { CardContext } from "../cardContext";
 import type { Card } from "../cardContext";
 import CardModal from "./CardModal";
-import styles from "./Calendar.module.css";
+import styles from "./Calender.module.css";
 
-// 날짜 범위 계산 함수
-type BoardProps = {
-  projectId: string | null;
-  projectName: string | null;
-  projectDesc: string | null;
-};
-
-const Calendar = ({ projectId }: BoardProps) => {
+const Calendar = ({ projectId }: { projectId: string | null }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
-  const calendarRef = useRef<HTMLDivElement | null>(null);
   const cardCon = useContext(CardContext);
+  const calendarRef = useRef<HTMLDivElement | null>(null);
 
-  const getMonthCalendar = () => {
+  const handlePrevMonth = () => {
+    setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+  };
+
+  const generateCalendar = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-    const days: (Date | null)[] = Array(firstDay).fill(null);
-    for (let i = 1; i <= daysInMonth; i++) {
-      days.push(new Date(year, month, i));
-    }
-    while (days.length % 7 !== 0) {
-      days.push(null);
-    }
-
-    const weeks: (Date | null)[][] = [];
-    for (let i = 0; i < days.length; i += 7) {
-      weeks.push(days.slice(i, i + 7));
-    }
-    return weeks;
+    const days: (number | null)[] = Array(firstDay).fill(null).concat(
+      Array.from({ length: daysInMonth }, (_, i) => i + 1)
+    );
+    return days;
   };
 
-  const isSameDay = (d1: Date, d2: Date) => d1.toDateString() === d2.toDateString();
-  const isBetween = (date: Date, start?: string, end?: string) => {
-    if (!start || !end) return false;
-    const d = date.getTime();
-    const s = new Date(start).getTime();
-    const e = new Date(end).getTime();
-    return d >= s && d <= e;
+  const getCardForDay = (day: number): Card[] => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    return cardCon.cards.filter((card) => {
+      const start = card.startDate ? new Date(card.startDate) : null;
+      const end = card.endDate ? new Date(card.endDate) : null;
+      if (!start || !end) return false;
+      const date = new Date(year, month, day);
+      return start <= date && date <= end;
+    });
   };
 
-  const calendarWeeks = getMonthCalendar();
-
-  const getCardSpansForWeek = (week: (Date | null)[]) => {
-    return cardCon.cards.map((card) => {
-      if (!card.startDate || !card.endDate) return null;
-
-      const start = new Date(card.startDate);
-      const end = new Date(card.endDate);
-
-      const startIdx = week.findIndex(day => day && isSameDay(day, start));
-      const endIdx = week.findIndex(day => day && isSameDay(day, end));
-
-      let offset = -1;
-      let length = 0;
-      for (let i = 0; i < 7; i++) {
-        const date = week[i];
-        if (date && isBetween(date, card.startDate, card.endDate)) {
-          if (offset === -1) offset = i;
-          length++;
-        }
-      }
-      return offset !== -1 ? { card, offset, length } : null;
-    }).filter(Boolean) as { card: Card; offset: number; length: number }[];
-  };
+  const calendarDays = generateCalendar();
 
   return (
-    <div ref={calendarRef} className="calendar-wrapper p-4" style={{ width: "90%", margin: "auto" }}>
-      <h2 className="text-center text-lg font-bold mb-4">
-        {currentDate.getFullYear()}년 {currentDate.getMonth() + 1}월
-      </h2>
+    <div ref={calendarRef} className={styles.calendarWrapper}>
+      <div className={styles.header}>
+        <button onClick={handlePrevMonth} className={styles.navButton}>← 이전</button>
+        <h2 className={styles.calendarTitle}>
+          {currentDate.getFullYear()}년 {currentDate.getMonth() + 1}월
+        </h2>
+        <button onClick={handleNextMonth} className={styles.navButton}>다음 →</button>
+      </div>
 
-      {calendarWeeks.map((week, weekIdx) => {
-        const spans = getCardSpansForWeek(week);
-        return (
-          <div key={weekIdx} className="grid grid-cols-7 gap-1 relative h-20 border-t">
-            {week.map((day, idx) => (
-              <div key={idx} className="border text-xs p-1 relative h-full">
-                {day ? day.getDate() : ""}
-              </div>
-            ))}
-            {spans.map(({ card, offset, length }, i) => (
-              <div
-                key={i}
-                className={styles.barWrapper}
-                style={{ gridColumnStart: offset + 1, gridColumnEnd: `span ${length}` }}
-              >
-                <div
-                  className={styles.cardBar}
-                  onClick={() => setSelectedCard(card)}
-                >
-                  {card.text}
-                </div>
-              </div>
-            ))}
+      <div className={styles.grid7}>
+        {["일", "월", "화", "수", "목", "금", "토"].map((d, i) => (
+          <div key={i} className={styles.dayLabel}>{d}</div>
+        ))}
+        {calendarDays.map((day, idx) => (
+          <div key={idx} className={styles.calendarCell}>
+            {day && (
+              <>
+                <div className={styles.dayNumber}>{day}</div>
+                {getCardForDay(day).map((card, i) => (
+                  <div
+                    key={i}
+                    className={styles.cardBar}
+                    style={{ top: `${30 + i * 24}px` }}
+                    onClick={() => setSelectedCard(card)}
+                  >
+                    {card.text}
+                  </div>
+                ))}
+              </>
+            )}
           </div>
-        );
-      })}
+        ))}
+      </div>
 
       {selectedCard && (
-        <CardModal
-          card={selectedCard}
-          setSelectedCard={setSelectedCard}
-          projectId={projectId}
-        />
+        <CardModal card={selectedCard} setSelectedCard={setSelectedCard} projectId={projectId} />
       )}
     </div>
   );

@@ -1,242 +1,190 @@
-import { useState, useEffect, useContext, useRef} from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import styles from "./CardModal.module.css";
 import { showUsers } from "./addDeleteBoardCard";
 import { AuthContext } from "../AuthContext";
 import { io } from 'socket.io-client';
-import type { CardModalProps, Card} from "../cardContext";
+import type { CardModalProps, Card } from "../cardContext";
+
 const socket = io('http://43.203.124.34:5001');
+
 export default function CardModal({
   card,
   setSelectedCard,
   projectId,
 }: CardModalProps) {
   const [details, setDetails] = useState(card.details);
-  const [assignee, setAssignee] = useState<{ assignee : string; id : number; }>();
+  const [assignee, setAssignee] = useState<{ assignee: string; id: number }>();
   const [startDate, setStartDate] = useState(card.startDate || "");
   const [endDate, setEndDate] = useState(card.endDate || "");
-  const [comments, setComments] = useState<{ text: string; author: string; author_email : string; id : number}[]>([]); // 댓글 내용과 작성자 정보를 관리
+  const [comments, setComments] = useState<{ text: string; author: string; author_email: string; id: number }[]>([]);
   const [newComment, setNewComment] = useState("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingText, setEditingText] = useState("");
-  const [assigneeOptions, setAssigneeOptions] = useState<{ assignee : string; id : number; }[]>([]);
+  const [assigneeOptions, setAssigneeOptions] = useState<{ assignee: string; id: number }[]>([]);
   const auth = useContext(AuthContext);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+
   const handleSave = async () => {
     try {
-      const response = await fetch("http://43.203.124.34:5001/api/setCardManager", {
+      await fetch("http://43.203.124.34:5001/api/setCardManager", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           cardId: card.id,
-          assignee: assignee !== undefined ? assignee.id : null,
+          assignee: assignee?.id ?? null,
         }),
       });
-
-      if (!response.ok) {
-        throw new Error("날짜 설정 실패");
-      }
     } catch (error) {
-      console.error("댓글 추가 오류:", error);
+      console.error("담당자 설정 오류:", error);
     }
-    
+
     try {
-      const response = await fetch("http://43.203.124.34:5001/api/setCard_desc", {
+      await fetch("http://43.203.124.34:5001/api/setCard_desc", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           cardId: card.id,
-          card_desc : details,
+          card_desc: details,
         }),
       });
-
-      if (!response.ok) {
-        throw new Error("날짜 설정 실패");
-      }
     } catch (error) {
-      console.error("댓글 추가 오류:", error);
+      console.error("설명 설정 오류:", error);
     }
-    if (!card.id) {
-      console.error("날짜 또는 card.id가 없음");
-      return;
-    }
+
     try {
-      const response = await fetch("http://43.203.124.34:5001/api/setStartEndDate", {
+      await fetch("http://43.203.124.34:5001/api/setStartEndDate", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           cardId: card.id,
-          startDate: startDate === "" ? null : startDate,
-          endDate: endDate === "" ? null : endDate,
-        })
+          startDate: startDate || null,
+          endDate: endDate || null,
+        }),
       });
-
-      if (!response.ok) {
-        throw new Error("날짜 설정 실패");
-      }
     } catch (error) {
-      console.error("댓글 추가 오류:", error);
+      console.error("날짜 설정 오류:", error);
     }
-  
-    const updatedCard: Card = {
-      ...card,
-      details,
-      startDate,
-      endDate,
-    };
-    socket.emit('isModalChanged');
+
+    socket.emit("isModalChanged");
     setSelectedCard(null);
   };
-  const fetchUsernames = async (isMounted : boolean) => {
+
+  const fetchUsernames = async () => {
     const options = await showUsers(projectId);
-    const userList = options.map((user: { username: string, id: number}) => ({assignee : user.username, id : user.id}));
-    if(isMounted){setAssigneeOptions(userList);}
+    const userList = options.map((user: { username: string; id: number }) => ({
+      assignee: user.username,
+      id: user.id,
+    }));
+    setAssigneeOptions(userList);
   };
-  const fetchCardManagerStartEndDate = async (isMounted : boolean) =>{
+
+  const fetchCardManagerStartEndDate = async () => {
     try {
       const response = await fetch("http://43.203.124.34:5001/api/getDescCardManagerStartEndDate", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          cardId: card.id,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cardId: card.id }),
       });
-      
+
       if (response.ok) {
         const data = await response.json();
-        if(isMounted){
-          setDetails(data.card_desc ?? "");
-          setAssignee({assignee : data.username, id : data.manager});
-          setStartDate(data.startDate ? data.startDate.slice(0, 10) : "");
-          setEndDate(data.endDate ? data.endDate.slice(0, 10) : "");
-        }
-      } else {
-        console.error("댓글 불러오기 실패");
+        setDetails(data.card_desc ?? "");
+        setAssignee({ assignee: data.username, id: data.manager });
+        setStartDate(data.startDate ? data.startDate.slice(0, 10) : "");
+        setEndDate(data.endDate ? data.endDate.slice(0, 10) : "");
       }
     } catch (error) {
-      console.error("댓글 불러오기 오류:", error);
+      console.error("카드 정보 불러오기 오류:", error);
     }
   };
-  const fetchComments = async (isMounted : boolean) => {
+
+  const fetchComments = async () => {
     try {
       const response = await fetch("http://43.203.124.34:5001/api/getComments", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          cardId : card.id,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cardId: card.id }),
       });
-      console.log(response);
+
       if (response.ok) {
-        const data = await response.json(); 
-        if(isMounted){setComments(data);}
-      } else {
-        console.error("댓글 불러오기 실패");
+        const data = await response.json();
+        setComments(data);
       }
     } catch (error) {
       console.error("댓글 불러오기 오류:", error);
     }
   };
+
   useEffect(() => {
-    let isMounted = true;
     if (!card?.id) return;
-    fetchCardManagerStartEndDate(isMounted);
-    fetchUsernames(isMounted);
-    fetchComments(isMounted);
-    return () => {
-      isMounted = false;
-    };
+    fetchCardManagerStartEndDate();
+    fetchUsernames();
+    fetchComments();
   }, [card.id]);
+
   useEffect(() => {
-    let isMounted = true;
     const handleModalChange = () => {
       if (!card?.id) return;
-      fetchCardManagerStartEndDate(isMounted);
-      fetchUsernames(isMounted);
-      fetchComments(isMounted);
+      fetchCardManagerStartEndDate();
+      fetchUsernames();
+      fetchComments();
     };
-    socket.on('isModalChanged', handleModalChange);
+    socket.on("isModalChanged", handleModalChange);
     return () => {
-      isMounted = false;
-      socket.off('isModalChanged', handleModalChange);
+      socket.off("isModalChanged", handleModalChange);
     };
   }, [card?.id]);
+
   useEffect(() => {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [comments]);
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [comments]);
+
   const handleAddComment = async () => {
-    if (newComment.trim()) {
-      const author = localStorage.getItem("email") || auth?.email;
-      if (!author) {
-        console.error("작성자 이메일이 없습니다.");
-        return;
-      }
-      try {
-        const response = await fetch("http://43.203.124.34:5001/api/addComment", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            cardId: card.id,
-            content: newComment.trim(),
-            email : author,
-          }),
-        });
+    if (!newComment.trim()) return;
+    const author = localStorage.getItem("email") || auth?.email;
+    if (!author) return;
 
-        if (!response.ok) {
-          throw new Error("댓글 추가 실패");
-        }
+    try {
+      const response = await fetch("http://43.203.124.34:5001/api/addComment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cardId: card.id,
+          content: newComment.trim(),
+          email: author,
+        }),
+      });
 
-        const data = await response.json(); 
-        const newCommentData = {
+      if (response.ok) {
+        const data = await response.json();
+        setComments((prev) => [...prev, {
           text: newComment.trim(),
           author: data.author,
-          author_email:data.author_email,
-          id : data.id,
-        };
-
-        console.log("댓글 추가 성공:", data);
-
-        setComments((prevComments) => [...prevComments, newCommentData]);
-        setNewComment(""); 
-        socket.emit('isModalChanged');
-      } catch (error) {
-        console.error("댓글 추가 오류:", error);
+          author_email: data.author_email,
+          id: data.id,
+        }]);
+        setNewComment("");
+        socket.emit("isModalChanged");
       }
+    } catch (error) {
+      console.error("댓글 추가 오류:", error);
     }
   };
 
   const handleDeleteComment = async (index: number) => {
     const commentId = comments[index].id;
-    if (commentId) {
-      try {
-        const response = await fetch("http://43.203.124.34:5001/api/deleteComment", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ commentId }),
-        });
-        const data = await response.json();
-        if (response.ok) {
-          setComments((prevComments) => prevComments.filter((_, i) => i !== index));
-          socket.emit('isModalChanged');
-        } else {
-          console.error("댓글 삭제 실패:", data.error);
-        }
-      } catch (err) {
-        console.error("서버 오류 발생:", err);
+    try {
+      const response = await fetch("http://43.203.124.34:5001/api/deleteComment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ commentId }),
+      });
+      if (response.ok) {
+        setComments((prev) => prev.filter((_, i) => i !== index));
+        socket.emit("isModalChanged");
       }
+    } catch (error) {
+      console.error("댓글 삭제 오류:", error);
     }
   };
 
@@ -256,7 +204,7 @@ export default function CardModal({
   };
 
   return (
-    <div className={styles.modal} onClick={ () => setSelectedCard(null)}>
+    <div className={styles.modal} onClick={() => setSelectedCard(null)}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <h2 className={styles.title}>{card.text}</h2>
 
@@ -277,15 +225,15 @@ export default function CardModal({
             const selectedUser = assigneeOptions.find(user => user.id === selectedId);
             setAssignee(selectedUser);
           }}
-          >
+        >
           <option value="">선택 안 함</option>
-          {assigneeOptions.map((option) => (
+          {assigneeOptions.map(option => (
             <option key={option.id} value={option.id}>
               {option.assignee}
             </option>
           ))}
         </select>
-        
+
         <label className={styles.label}>시작일</label>
         <input
           type="date"
@@ -302,51 +250,40 @@ export default function CardModal({
           onChange={(e) => setEndDate(e.target.value)}
         />
 
-          {comments.length > 0 && (
+        {comments.length > 0 && (
           <>
             <label className={styles.label}>댓글</label>
             <div className={styles.commentList}>
-            {comments.map((comment, index) => {
-              const currentUser = localStorage.getItem("email") || auth?.email;
-              const isAuthor = comment.author_email === currentUser;
-              return (
-                <div key={index} className={styles.commentItem}>
-                  {editingIndex === index ? (
-                    <div className={styles.commentInputWrap}>
-                      <input
-                        value={editingText}
-                        onChange={(e) => setEditingText(e.target.value)}
-                        className={`${styles.input} ${styles.commentInput}`}
-                      />
-                      <button onClick={handleSaveEditedComment} className={styles.addCommentBtn}>
-                        저장
-                      </button>
-                    </div>
-                  ) : (
-                    <div className={styles.commentInputWrap}>
-                      <span style={{ flexGrow: 1 }}>
-                        {comment.text} - <strong>{comment.author}</strong>
-                      </span>
+              {comments.map((comment, index) => {
+                const currentUser = localStorage.getItem("email") || auth?.email;
+                const isAuthor = comment.author_email === currentUser;
 
-                      {isAuthor && (
-                        <>
-                          <button onClick={() => handleEditComment(index)} className={styles.addCommentBtn}>
-                            수정
-                          </button>
-                          <button
-                            onClick={() => handleDeleteComment(index)}
-                            className={`${styles.addCommentBtn} ${styles.closeBtn}`}
-                          >
-                            삭제
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-            <div ref={bottomRef} />
+                return (
+                  <div key={index} className={styles.commentItem}>
+                    {editingIndex === index ? (
+                      <div className={styles.commentInputWrap}>
+                        <input
+                          value={editingText}
+                          onChange={(e) => setEditingText(e.target.value)}
+                          className={`${styles.input} ${styles.commentInput}`}
+                        />
+                        <button onClick={handleSaveEditedComment} className={styles.addCommentBtn}>저장</button>
+                      </div>
+                    ) : (
+                      <div className={styles.commentInputWrap}>
+                        <span style={{ flexGrow: 1 }}>{comment.text} - <strong>{comment.author}</strong></span>
+                        {isAuthor && (
+                          <>
+                            <button onClick={() => handleEditComment(index)} className={styles.addCommentBtn}>수정</button>
+                            <button onClick={() => handleDeleteComment(index)} className={`${styles.addCommentBtn} ${styles.closeBtn}`}>삭제</button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              <div ref={bottomRef} />
             </div>
           </>
         )}
@@ -358,14 +295,10 @@ export default function CardModal({
             placeholder="댓글 입력"
             className={`${styles.input} ${styles.commentInput}`}
           />
-          <button onClick={handleAddComment} className={styles.addCommentBtn}>
-            추가
-          </button>
+          <button onClick={handleAddComment} className={styles.addCommentBtn}>추가</button>
         </div>
 
-        <button onClick={handleSave} className={styles.button}>
-          완료
-        </button>
+        <button onClick={handleSave} className={styles.button}>완료</button>
       </div>
     </div>
   );

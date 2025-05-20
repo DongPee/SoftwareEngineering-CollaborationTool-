@@ -1,0 +1,65 @@
+.timelineWrapper {
+  padding: 1rem;
+  overflow-x: auto;
+  width: 100%;
+}
+
+.timelineTitle {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.timelineHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.taskColumn {
+  width: 150px;
+  min-width: 150px;
+  font-weight: bold;
+}
+
+.dateRow {
+  display: flex;
+  flex-grow: 1;
+}
+
+.dateCell {
+  width: 28px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.timelineBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.taskRow {
+  display: flex;
+}
+
+.dateBarRow {
+  position: relative;
+  flex-grow: 1;
+}
+
+.bar {
+  position: absolute;
+  height: 1.5rem;
+  background-color: #93c5fd;
+  color: #1e3a8a;
+  border-radius: 4px;
+  text-align: center;
+  line-height: 1.5rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

@@ -54,7 +54,7 @@ const Top = ({ projectName, projectId }: BoardProps) => {
         <div className="m-3 flex items-center">
           <div>
             <h3 className="font-bold mb-2">프로젝트</h3>
-            <h1 className="text-2xl inline-block mr-2">{projectName}</h1>
+            <h1 className="text-2xl inline-block mr-2">{decodeURIComponent(projectName)}</h1>
           </div>
           <button
             id="projectNameButton"

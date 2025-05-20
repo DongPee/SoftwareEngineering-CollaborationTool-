@@ -1,58 +1,76 @@
-// components/projectTimeline.tsx
 'use client';
-import { useEffect, useState, useContext} from 'react';
-import type { Card } from "../cardContext";
-import CardModal from "./CardModal";
-import { CardContext } from '../cardContext';
-function ProjectTimeline({
-  projectId,
-}: {
+
+import { useContext, useEffect, useState } from 'react';
+import styles from './Timeline.module.css';
+import { CardContext, Card } from '../cardContext';
+import CardModal from './CardModal';
+
+type Props = {
   projectId: string | null;
-}) {
-  const [tasks, setTasks] = useState<{id : number, name : string, start : string, end : string}[]>([]);
+};
+
+function ProjectTimeline({ projectId }: Props) {
+  const { cards } = useContext(CardContext);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
-  const cardCon = useContext(CardContext);
-  useEffect(() => {
-    const dummyTasks = [
-      { id: 1, name: '기획안 작성', start: '2025-05-01', end: '2025-05-05' },
-      {
-        id: 2,
-        name: '디자인 시안 제작',
-        start: '2025-05-06',
-        end: '2025-05-10',
-      },
-      { id: 3, name: '프론트 개발', start: '2025-05-11', end: '2025-05-20' },
-    ];
-    setTasks(dummyTasks);
-  }, [projectId]);
+
+  // 60일 범위 날짜 생성 (오늘 기준 -30일 ~ +30일)
+  const today = new Date();
+  const start = new Date(today);
+  start.setDate(start.getDate() - 30);
+  const dateRange = Array.from({ length: 60 }, (_, i) => {
+    const date = new Date(start);
+    date.setDate(date.getDate() + i);
+    return date;
+  });
+
+  const formatDate = (date: Date) => date.toISOString().split('T')[0];
+
+  const getBarStyle = (startDate: string, endDate: string) => {
+    const startIdx = dateRange.findIndex(
+      (d) => formatDate(d) === startDate.slice(0, 10)
+    );
+    const endIdx = dateRange.findIndex(
+      (d) => formatDate(d) === endDate.slice(0, 10)
+    );
+    const left = startIdx * 28;
+    const width = (endIdx - startIdx + 1) * 28;
+    return { left: `${left}px`, width: `${width}px` };
+  };
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">📅 타임라인</h2>
-      <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse border border-gray-300">
-          <thead>
-            <tr>
-              <th className="border border-gray-300 px-4 py-2">업무</th>
-              <th className="border border-gray-300 px-4 py-2">시작일</th>
-              <th className="border border-gray-300 px-4 py-2">종료일</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tasks.map((task) => (
-              <tr key={task.id}>
-                <td className="border border-gray-300 px-4 py-2">
-                  {task.name}
-                </td>
-                <td className="border border-gray-300 px-4 py-2">
-                  {task.start}
-                </td>
-                <td className="border border-gray-300 px-4 py-2">{task.end}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className={styles.timelineWrapper}>
+      <h2 className={styles.timelineTitle}>타임라인</h2>
+
+      <div className={styles.timelineHeader}>
+        <div className={styles.taskColumn}>업무</div>
+        <div className={styles.dateRow}>
+          {dateRange.map((d, i) => (
+            <div key={i} className={styles.dateCell}>
+              {d.getDate()}
+            </div>
+          ))}
+        </div>
       </div>
+
+      <div className={styles.timelineBody}>
+        {cards
+          .filter((card) => card.startDate && card.endDate)
+          .map((card) => (
+            <div key={card.id} className={styles.taskRow}>
+              <div className={styles.taskColumn}>{card.text}</div>
+              <div className={styles.dateBarRow}>
+                <div
+                  className={styles.bar}
+                  style={getBarStyle(card.startDate!, card.endDate!)}
+                  onClick={() => setSelectedCard(card)}
+                >
+                  {card.text}
+                </div>
+              </div>
+            </div>
+          ))}
+      </div>
+
       {selectedCard && (
         <CardModal
           card={selectedCard}
