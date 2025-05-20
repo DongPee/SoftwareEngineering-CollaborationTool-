@@ -1,0 +1,70 @@
+.calendarWrapper {
+  width: 80%;
+  margin: auto;
+  user-select: none;
+  overflow: hidden;
+}
+
+.calendarTitle {
+  text-align: center;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.dateInput {
+  width: 60px;
+  text-align: center;
+}
+
+.grid7 {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+}
+
+.dayLabel {
+  text-align: center;
+  font-weight: bold;
+  padding: 4px 0;
+}
+
+.calendarCell {
+  min-height: 60px;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  position: relative;
+  padding: 4px;
+  overflow: hidden;
+}
+
+.dayNumber {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.cardBar {
+  background-color: #93c5fd;
+  color: #1e3a8a;
+  border-radius: 4px;
+  padding: 2px 4px;
+  font-size: 0.75rem;
+  max-width: 90%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.barWrapper {
+  position: absolute;
+  top: 20px;
+  height: 22px;
+  padding: 0 4px;
+  z-index: 10;
+  width: 100%;
+}

@@ -1,170 +1,111 @@
-import { useEffect, useState, useRef, useContext} from "react";
+// components/projectCalender.tsx
+import { useEffect, useState, useRef, useContext } from "react";
 import { CardContext } from "../cardContext";
 import type { Card } from "../cardContext";
 import CardModal from "./CardModal";
+import styles from "./Calendar.module.css";
 
+// 날짜 범위 계산 함수
 type BoardProps = {
-  projectId : string | null;
-  projectName : string | null;
-  projectDesc : string | null;
+  projectId: string | null;
+  projectName: string | null;
+  projectDesc: string | null;
 };
 
-const Calendar = ({projectId}: BoardProps) => {
+const Calendar = ({ projectId }: BoardProps) => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [editYear, setEditYear] = useState(false);
-  const [editMonth, setEditMonth] = useState(false);
-  const [tempYear, setTempYear] = useState(currentDate.getFullYear());
-  const [tempMonth, setTempMonth] = useState(currentDate.getMonth() + 1);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
-  
-  const isScrolling = useRef(false);
-  const inputRef = useRef<HTMLInputElement | null>(null);
   const calendarRef = useRef<HTMLDivElement | null>(null);
   const cardCon = useContext(CardContext);
 
-  // 스크롤 이벤트 수동 등록 (preventDefault 작동 보장)
-  useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      if (!calendarRef.current || !calendarRef.current.contains(e.target as Node)) return;
-
-      e.preventDefault();
-
-      if (isScrolling.current) return;
-      isScrolling.current = true;
-
-      const deltaY = e.deltaY;
-      if (deltaY < 0) {
-        setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
-      } else {
-        setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
-      }
-
-      setTimeout(() => {
-        isScrolling.current = false;
-      }, 2000 / Math.abs(deltaY));
-    };
-
-    const calendarElement = calendarRef.current;
-    if (calendarElement) {
-      calendarElement.addEventListener("wheel", handleWheel, { passive: false });
-    }
-
-    return () => {
-      if (calendarElement) {
-        calendarElement.removeEventListener("wheel", handleWheel);
-      }
-    };
-  }, []);
-
-  const generateCalendar = () => {
+  const getMonthCalendar = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const days = [];
 
-    for (let i = 0; i < firstDay; i++) {
+    const days: (Date | null)[] = Array(firstDay).fill(null);
+    for (let i = 1; i <= daysInMonth; i++) {
+      days.push(new Date(year, month, i));
+    }
+    while (days.length % 7 !== 0) {
       days.push(null);
     }
-    for (let i = 1; i <= daysInMonth; i++) {
-      days.push(i);
+
+    const weeks: (Date | null)[][] = [];
+    for (let i = 0; i < days.length; i += 7) {
+      weeks.push(days.slice(i, i + 7));
     }
-
-    return days;
+    return weeks;
   };
 
-  const applyDateChange = () => {
-    const newMonth = Math.min(Math.max(tempMonth, 1), 12);
-    const newYear = tempYear;
-    setCurrentDate(new Date(newYear, newMonth - 1, 1));
-    setEditYear(false);
-    setEditMonth(false);
+  const isSameDay = (d1: Date, d2: Date) => d1.toDateString() === d2.toDateString();
+  const isBetween = (date: Date, start?: string, end?: string) => {
+    if (!start || !end) return false;
+    const d = date.getTime();
+    const s = new Date(start).getTime();
+    const e = new Date(end).getTime();
+    return d >= s && d <= e;
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      applyDateChange();
-    }
-  };
+  const calendarWeeks = getMonthCalendar();
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (inputRef.current && !inputRef.current.contains(e.target as Node)) {
-        if (editYear || editMonth) {
-          applyDateChange();
+  const getCardSpansForWeek = (week: (Date | null)[]) => {
+    return cardCon.cards.map((card) => {
+      if (!card.startDate || !card.endDate) return null;
+
+      const start = new Date(card.startDate);
+      const end = new Date(card.endDate);
+
+      const startIdx = week.findIndex(day => day && isSameDay(day, start));
+      const endIdx = week.findIndex(day => day && isSameDay(day, end));
+
+      let offset = -1;
+      let length = 0;
+      for (let i = 0; i < 7; i++) {
+        const date = week[i];
+        if (date && isBetween(date, card.startDate, card.endDate)) {
+          if (offset === -1) offset = i;
+          length++;
         }
       }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [editYear, editMonth]);
+      return offset !== -1 ? { card, offset, length } : null;
+    }).filter(Boolean) as { card: Card; offset: number; length: number }[];
+  };
 
-  const calendarDays = generateCalendar();
-  console.log(cardCon.columns);
-  console.log(cardCon.cards);
   return (
-    <div
-      ref={calendarRef}
-      className="calendar-wrapper"
-      style={{ width: "80%", margin: "auto", userSelect: "none", overflow: "hidden" }}
-    >
-      <h2 style={{ textAlign: "center", marginBottom: "10px" }}>
-        {editYear ? (
-          <input
-            ref={inputRef}
-            type="number"
-            value={tempYear}
-            onChange={e => setTempYear(Number(e.target.value))}
-            onKeyDown={handleKeyDown}
-            style={{ width: "80px", textAlign: "center" }}
-            autoFocus
-          />
-        ) : (
-          <span
-            style={{ cursor: "pointer" }}
-            onClick={() => {
-              setEditYear(true);
-              setTempYear(currentDate.getFullYear());
-            }}
-          >
-            {currentDate.getFullYear()}년{" "}
-          </span>
-        )}
-
-        {editMonth ? (
-          <input
-            ref={inputRef}
-            type="number"
-            value={tempMonth}
-            onChange={e => setTempMonth(Number(e.target.value))}
-            onKeyDown={handleKeyDown}
-            style={{ width: "50px", textAlign: "center" }}
-            autoFocus
-          />
-        ) : (
-          <span
-            style={{ cursor: "pointer" }}
-            onClick={() => {
-              setEditMonth(true);
-              setTempMonth(currentDate.getMonth() + 1);
-            }}
-          >
-            {currentDate.getMonth() + 1}월
-          </span>
-        )}
+    <div ref={calendarRef} className="calendar-wrapper p-4" style={{ width: "90%", margin: "auto" }}>
+      <h2 className="text-center text-lg font-bold mb-4">
+        {currentDate.getFullYear()}년 {currentDate.getMonth() + 1}월
       </h2>
 
-      <div className="grid grid-cols-7 gap-1">
-        {["일", "월", "화", "수", "목", "금", "토"].map((d, i) => (
-          <div key={i} className="text-center font-bold">{d}</div>
-        ))}
-        {calendarDays.map((day, idx) => (
-          <div key={idx} className="min-h-15 text-center border border-gray-300 rounded-sm
-">
-            {day}
+      {calendarWeeks.map((week, weekIdx) => {
+        const spans = getCardSpansForWeek(week);
+        return (
+          <div key={weekIdx} className="grid grid-cols-7 gap-1 relative h-20 border-t">
+            {week.map((day, idx) => (
+              <div key={idx} className="border text-xs p-1 relative h-full">
+                {day ? day.getDate() : ""}
+              </div>
+            ))}
+            {spans.map(({ card, offset, length }, i) => (
+              <div
+                key={i}
+                className={styles.barWrapper}
+                style={{ gridColumnStart: offset + 1, gridColumnEnd: `span ${length}` }}
+              >
+                <div
+                  className={styles.cardBar}
+                  onClick={() => setSelectedCard(card)}
+                >
+                  {card.text}
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        );
+      })}
+
       {selectedCard && (
         <CardModal
           card={selectedCard}
