@@ -88,14 +88,11 @@ export default function Board({ projectId }: BoardProps) {
 }, [projectId]);
 
   useEffect(() => {
-    const handleChange = () => {
-      cardCon.fetchCardsByProject(projectId);
-      fetchColumnsAndCards();
-    };
-
-    socket.on("isChanged", handleChange);
-    return () => socket.off("isChanged", handleChange);
-  }, [cardCon, projectId]);
+  if (projectId) {
+    cardCon.fetchCardsByProject(projectId);
+    fetchColumnsAndCards();
+  }
+}, [projectId]);
 
   const handleCardClick = (card: Card) => setSelectedCard(card);
 
