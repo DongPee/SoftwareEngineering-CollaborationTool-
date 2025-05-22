@@ -13,7 +13,7 @@ type BoardProps = {
 const Summary = ({projectId}: BoardProps) => {
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const cardCon = useContext(CardContext);
-
+  console.log(cardCon);
   return (
     <div className="summary-b p-6 overflow-y-auto">
       {/* 화면 크기에 따라 레이아웃 변경 */}

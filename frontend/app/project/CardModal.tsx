@@ -3,7 +3,7 @@ import styles from "./CardModal.module.css";
 import { showUsers } from "./addDeleteBoardCard";
 import { AuthContext } from "../AuthContext";
 import { io } from 'socket.io-client';
-import type { CardModalProps, Card} from "../cardContext";
+import type { CardModalProps} from "../cardContext";
 const socket = io('http://43.203.124.34:5001');
 export default function CardModal({
   card,
@@ -83,12 +83,6 @@ export default function CardModal({
       console.error("댓글 추가 오류:", error);
     }
   
-    const updatedCard: Card = {
-      ...card,
-      details,
-      startDate,
-      endDate,
-    };
     socket.emit('isModalChanged');
     setSelectedCard(null);
   };
@@ -301,7 +295,7 @@ export default function CardModal({
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
         />
-
+        
           {comments.length > 0 && (
           <>
             <label className={styles.label}>댓글</label>

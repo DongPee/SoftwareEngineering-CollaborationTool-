@@ -12,6 +12,7 @@ function ProjectTimeline({
   const [tasks, setTasks] = useState<{id : number, name : string, start : string, end : string}[]>([]);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const cardCon = useContext(CardContext);
+  console.log(cardCon);
   useEffect(() => {
     const dummyTasks = [
       { id: 1, name: '기획안 작성', start: '2025-05-01', end: '2025-05-05' },

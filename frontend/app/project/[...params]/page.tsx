@@ -12,7 +12,6 @@ import Calendar from "../projectCalender";
 import Chat from "../projectChat";
 import ProjectTimeline from "../projectTimeline";
 import { CardContext } from "../../cardContext";
-
 export default function Project() {
   const [active, setActive] = useState("summary");
   const router = useRouter();
@@ -27,7 +26,6 @@ export default function Project() {
     }
   }, [auth?.isLoggedIn]);
   useEffect(() =>{
-    cardCon.setProjectId(projectId);
     cardCon.fetchCardsByProject(projectId);
   }, [projectId]);
   return (
@@ -54,6 +52,7 @@ export default function Project() {
         {active === "calender" && <Calendar projectId={projectId} projectName={projectName} projectDesc={projectDesc} />}
         {active === "chat" && <Chat />}
       </div>
+      
     </div>
   );
 }

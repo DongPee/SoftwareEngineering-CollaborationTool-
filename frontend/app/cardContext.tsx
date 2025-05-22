@@ -1,6 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
-const socket = io('http://43.203.124.34:5001');
+import React, { createContext, useState } from 'react';
 
 export interface ColumnType {
   id: number;
@@ -54,7 +52,6 @@ interface CardContextType {
   cards: CardType[];
   loading: boolean;
   fetchCardsByProject: (projectId: string | null) => Promise<void>;
-  setProjectId : (project_id : string | null) => void;
 }
 
 // 🔹 초기 context
@@ -63,14 +60,12 @@ const CardContext = createContext<CardContextType | null>({
   cards: [],
   loading: false,
   fetchCardsByProject: async () => {},
-  setProjectId : null,
 });
 
 
 
 // 🔹 Provider
 export const CardProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [projectId, setProjectId] = useState<string | null>(null);
   const [columns, setColumns] = useState<ColumnType[]>([]);
   const [cards, setCards] = useState<CardType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -119,7 +114,7 @@ export const CardProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <CardContext.Provider value={{ columns, cards, loading, fetchCardsByProject, setProjectId}}>
+    <CardContext.Provider value={{ columns, cards, loading, fetchCardsByProject}}>
       {children}
     </CardContext.Provider>
   );

@@ -101,7 +101,7 @@ export const deleteCard = async (columnId: number, cardId:number) => {
 
 
 
-export const handleInvite = async (projectId : string, inviterEmail : string) => {
+export const handleInvite = async (projectId: string, inviterEmail: string) => {
   try {
     const response = await fetch("http://43.203.124.34:5001/api/createInviteLink", {
       method: "POST",
@@ -112,14 +112,51 @@ export const handleInvite = async (projectId : string, inviterEmail : string) =>
     });
 
     const data = await response.json();
-    await navigator.clipboard.writeText(data.inviteUrl);
-    console.log(data.inviteUrl);
-    alert("초대 링크가 복사되었습니다!");
+    const link = data.inviteUrl;
+
+    // 클립보드 복사 시도
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(link);
+      } else {
+        fallbackCopyTextToClipboard(link); // 폴백 함수 호출
+      }
+      alert("초대 링크가 복사되었습니다!");
+    } catch (clipboardError) {
+      console.log(clipboardError);
+      fallbackCopyTextToClipboard(link);
+    }
+
+    console.log(link);
   } catch (err) {
-    console.error("카드 삭제 실패:", err);
+    console.error("초대 링크 복사 실패:", err);
     throw err;
   }
 };
+
+// 폴백 함수 정의
+function fallbackCopyTextToClipboard(text: string) {
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.style.position = "fixed";
+  textArea.style.top = "-1000px";
+  textArea.style.left = "-1000px";
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  try {
+    const successful = document.execCommand("copy");
+    if (!successful) {
+      alert("복사에 실패했습니다. 아래 링크를 직접 복사해주세요:\n" + text);
+    }
+  } catch (err) {
+    console.log(err);
+    alert("복사 중 오류가 발생했습니다. 아래 링크를 직접 복사해주세요:\n" + text);
+  }
+
+  document.body.removeChild(textArea);
+}
 
 export const showUsers = async (projectId: string | null) => {
   if (!projectId) return [];
