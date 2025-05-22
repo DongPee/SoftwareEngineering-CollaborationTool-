@@ -7,6 +7,8 @@ import nodemailer from 'nodemailer';
 import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
+import OpenAI from "openai";
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -73,6 +75,40 @@ async function sendVerificationEmail(email, verificationCode) {
         console.error('이메일 전송 오류:', error);
     }
 }
+
+
+
+app.post("/api/analyze", async (req, res) => {
+  const text = req.body.text || "";
+
+  // 키워드 기반 리다이렉트 처리
+  if (text.includes("프로젝트") && text.includes("이동")) {
+    return res.json({ redirect_url: "/projectList" });
+  } else if (text.includes("로그인") && text.includes("이동")) {
+    return res.json({ redirect_url: "/login" });
+  } else if (text.includes("회원가입") && text.includes("이동")) {
+    return res.json({ redirect_url: "/signup" });
+  } else if (text.includes("메인") && text.includes("이동")) {
+    return res.json({ redirect_url: "/" });
+  }
+
+  // GPT-3.5-turbo 응답
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo", // 또는 "gpt-4"
+      messages: [{ role: "user", content: text }],
+    });
+
+    const responseText = completion.choices[0].message.content;
+
+    return res.json({
+      gpt_response: responseText,
+    });
+  } catch (err) {
+    console.error("GPT 응답 에러:", err);
+    return res.status(500).json({ error: "GPT 요청 실패" });
+  }
+});
 
 
 

@@ -2,7 +2,7 @@
 
 export const requestVerification = async (email: string, username : string) => {
   try {
-    const response = await fetch("http://localhost:5001/api/request-verification", {
+    const response = await fetch("http://43.203.124.34:5001/api/request-verification", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, username}),
@@ -21,7 +21,7 @@ export const requestVerification = async (email: string, username : string) => {
 };
 export const lostPasswordRequestVerification = async (email: string) => {
   try {
-    const response = await fetch("http://localhost:5001/api/lost-password-request-verification", {
+    const response = await fetch("http://43.203.124.34:5001/api/lost-password-request-verification", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email}),
@@ -41,7 +41,7 @@ export const lostPasswordRequestVerification = async (email: string) => {
 };
 export const verifyCode = async (email: string, verificationCode: string) => {
   try {
-    const response = await fetch("http://localhost:5001/api/verify-code", {
+    const response = await fetch("http://43.203.124.34:5001/api/verify-code", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, verificationCode }),
