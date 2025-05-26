@@ -58,6 +58,7 @@ const Calendar = ({ projectId }: { projectId: string | null }) => {
         {["일", "월", "화", "수", "목", "금", "토"].map((d, i) => (
           <div key={i} className={styles.dayLabel}>{d}</div>
         ))}
+        
         {calendarDays.map((day, idx) => (
           <div key={idx} className={styles.calendarCell}>
             {day && (
@@ -80,7 +81,7 @@ const Calendar = ({ projectId }: { projectId: string | null }) => {
       </div>
 
       {selectedCard && (
-        <CardModal card={selectedCard} setSelectedCard={setSelectedCard} projectId={projectId} />
+        <CardModal card={selectedCard} setSelectedAction={setSelectedCard} projectId={projectId} />
       )}
     </div>
   );

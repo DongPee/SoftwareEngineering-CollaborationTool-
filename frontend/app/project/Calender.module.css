@@ -85,3 +85,16 @@
 .cardBar:hover {
   background-color: #93c5fd;
 }
+
+.calendarBar {
+  background-color: #93c5fd;
+  color: #1e3a8a;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  margin: 2px;
+}
