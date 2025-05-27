@@ -1,0 +1,347 @@
+@import "tailwindcss";
+
+/* 기본 세팅 */
+* {
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  height: 100vh;
+  font-family: sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+:root {
+  --bg-color: #ffffff;
+  --text-color: #333;
+  --border-color: #d1d5db;
+  --chat-bg-color: #dddddd;
+  --column-bg-color: rgb(234, 234, 234);
+  --column-box-shadow: rgba(0, 0, 0, 1);
+  --card-bg-color: #fff;
+  --bg-login-color: #fafafa;
+  --text-socialLogin-color: #4a5565;
+  --text-help-login-color: #155dfc;
+  --text-inputGroupLabel-color: #555;
+  --summaryImages-filter: none;
+  --bg-mainPage-function: #f3f4f6;
+  --header-btn-bg-color: rgb(239, 239, 239);
+  --header-btn-bg-hover: #d9d9d9;
+}
+
+.dark-mode {
+  --bg-color: #282828;
+  --chat-bg-color: #666666;
+  --text-color: #ffffff;
+  --border-color: #8a8a8a;
+  --column-bg-color: rgb(50, 50, 50);
+  --column-box-shadow: rgba(255, 255, 255, 1);
+  --card-bg-color: #000;
+  --bg-login-color: #323232;
+  --text-socialLogin-color: #b5aa9a;
+  --text-help-login-color: #ffae00;
+  --text-inputGroupLabel-color: #ccc;
+  --summaryImages-filter: invert(1) brightness(2) contrast(0.47);
+  --projectColor: brightness(0.7) contrast(2);
+  --bg-mainPage-function: #504e4d;
+  --header-btn-bg-color: #343434;
+  --header-btn-bg-hover: #4a4a4a;
+}
+
+/* 스크롤 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
+}
+.dark-mode ::-webkit-scrollbar-thumb {
+  background-color: #555;
+}
+.dark-mode ::-webkit-scrollbar-track {
+  background-color: #222;
+}
+
+/* 레이아웃 */
+.header-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  height: 62px;
+  padding: 10px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.header-bottom-line {
+  width: 100%;
+  height: 2px;
+  background-color: var(--border-color);
+}
+
+/* 버튼 스타일 */
+.title-button {
+  font-size: 30px;
+  color: var(--text-color);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.darkMode-button,
+.profile-button,
+.login-button {
+  --btn-h: 40px; /* 기본 버튼 높이 */
+  height: var(--btn-h); /* 버튼 높이 고정 */
+  padding: 0 0.9rem; /* 좌우 패딩만 고정 */
+  font-size: calc(var(--btn-h) * 0.4); /* 버튼 높이의 50% */
+  line-height: 1; /* 텍스트가 버튼 중앙 정렬되도록 */
+  white-space: nowrap;
+  border-radius: 0.625rem; /* 10px */
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* 색상/배경 */
+.darkMode-button,
+.profile-button {
+  background: var(--header-btn-bg-color);
+  color: var(--text-color);
+}
+.login-button {
+  background: var(--header-btn-bg-color);
+  color: var(--text-color);
+}
+
+/* 위치 */
+.darkMode-button {
+  right: 110px;
+}
+.profile-button,
+.login-button {
+  right: 30px;
+}
+
+/* 호버 */
+.darkMode-button:hover,
+.profile-button:hover,
+.login-button:hover {
+  background-color: var(--header-btn-bg-hover);
+}
+
+/* 반응형: 화면 너비에 따라 --btn-h 조정 */
+@media (max-width: 640px) {
+  /* 모바일 */
+  .darkMode-button,
+  .profile-button,
+  .login-button {
+    --btn-h: 33px; /* 모바일에선 버튼을 좀 작게 */
+  }
+  .darkMode-button {
+    right: 90px;
+  }
+  .profile-button,
+  .login-button {
+    right: 15px;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* 데스크탑 */
+  .darkMode-button,
+  .profile-button,
+  .login-button {
+    --btn-h: 40px; /* 데스크탑에선 버튼을 좀 더 크게 */
+  }
+}
+
+/* 보드, 컬럼 */
+.board {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding: 10px;
+}
+
+.column {
+  background: var(--column-bg-color);
+  padding: 15px;
+  min-width: 300px;
+  min-height: 400px;
+  max-height: 400px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px var(--column-box-shadow);
+  overflow-y: auto;
+}
+
+/* 카드 */
+.card,
+.card-selected {
+  background: var(--card-bg-color);
+  padding: 10px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px var(--column-box-shadow);
+  margin-bottom: 10px;
+}
+.card-selected {
+  background: rgb(50, 255, 47);
+}
+.card:hover {
+  background-color: #aaa;
+  cursor: pointer;
+}
+
+/* 기타 */
+.summary-b {
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+.summary-top,
+.summary-middle {
+  border: 2px solid var(--border-color);
+  background: var(--bg-color);
+  color: var(--text-color);
+  border-radius: 8px;
+}
+.summary-middle {
+  height: 300px;
+  overflow-y: auto;
+}
+.summary-middle h1 {
+  margin: 10px 0px 10px 10px;
+}
+.summaryImages {
+  filter: var(--summaryImages-filter);
+}
+
+.project-info {
+  border-bottom: 2px solid var(--border-color);
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+.project-side-menu {
+  border-right: 2px solid var(--border-color);
+  background: var(--bg-color);
+  color: var(--text-color);
+  overflow-y: auto;
+  width: 240px;
+  min-width: 120px;
+}
+
+.allContent {
+  display: flex;
+}
+.project-side-menu-nav {
+  flex-direction: column;
+}
+
+/* 반응형 */
+@media (max-width: 600px) {
+  .project-side-menu {
+    width: 100%;
+    border: none;
+    border-bottom: 2px solid var(--border-color);
+    overflow-x: auto;
+    flex-grow: 1;
+  }
+  .allContent {
+    display: block;
+  }
+  .project-side-menu-nav {
+    flex-direction: row;
+  }
+}
+
+/* 입력창, 모달 */
+input {
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+.modal {
+  background-color: rgba(0, 0, 0, 0.75);
+}
+.modal-content {
+  padding: 10px;
+}
+.modal-content input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.projectMain {
+  height: calc(100% - 64px);
+}
+.mainPage {
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+.mainPage-function {
+  background: var(--bg-mainPage-function);
+  color: var(--text-color);
+  padding: 20px;
+  margin: 0px 20px;
+}
+
+.addColumn {
+  border-color: var(--border-color);
+}
+.columnAddButton {
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+.dragging {
+  opacity: 0.5;
+  z-index: 1000;
+}
+
+.chatbot-toggle-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #007bff;
+  color: white;
+  font-size: 24px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  transition: background-color 0.3s ease;
+}
+
+.chatbot-toggle-button:hover {
+  background-color: #0056b3;
+}
+
+.chatbot-container {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  width: 360px;
+  max-height: 500px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  overflow: hidden;
+}
+

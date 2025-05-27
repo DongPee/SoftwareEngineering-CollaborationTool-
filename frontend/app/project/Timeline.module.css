@@ -1,0 +1,97 @@
+.timelineWrapper {
+  padding: 16px;
+}
+
+.timelineTitle {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.timelineContainer {
+  display: flex;
+}
+
+.taskColumn {
+  width: 200px;
+  background-color: #f9f9f9;
+  border-right: 1px solid #ccc;
+  padding-top: 36px; /* 날짜 라벨과 높이 맞추기 */
+}
+
+.taskCell {
+  height: 34px;
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.scrollSyncWrapper {
+  overflow-x: auto;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.dateRow {
+  display: flex;
+  white-space: nowrap;
+  border-bottom: 1px solid #ccc;
+}
+
+.dateCell {
+  width: 34px;
+  min-width: 34px;
+  flex: 0 0 34px;
+  text-align: center;
+  border-left: 1px solid #eee;
+  font-size: 12px;
+}
+
+.dateContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.monthLabel {
+  font-size: 10px;
+  color: #999;
+}
+
+.dateNumber {
+  font-weight: bold;
+}
+
+.timelineBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.taskRow {
+  display: flex;
+  height: 34px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.dateBarRow {
+  position: relative;
+  flex: 1;
+  height: 34px;
+}
+
+.bar {
+  position: absolute;
+  top: 8px;
+  height: 18px;
+  background-color: #4caf50;
+  border-radius: 4px;
+  cursor: pointer;
+  color: white;
+  font-size: 11px;
+  text-align: center;
+  line-height: 18px;
+  padding: 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

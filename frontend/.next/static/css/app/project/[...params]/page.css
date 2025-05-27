@@ -1,0 +1,434 @@
+/*!****************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[3]!./app/project/CardModal.module.css ***!
+  \****************************************************************************************************************************************************************************************************************************************************************************/
+.CardModal_modal__cwqaD {
+    color: var(--text-color);
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 50;
+}
+
+.CardModal_modalContent__nkQcB {
+  background: var(--bg-color);
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 480px;
+  padding: 24px;
+  animation: CardModal_fadeIn__722Po 0.25s ease-out;
+}
+
+@keyframes CardModal_fadeIn__722Po {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.CardModal_title__OvWmG {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.CardModal_label__kYbUt {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.CardModal_input__UWvuf,
+.CardModal_select__qlUlp,
+.CardModal_textarea__GFm7_ {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  outline: none;
+}
+
+.CardModal_input__UWvuf:focus,
+.CardModal_select__qlUlp:focus,
+.CardModal_textarea__GFm7_:focus {
+  border-color: var(--border-color);
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
+}
+
+.CardModal_button__iDnkg {
+  display: block;
+  width: 100%;
+  background-color: #3b82f6;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 0;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.CardModal_button__iDnkg:hover {
+  background-color: #2563eb;
+}
+
+.CardModal_commentList__Xd7ZU {
+  max-height: 120px;
+  overflow-y: auto;
+  background: var(--bg-color);
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.CardModal_commentItem__I7bgc {
+  font-size: 13px;
+  border-bottom: 1px solid #eee;
+  padding: 6px 0;
+}
+
+.CardModal_commentItem__I7bgc:last-child {
+  border-bottom: none;
+}
+
+.CardModal_commentInputWrap__j0Yfo {
+  display: flex;
+  gap: 8px;
+}
+
+.CardModal_commentInput__vbZqj {
+  flex-grow: 1;
+}
+
+.CardModal_addCommentBtn__u01cT {
+  background-color: #22c55e;
+  border: none;
+  border-radius: 12px;
+  padding: 0 14px;
+  height: 40px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+}
+
+.CardModal_addCommentBtn__u01cT:hover {
+  background-color: #16a34a;
+}
+
+.CardModal_closeBtn__SkfYI {
+  background-color: #6b7280;
+}
+
+.CardModal_closeBtn__SkfYI:hover {
+  background-color: #ff4545;
+}
+
+/*!***************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[3]!./app/project/Calender.module.css ***!
+  \***************************************************************************************************************************************************************************************************************************************************************************/
+.Calender_calendarWrapper__1MU56 {
+  width: 90%;
+  margin: auto;
+  user-select: none;
+  overflow-x: auto;
+  padding-bottom: 2rem;
+}
+
+.Calender_header__uwYpG {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.Calender_navButton___JxSt {
+  background: var(--bg-color);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.Calender_navButton___JxSt:hover {
+  background: #d1d5db;
+}
+
+.Calender_calendarTitle__1KyWx {
+  font-weight: bold;
+  font-size: 1.3rem;
+}
+
+.Calender_grid7__OZwn5 {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+}
+
+.Calender_dayLabel__89Yp6 {
+  text-align: center;
+  font-weight: bold;
+  padding: 6px 0;
+  background: #f3f4f6;
+  border-bottom: 1px solid #d1d5db;
+}
+
+.Calender_calendarCell__9pvZq {
+  background: #fff;
+  min-height: 90px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  position: relative;
+  padding: 4px;
+  overflow: visible;
+}
+
+.Calender_dayNumber__vqOWh {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  text-align: left;
+  color: #4b5563;
+}
+
+.Calender_cardBar__AcLFU {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  height: 22px;
+  line-height: 22px;
+  background-color: #bfdbfe;
+  color: #1e3a8a;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.Calender_cardBar__AcLFU:hover {
+  background-color: #93c5fd;
+}
+
+.Calender_calendarBar__h4Hq1 {
+  background-color: #93c5fd;
+  color: #1e3a8a;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  margin: 2px;
+}
+/*!******************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./app/project/chat.css ***!
+  \******************************************************************************************************************************************************************************************************************************************************************/
+.chat-container {
+  max-width: 600px;
+  margin: 40px auto;
+  border: 2px solid var(--chat-bg-color);
+  border-radius: 12px;
+  padding: 20px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.chat-title {
+  text-align: center;
+  margin-bottom: 15px;
+  color: #00b0f4;
+}
+
+.chat-box {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 10px;
+  background-color: var(--chat-bg-color);
+  border-radius: 8px;
+}
+
+.chat-message {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+.chat-message.me {
+  align-items: flex-end;
+}
+
+.chat-message.other {
+  align-items: flex-start;
+}
+
+.sender-name {
+  font-size: 12px;
+  margin-bottom: 3px;
+  color: var(--text-color);
+}
+
+.message-bubble {
+  max-width: 60%;
+  padding: 10px 14px;
+  border-radius: 20px;
+  word-wrap: break-word;
+}
+
+.chat-message.me .message-bubble {
+  background-color: #5865f2;
+  color: #fff;
+  border-bottom-right-radius: 0;
+}
+
+.chat-message.other .message-bubble {
+  background-color: #4f545c;
+  color: #e3e3e3;
+  border-bottom-left-radius: 0;
+}
+
+.chat-input {
+  display: flex;
+  margin-top: 15px;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px 0 0 8px;
+  outline: none;
+  background-color: var(--chat-bg-color);
+  color: var(--text-color);
+}
+
+.chat-input button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 0 8px 8px 0;
+  background-color: #7289da;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.chat-input button:hover {
+  background-color: #5b6eae;
+}
+
+/*!***************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[3]!./app/project/Timeline.module.css ***!
+  \***************************************************************************************************************************************************************************************************************************************************************************/
+.Timeline_timelineWrapper__oSSbz {
+  padding: 16px;
+}
+
+.Timeline_timelineTitle__gqaqM {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.Timeline_timelineContainer__pemk9 {
+  display: flex;
+}
+
+.Timeline_taskColumn__cJe9Z {
+  width: 200px;
+  background-color: #f9f9f9;
+  border-right: 1px solid #ccc;
+  padding-top: 36px; /* 날짜 라벨과 높이 맞추기 */
+}
+
+.Timeline_taskCell__nQJfo {
+  height: 34px;
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.Timeline_scrollSyncWrapper__kqYLe {
+  overflow-x: auto;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.Timeline_dateRow__oPI_1 {
+  display: flex;
+  white-space: nowrap;
+  border-bottom: 1px solid #ccc;
+}
+
+.Timeline_dateCell__YwXnp {
+  width: 34px;
+  min-width: 34px;
+  flex: 0 0 34px;
+  text-align: center;
+  border-left: 1px solid #eee;
+  font-size: 12px;
+}
+
+.Timeline_dateContent__y6dJS {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.Timeline_monthLabel__RBFix {
+  font-size: 10px;
+  color: #999;
+}
+
+.Timeline_dateNumber__pDbz9 {
+  font-weight: bold;
+}
+
+.Timeline_timelineBody__voqhK {
+  display: flex;
+  flex-direction: column;
+}
+
+.Timeline_taskRow__tFj_e {
+  display: flex;
+  height: 34px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.Timeline_dateBarRow__3Xgl5 {
+  position: relative;
+  flex: 1;
+  height: 34px;
+}
+
+.Timeline_bar__o0u2o {
+  position: absolute;
+  top: 8px;
+  height: 18px;
+  background-color: #4caf50;
+  border-radius: 4px;
+  cursor: pointer;
+  color: white;
+  font-size: 11px;
+  text-align: center;
+  line-height: 18px;
+  padding: 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
