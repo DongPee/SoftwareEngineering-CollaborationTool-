@@ -6,7 +6,12 @@ import bcrypt from 'bcryptjs';
 import nodemailer from 'nodemailer';
 import { Server } from 'socket.io';
 import dotenv from 'dotenv';
+import multer from 'multer';
+import multerS3 from 'multer-s3';
+import { S3Client } from '@aws-sdk/client-s3';
 dotenv.config({ path: '.env.local' });
+import OpenAI from "openai";
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -34,6 +39,47 @@ io.on('connection', (socket) => {
 });
 app.use(cors());//{ origin: "http://localhost:3000" }
 app.use(express.json());
+
+const s3 = new S3Client({
+   credentials: {
+     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+   },
+   region: 'ap-northeast-2',
+});
+
+const upload = multer({
+  storage: multerS3({
+    s3,
+    bucket: process.env.AWS_S3_BUCKET_NAME,
+    acl: 'public-read',
+    key: (req, file, cb) => {
+      const fileName = `${Date.now()}_${file.originalname}`;
+      cb(null, `uploads/${fileName}`);
+    },
+  }),
+});
+
+app.post('/api/upload', upload.single('file'), (req, res) => {
+  console.log('🔥 upload route 진입');
+  console.log('📂 req.file:', req.file);
+  console.log('📂 req.body:', req.body);
+  try {
+    if (!req.file) {
+      console.error('❌ 파일이 업로드되지 않았습니다.');
+      return res.status(400).json({ error: '파일이 업로드되지 않았습니다.' });
+    }
+
+    const fileUrl = req.file.location;
+    console.log('✅ 업로드된 파일 URL:', fileUrl);
+
+    return res.status(200).json({ fileUrl });
+  } catch (error) {
+    console.error('❌ 파일 업로드 실패:', error);
+    return res.status(500).json({ error: '파일 업로드 중 오류 발생' });
+  }
+});
+
 import { v4 as uuidv4 } from 'uuid';
 // MySQL 연결 정보
 const db = mysql.createPool({
@@ -73,6 +119,40 @@ async function sendVerificationEmail(email, verificationCode) {
         console.error('이메일 전송 오류:', error);
     }
 }
+
+
+
+app.post("/api/analyze", async (req, res) => {
+  const text = req.body.text || "";
+
+  // 키워드 기반 리다이렉트 처리
+  if (text.includes("프로젝트") && text.includes("이동")) {
+    return res.json({ redirect_url: "/projectList" });
+  } else if (text.includes("로그인") && text.includes("이동")) {
+    return res.json({ redirect_url: "/login" });
+  } else if (text.includes("회원가입") && text.includes("이동")) {
+    return res.json({ redirect_url: "/signup" });
+  } else if (text.includes("메인") && text.includes("이동")) {
+    return res.json({ redirect_url: "/" });
+  }
+
+  // GPT-3.5-turbo 응답
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo", // 또는 "gpt-4"
+      messages: [{ role: "user", content: text }],
+    });
+
+    const responseText = completion.choices[0].message.content;
+
+    return res.json({
+      gpt_response: responseText,
+    });
+  } catch (err) {
+    console.error("GPT 응답 에러:", err);
+    return res.status(500).json({ error: "GPT 요청 실패" });
+  }
+});
 
 
 
@@ -763,7 +843,7 @@ app.post('/api/showProjectUsername', async (req, res) => {
 
 
 app.post('/api/addComment', async (req, res) => {
-    const { cardId, content, email} = req.body;
+    const { cardId, content, email, fileUrl} = req.body;
     if (!cardId || !content || !email) {
       return res.status(400).json({ error: "cardId 또는 내용 또는 사용자가 없습니다." });
     }
@@ -780,11 +860,11 @@ app.post('/api/addComment', async (req, res) => {
         const author_email = userResult[0].email;
         console.log(userResult);
         const [result] = await db.query(
-            "INSERT INTO comment_table (content, cards_id, author, author_username, author_email) VALUES (?, ?, ?, ?, ?)",
-            [content, cardId, authorId, author, author_email]
+            "INSERT INTO comment_table (content, cards_id, author, author_username, author_email, file_url) VALUES (?, ?, ?, ?, ?, ?)",
+            [content, cardId, authorId, author, author_email, fileUrl]
         );
         console.log(result);
-      res.json({ id: result.insertId, author : author, author_email : author_email }); 
+      res.json({ id: result.insertId, author : author, author_email : author_email, file_url : fileUrl}); 
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "서버 오류 발생" });
@@ -827,7 +907,7 @@ app.post('/api/getComments', async (req, res) => {
     }
     try {
       const [rows] = await db.query(
-        'SELECT content, author_username, author_email, id FROM comment_table WHERE cards_id = ?',
+        'SELECT content, author_username, author_email, id, file_url FROM comment_table WHERE cards_id = ?',
         [cardId]
       );
       if(rows.length === 0){
@@ -838,7 +918,8 @@ app.post('/api/getComments', async (req, res) => {
         text: row.content,
         author: row.author_username,
         author_email : row.author_email,
-        id : row.id
+        id : row.id,
+        file_Url : row.file_url
       }));
   
       console.log("댓글 데이터:", comments);
