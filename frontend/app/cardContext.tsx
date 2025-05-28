@@ -1,6 +1,4 @@
 import React, { createContext, useState } from 'react';
-import { io } from 'socket.io-client';
-const socket = io('http://43.203.124.34:5001');
 
 export interface ColumnType {
   id: number;
@@ -34,6 +32,13 @@ export type Column = {
   addCardToggle: boolean;
 };
 
+export type comment = {
+  text: string,
+  author: string,
+  author_email : string,
+  id : number,
+  file_Url : string
+}
 export interface CardType {
   id: number;
   title: string;

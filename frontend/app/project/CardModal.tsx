@@ -5,7 +5,7 @@ import styles from "./CardModal.module.css";
 import { showUsers } from "./addDeleteBoardCard";
 import { AuthContext } from "../AuthContext";
 import { io } from 'socket.io-client';
-import type { CardModalProps, Card } from "../cardContext";
+import type { CardModalProps, comment} from "../cardContext";
 
 const socket = io('http://43.203.124.34:5001');
 
@@ -15,7 +15,7 @@ export default function CardModal({ card, setSelectedAction, projectId }: CardMo
   const [priority, setPriority] = useState('');
   const [startDate, setStartDate] = useState(card.startDate || "");
   const [endDate, setEndDate] = useState(card.endDate || "");
-  const [comments, setComments] = useState<any[]>([]);
+  const [comments, setComments] = useState<comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [assigneeOptions, setAssigneeOptions] = useState<{ assignee: string; id: number }[]>([]);
@@ -23,6 +23,26 @@ export default function CardModal({ card, setSelectedAction, projectId }: CardMo
   const [editingText, setEditingText] = useState("");
   const auth = useContext(AuthContext);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  const uploadFileToS3 = async (file: File): Promise<string | null> => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch("http://43.203.124.34:5001/api/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) throw new Error("파일 업로드 실패");
+
+    const data = await response.json();
+    return data.fileUrl; // S3에 업로드된 파일 URL 반환
+  } catch (err) {
+    console.error("파일 업로드 중 오류:", err);
+    return null;
+  }
+};
 
   const handleSave = async () => {
     try {
@@ -56,43 +76,51 @@ export default function CardModal({ card, setSelectedAction, projectId }: CardMo
   };
 
   const handleAddComment = async () => {
-  const trimmed = newComment.trim();
-  if (!trimmed) return;
+    const trimmed = newComment.trim();
+    if (!trimmed && !selectedFile) return;
 
-  const author = localStorage.getItem("email") || auth?.email;
-  if (!author) return;
+    const author = localStorage.getItem("email") || auth?.email;
+    if (!author) return;
 
-  try {
-    const response = await fetch("http://43.203.124.34:5001/api/addComment", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        cardId: card.id,
-        content: trimmed,
-        email: author,
-      }),
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      setComments((prev) => [
-        ...prev,
-        {
-          text: trimmed,
-          author: data.author,
-          author_email: data.author_email,
-          id: data.id,
-        },
-      ]);
-      setNewComment("");
-      socket.emit("isModalChanged");
-    } else {
-      console.error("서버 응답 실패", await response.text());
+    let uploadedFileUrl = null;
+    if (selectedFile) {
+      uploadedFileUrl = await uploadFileToS3(selectedFile);
     }
-  } catch (error) {
-    console.error("댓글 추가 오류:", error);
-  }
-};
+    console.log(uploadedFileUrl);
+    try {
+      const response = await fetch("http://43.203.124.34:5001/api/addComment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cardId: card.id,
+          content: trimmed,
+          email: author,
+          fileUrl: uploadedFileUrl,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setComments((prev) => [
+          ...prev,
+          {
+            text: trimmed,
+            author: data.author,
+            author_email: data.author_email,
+            id: data.id,
+            file_Url: uploadedFileUrl, // ← 프론트에서도 표시
+          },
+        ]);
+        setNewComment("");
+        setSelectedFile(null); // 파일 초기화
+        socket.emit("isModalChanged");
+      } else {
+        console.error("서버 응답 실패", await response.text());
+      }
+    } catch (error) {
+      console.error("댓글 추가 오류:", error);
+    }
+  };
 
   const handleEditComment = (index: number) => {
     setEditingIndex(index);
@@ -253,8 +281,8 @@ export default function CardModal({ card, setSelectedAction, projectId }: CardMo
                       ) : (
                         <span style={{ flexGrow: 1 }}>
                           {comment.text} - <strong>{comment.author}</strong>
-                          {comment.fileUrl && (
-                            <a href={comment.fileUrl} target="_blank" rel="noopener noreferrer" className={styles.fileLink}>
+                          {comment.file_Url && (
+                            <a href={comment.file_Url} target="_blank" rel="noopener noreferrer" className={styles.fileLink}>
                               첨부
                             </a>
                           )}
