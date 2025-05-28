@@ -4,7 +4,6 @@ import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../AuthContext";
 import { useRouter } from "next/navigation";
 import styles from './ProfilePage.module.css';
-import { getDarkMode, setDarkMode } from "../DarkState";
 import Image from 'next/image';
 
 const ProfilePage = () => {
@@ -12,17 +11,6 @@ const ProfilePage = () => {
   const [userFilter, setUserFilter] = useState<string>("");
   const [projects, setProjects] = useState<string[]>([]);
   const router = useRouter();
-  const [darkMode, setDarkModeState] = useState(getDarkMode());
-
-  useEffect(() => {
-    document.body.classList.toggle("dark-mode", darkMode);
-  }, [darkMode]);
-
-  const toggleDarkMode = () => {
-    const newMode = !darkMode;
-    setDarkMode(newMode);
-    setDarkModeState(newMode);
-  };
 
   useEffect(() => {
     if (auth?.username) {
@@ -42,12 +30,12 @@ const ProfilePage = () => {
     <div className={styles.profileContainer}>
       <div className={styles.profileCard}>
         <Image
-          src="/default-user.png" // 이미지 경로 설정
+          src="/default-user.png"  // 이미지 경로
           alt="프로필 이미지"
           className={styles.profileImage}
           style={{ filter: userFilter }}
-          width={100} // 이미지 크기
-          height={100} // 이미지 크기
+          width={100}  // 이미지 크기 지정
+          height={100}  // 이미지 크기 지정
         />
         <h1 className={styles.profileTitle}>{auth.username}</h1>
         <p className={styles.profileEmail}>{auth.email}</p>
@@ -62,12 +50,6 @@ const ProfilePage = () => {
         </div>
 
         <div className={styles.buttonContainer}>
-          <button
-            className={`${styles.button} ${styles.buttonSecondary}`}
-            onClick={toggleDarkMode}
-          >
-            {darkMode ? "Day" : "Night"}
-          </button>
           <button
             className={`${styles.button} ${styles.buttonPrimary}`}
             onClick={() => router.push("/frontend")}

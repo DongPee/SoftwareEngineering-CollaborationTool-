@@ -1,59 +1,58 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import styles from "./chatBot.module.css"; 
+import { useRouter } from "next/navigation"; 
+import Image from 'next/image';
 
-const POSAnalyzer: React.FC = () => {
+const ChatBot: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
   const [inputText, setInputText] = useState("");
   const [messages, setMessages] = useState<
     { sender: "user" | "bot"; content: string }[]
   >([]);
   const [username, setUsername] = useState<string>("");
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const router = useRouter(); 
+
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
     setUsername(storedUsername || "User");
   }, []);
-
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
   const handleAnalyze = async () => {
     if (!inputText.trim()) return;
 
-    // 사용자 메시지 추가
     setMessages((prev) => [...prev, { sender: "user", content: inputText }]);
 
     try {
-      const response = await fetch("http://127.0.0.1:5002/analyze", {
+      const response = await fetch("http://43.203.124.34:5001/api/analyze", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: inputText }),
       });
 
-      if (!response.ok) {
-        throw new Error(`서버 오류: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`서버 오류: ${response.status}`);
 
       const data = await response.json();
 
-      // GPT 응답은 따로 사용
       const gptResponse = data.gpt_response;
-
-      // SpaCy 분석 결과는 따로 출력
-      const prettyResult = data.spacy_result
-        .map((item: { token: string; pos: string }) => `${item.token} (${item.pos})`)
-        .join(", ");
-      console.log(prettyResult);
-      if(prettyResult){
+      const url = data.redirect_url;
+      if (url) {
         setMessages((prev) => [
-        ...prev,
-        { sender: "bot", content: `🔍 분석 결과: ${prettyResult}` },
-      ]);
+          ...prev,
+          { sender: "bot", content: `${url}로 이동합니다.` },
+        ]);
+        router.push(url);
       }
-      if(gptResponse){
+      if (gptResponse) {
         setMessages((prev) => [
-        ...prev,
-        { sender: "bot", content: `💬 GPT 응답: ${gptResponse}` },
-      ]);
+          ...prev,
+          { sender: "bot", content: `💬 응답: ${gptResponse}` },
+        ]);
       }
-    } catch (err: any) {
+    } catch (err){
+      console.log(err);
       setMessages((prev) => [
         ...prev,
         { sender: "bot", content: "⚠️ 오류가 발생했습니다. 다시 시도해주세요." },
@@ -64,44 +63,55 @@ const POSAnalyzer: React.FC = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <h2>💬 POS Chat Analyzer</h2>
-      <div style={styles.chatBox}>
+    <div className={styles.wrapper}>
+      <div className={styles.header}>
+        <h3>ChatBot</h3>
+        {onClose && (
+          <button onClick={onClose} className={styles.closeButton}>
+            ❌
+          </button>
+        )}
+      </div>
+
+      <div className={styles.chatBox}>
         {messages.map((msg, idx) => (
           <div
             key={idx}
+            className={styles.message}
             style={{
-              ...styles.message,
               flexDirection: msg.sender === "user" ? "row-reverse" : "row",
             }}
           >
             {msg.sender === "bot" ? (
-              <img src="/robot.png" alt="Robot" style={styles.avatar} />
+              <Image src="/robot.png" alt="Robot" className={styles.avatar} />
             ) : (
-              <div style={styles.userAvatar}>{username.charAt(0).toUpperCase()}</div>
+              <div className={styles.userAvatar}>
+                {username.charAt(0).toUpperCase()}
+              </div>
             )}
             <div
+              className={styles.bubble}
               style={{
-                ...styles.bubble,
                 backgroundColor: msg.sender === "user" ? "#dcf8c6" : "#e6e6e6",
                 alignSelf: msg.sender === "user" ? "flex-end" : "flex-start",
               }}
             >
               {msg.content}
             </div>
+            <div ref={chatEndRef} />
           </div>
         ))}
       </div>
 
-      <div style={styles.inputSection}>
+      <div className={styles.inputSection}>
         <textarea
           rows={3}
           placeholder="분석할 문장을 입력하세요..."
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          style={styles.textarea}
+          className={styles.textarea}
         />
-        <button onClick={handleAnalyze} style={styles.button}>
+        <button onClick={handleAnalyze} className={styles.button}>
           전송
         </button>
       </div>
@@ -109,73 +119,4 @@ const POSAnalyzer: React.FC = () => {
   );
 };
 
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    maxWidth: 600,
-    margin: "0 auto",
-    fontFamily: "Arial, sans-serif",
-    padding: 20,
-  },
-  chatBox: {
-    backgroundColor: "#f9f9f9",
-    padding: 15,
-    height: "60vh",
-    overflowY: "auto",
-    borderRadius: 10,
-    boxShadow: "0 0 5px rgba(0,0,0,0.1)",
-    marginBottom: 20,
-  },
-  message: {
-    display: "flex",
-    alignItems: "flex-end",
-    marginBottom: 12,
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    marginRight: 10,
-    borderRadius: "50%",
-  },
-  userAvatar: {
-    width: 40,
-    height: 40,
-    marginLeft: 10,
-    borderRadius: "50%",
-    backgroundColor: "#1976d2",
-    color: "white",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontWeight: "bold",
-  },
-  bubble: {
-    maxWidth: "75%",
-    padding: "10px 15px",
-    borderRadius: "15px",
-    wordWrap: "break-word",
-    fontSize: "15px",
-  },
-  inputSection: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 10,
-  },
-  textarea: {
-    padding: 10,
-    fontSize: 16,
-    borderRadius: 5,
-    resize: "none",
-  },
-  button: {
-    alignSelf: "flex-end",
-    padding: "8px 20px",
-    fontSize: 16,
-    backgroundColor: "#1976d2",
-    color: "white",
-    border: "none",
-    borderRadius: 5,
-    cursor: "pointer",
-  },
-};
-
-export default POSAnalyzer;
+export default ChatBot;

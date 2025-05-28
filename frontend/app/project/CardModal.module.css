@@ -1,65 +1,75 @@
-/* CardModal.module.css */
-
 .modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+    color: var(--text-color);
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 50;
 }
 
 .modalContent {
-  background: white;
+  background: var(--bg-color);
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 480px;
   padding: 24px;
-  border-radius: 8px;
-  width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .title {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: bold;
   margin-bottom: 16px;
 }
 
 .label {
   display: block;
-  margin-top: 16px;
-  margin-bottom: 4px;
-  font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
+  margin-bottom: 6px;
 }
 
 .input,
-.textarea,
-.select {
+.select,
+.textarea {
   width: 100%;
-  padding: 8px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
   font-size: 14px;
+  outline: none;
 }
 
-.textarea {
-  resize: vertical;
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--border-color);
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
 }
 
 .button {
-  margin-top: 24px;
+  display: block;
   width: 100%;
-  padding: 10px;
   background-color: #3b82f6;
-  color: white;
   border: none;
-  border-radius: 6px;
-  font-weight: bold;
+  border-radius: 12px;
+  padding: 10px 0;
+  margin-bottom: 20px;
   cursor: pointer;
   transition: background 0.2s ease;
 }
@@ -68,99 +78,54 @@
   background-color: #2563eb;
 }
 
-.dateRow,
-.selectRow {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 1rem;
+.commentList {
+  max-height: 120px;
+  overflow-y: auto;
+  background: var(--bg-color);
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 16px;
 }
 
-.dateColumn,
-.selectColumn {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+.commentItem {
+  font-size: 13px;
+  border-bottom: 1px solid #eee;
+  padding: 6px 0;
+}
+
+.commentItem:last-child {
+  border-bottom: none;
 }
 
 .commentInputWrap {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 12px;
-  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .commentInput {
-  flex: 1;
-  min-width: 200px;
-  padding: 6px 8px;
-  font-size: 14px;
+  flex-grow: 1;
 }
 
 .addCommentBtn {
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  border-radius: 9999px;
-  border: none;
   background-color: #22c55e;
-  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 0 14px;
+  height: 40px;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition: background 0.2s ease;
+  white-space: nowrap;
 }
 
 .addCommentBtn:hover {
   background-color: #16a34a;
-  transform: translateY(-1px);
-}
-
-.fileUploadBtn {
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  border-radius: 9999px;
-  border: none;
-  background-color: #22c55e;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-}
-
-.fileUploadBtn:hover {
-  background-color: #16a34a;
-  transform: translateY(-1px);
 }
 
 .closeBtn {
-  background-color: #ef4444;
+  background-color: #6b7280;
 }
 
 .closeBtn:hover {
-  background-color: #dc2626;
-}
-
-.fileName {
-  font-size: 12px;
-  color: #555;
-  max-width: 200px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.commentList {
-  margin-top: 8px;
-}
-
-.commentItem {
-  margin: 6px 0;
-  border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 6px;
-}
-
-.fileLink {
-  margin-left: 6px;
-  font-size: 12px;
-  color: #2563eb;
-  text-decoration: underline;
+  background-color: #ff4545;
 }

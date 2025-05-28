@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, useRef, useContext } from "react";
+import { useState, useRef, useContext } from "react";
 import { CardContext } from "../cardContext";
 import type { Card } from "../cardContext";
 import CardModal from "./CardModal";
@@ -10,11 +10,9 @@ const Calendar = ({ projectId }: { projectId: string | null }) => {
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const cardCon = useContext(CardContext);
   const calendarRef = useRef<HTMLDivElement | null>(null);
-
   const handlePrevMonth = () => {
     setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   };
-
   const handleNextMonth = () => {
     setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
   };
