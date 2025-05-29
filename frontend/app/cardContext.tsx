@@ -20,7 +20,7 @@ export type Card = {
 
 export type CardModalProps = {
   card: Card;
-  setSelectedAction: (setSelectedAction: Card) => void;
+  setSelectedCard: (setSelectedCard: Card) => void;
   projectId: string | null;
 };
 

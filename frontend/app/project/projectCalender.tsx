@@ -1,15 +1,41 @@
 'use client';
-import { useState, useRef, useContext } from "react";
+import { useState, useRef, useContext, useEffect } from "react";
 import { CardContext } from "../cardContext";
 import type { Card } from "../cardContext";
 import CardModal from "./CardModal";
 import styles from "./Calender.module.css";
+import { io } from "socket.io-client";
+
+const socket = io("http://43.203.124.34:5001");
 
 const Calendar = ({ projectId }: { projectId: string | null }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const cardCon = useContext(CardContext);
   const calendarRef = useRef<HTMLDivElement | null>(null);
+
+   useEffect(() => {
+    if (projectId && cardCon?.fetchCardsByProject) {
+      cardCon.fetchCardsByProject(projectId);
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+  const updateCards = () => {
+    if (projectId && cardCon?.fetchCardsByProject) {
+      cardCon.fetchCardsByProject(projectId);
+    }
+  };
+
+  socket.on("isChanged", updateCards);
+  socket.on("isModalChanged", updateCards);
+
+  return () => {
+    socket.off("isChanged", updateCards);
+    socket.off("isModalChanged", updateCards);
+  };
+}, [projectId]);
+
   const handlePrevMonth = () => {
     setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   };
@@ -31,12 +57,17 @@ const Calendar = ({ projectId }: { projectId: string | null }) => {
   const getCardForDay = (day: number): Card[] => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
+    const date = new Date(year, month, day, 0, 0, 0, 0);
+
     return cardCon.cards.filter((card) => {
       const start = card.startDate ? new Date(card.startDate) : null;
       const end = card.endDate ? new Date(card.endDate) : null;
       if (!start || !end) return false;
-      const date = new Date(year, month, day);
-      return start <= date && date <= end;
+
+      const startDate = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+      const endDate = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+
+      return startDate <= date && date <= end;
     });
   };
 
@@ -79,7 +110,7 @@ const Calendar = ({ projectId }: { projectId: string | null }) => {
       </div>
 
       {selectedCard && (
-        <CardModal card={selectedCard} setSelectedAction={setSelectedCard} projectId={projectId} />
+        <CardModal card={selectedCard} setSelectedCard={setSelectedCard} projectId={projectId} />
       )}
     </div>
   );

@@ -12,14 +12,24 @@ import Calendar from "../projectCalender";
 import Chat from "../projectChat";
 import ProjectTimeline from "../projectTimeline";
 import Log from "../ProjectLog";
+import { useSearchParams } from "next/navigation";
 
 export default function Project() {
-  const [active, setActive] = useState("summary");
   const router = useRouter();
   const params = useParams(); // App Router용
+  const searchParams = useSearchParams();
+  const tab = searchParams.get("tab");
 
   const [projectId, projectName, projectDesc] = params.params || [];
   const auth = useContext(AuthContext);
+
+  const [active, setActiveState] = useState(tab ?? "summary");
+  const setActive = (tab: string) => {
+    setActiveState(tab);
+    const current = new URLSearchParams(window.location.search);
+    current.set("tab", tab);
+    window.history.replaceState({}, "", `?${current.toString()}`);
+  };
 
   useEffect(() => {
     if (!auth?.isLoggedIn) {

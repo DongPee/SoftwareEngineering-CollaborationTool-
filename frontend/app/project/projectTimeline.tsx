@@ -12,7 +12,7 @@ const CELL_WIDTH = 34;
 export default function ProjectTimeline({ projectId }: { projectId: string | null }) {
   const cardCon = useContext(CardContext)!;
   const { cards, fetchCardsByProject } = cardCon;
-  const [selectedCard, setSelectedAction] = useState<Card | null>(null);
+  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [dateRange, setDateRange] = useState<Date[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -38,6 +38,12 @@ export default function ProjectTimeline({ projectId }: { projectId: string | nul
       width: `${width}px`,
     };
   };
+
+  useEffect(() => {
+  if (projectId) {
+    fetchCardsByProject(projectId);
+  }
+}, [projectId]);
 
   useEffect(() => {
     const today = new Date();
@@ -130,7 +136,7 @@ export default function ProjectTimeline({ projectId }: { projectId: string | nul
                   <div
                     className={styles.bar}
                     style={getBarStyle(card.startDate!, card.endDate!)}
-                    onClick={() => setSelectedAction(card)}
+                    onClick={() => setSelectedCard(card)}
                   >
                     {card.text}
                   </div>
@@ -144,7 +150,7 @@ export default function ProjectTimeline({ projectId }: { projectId: string | nul
       {selectedCard && (
         <CardModal
           card={selectedCard}
-          setSelectedAction={setSelectedAction}
+          setSelectedCard={setSelectedCard}
           projectId={projectId}
         />
       )}
