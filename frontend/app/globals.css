@@ -38,7 +38,7 @@ body {
   --border-color: #8a8a8a;
   --column-bg-color: rgb(50, 50, 50);
   --column-box-shadow: rgba(255, 255, 255, 1);
-  --card-bg-color: #000;
+  --card-bg-color: #212121;
   --bg-login-color: #323232;
   --text-socialLogin-color: #b5aa9a;
   --text-help-login-color: #ffae00;
@@ -184,7 +184,6 @@ body {
   min-height: 400px;
   max-height: 400px;
   border-radius: 8px;
-  box-shadow: 0 4px 6px var(--column-box-shadow);
   overflow-y: auto;
 }
 
@@ -194,7 +193,6 @@ body {
   background: var(--card-bg-color);
   padding: 10px;
   border-radius: 6px;
-  box-shadow: 0 2px 4px var(--column-box-shadow);
   margin-bottom: 10px;
 }
 .card-selected {
@@ -345,3 +343,21 @@ input {
   overflow: hidden;
 }
 
+.taskColumn {
+  background-color: var(--bg-color);
+  border-right: 1px solid var(--border-color);
+  padding-top: 36px;
+}
+
+.taskCell {
+  height: 34px;
+  line-height: 34px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+}

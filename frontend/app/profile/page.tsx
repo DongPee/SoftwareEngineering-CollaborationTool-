@@ -4,6 +4,7 @@ import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../AuthContext";
 import { useRouter } from "next/navigation";
 import styles from './ProfilePage.module.css';
+import { getDarkMode, setDarkMode } from "../DarkState";
 import Image from 'next/image';
 
 const ProfilePage = () => {
@@ -11,6 +12,17 @@ const ProfilePage = () => {
   const [userFilter, setUserFilter] = useState<string>("");
   const [projects, setProjects] = useState<string[]>([]);
   const router = useRouter();
+  const [darkMode, setDarkModeState] = useState(getDarkMode());
+
+   useEffect(() => {
+    document.body.classList.toggle("dark-mode", darkMode);
+  }, [darkMode]);
+
+  const toggleDarkMode = () => {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    setDarkModeState(newMode);
+  };
 
   useEffect(() => {
     if (auth?.username) {
@@ -50,6 +62,12 @@ const ProfilePage = () => {
         </div>
 
         <div className={styles.buttonContainer}>
+          <button
+            className={`${styles.button} ${styles.buttonSecondary}`}
+            onClick={toggleDarkMode}
+          >
+            {darkMode ? "Day" : "Night"}
+          </button>
           <button
             className={`${styles.button} ${styles.buttonPrimary}`}
             onClick={() => router.push("/frontend")}

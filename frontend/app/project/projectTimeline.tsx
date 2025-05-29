@@ -10,6 +10,7 @@ const socket = io('http://43.203.124.34:5001');
 const CELL_WIDTH = 34;
 
 export default function ProjectTimeline({ projectId }: { projectId: string | null }) {
+  const isScrolling = useRef(false);
   const cardCon = useContext(CardContext)!;
   const { cards, fetchCardsByProject } = cardCon;
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
@@ -93,12 +94,30 @@ export default function ProjectTimeline({ projectId }: { projectId: string | nul
   };
 
   const handleScroll = () => {
-    const el = scrollRef.current;
-    if (!el) return;
-    if (el.scrollLeft < 50) expandDates('left');
-    if (el.scrollLeft + el.clientWidth > el.scrollWidth - 50) expandDates('right');
-  };
+  const el = scrollRef.current;
+  if (!el) return;
 
+  const nearLeftEdge = el.scrollLeft < 10;
+  const nearRightEdge = el.scrollLeft + el.clientWidth > el.scrollWidth - 10;
+
+  if (nearLeftEdge && !isScrolling.current) {
+    isScrolling.current = true;
+    expandDates('left');
+    setTimeout(() => {
+      isScrolling.current = false;
+    }, 300);
+  }
+
+  if (nearRightEdge && !isScrolling.current) {
+    isScrolling.current = true;
+    expandDates('right');
+    setTimeout(() => {
+      isScrolling.current = false;
+    }, 300);
+  }
+};
+
+  
   const getMonthLabel = (date: Date) => `${date.getMonth() + 1}월`;
 
   return (
@@ -108,9 +127,7 @@ export default function ProjectTimeline({ projectId }: { projectId: string | nul
       <div className={styles.timelineContainer}>
         <div className={styles.taskColumn}>
           {cards.filter(c => c.startDate && c.endDate).map((card) => (
-            <div key={card.id} className={styles.taskCell}>
-              {card.text}
-            </div>
+            <div key={card.id} className={styles.taskCell}>{card.text}</div>
           ))}
         </div>
 

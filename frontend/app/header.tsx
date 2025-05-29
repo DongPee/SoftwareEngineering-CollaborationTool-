@@ -1,23 +1,11 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "./AuthContext";
 import Link from "next/link";
-import { getDarkMode, setDarkMode } from "./DarkState";
 import UserDropdown from "./UserDropdown";
 
 const Header = () => {
   const auth = useContext(AuthContext);
-  const [darkMode, setDarkModeState] = useState(getDarkMode());
   const [showDropdown, setShowDropdown] = useState(false);
-
-  useEffect(() => {
-    document.body.classList.toggle("dark-mode", darkMode);
-  }, [darkMode]);
-
-  const toggleMode = () => {
-    const newMode = !darkMode;
-    setDarkMode(newMode);
-    setDarkModeState(newMode);
-  };
 
   const handleProfileClick = () => setShowDropdown(!showDropdown);
   const closeDropdown = () => setShowDropdown(false);
@@ -32,10 +20,6 @@ const Header = () => {
         </Link>
 
         <div className="right-box">
-          <button onClick={toggleMode} className="darkMode-button">
-            {darkMode ? "Day" : "Night"}
-          </button>
-
           {auth?.isLoggedIn ? (
             <div className="profile-wrapper">
               <button onClick={handleProfileClick} className="profile-button">
