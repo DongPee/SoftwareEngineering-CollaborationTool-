@@ -337,7 +337,7 @@ export default function Board({ projectId }: BoardProps) {
       {selectedCard && (
         <CardModal
           card={selectedCard}
-          setSelectedAction={setSelectedCard}
+          setSelectedCard={setSelectedCard}
           projectId={projectId}
         />
       )}

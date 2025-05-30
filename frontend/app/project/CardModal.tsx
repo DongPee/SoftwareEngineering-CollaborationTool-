@@ -9,7 +9,7 @@ import type { CardModalProps, comment} from "../cardContext";
 
 const socket = io('http://43.203.124.34:5001');
 
-export default function CardModal({ card, setSelectedAction, projectId }: CardModalProps) {
+export default function CardModal({ card, setSelectedCard, projectId }: CardModalProps) {
   const [details, setDetails] = useState(card.details);
   const [assignee, setAssignee] = useState<{ assignee: string; id: number }>();
   const [priority, setPriority] = useState('');
@@ -65,7 +65,7 @@ export default function CardModal({ card, setSelectedAction, projectId }: CardMo
       });
 
       socket.emit("isModalChanged");
-      setSelectedAction(null);
+      setSelectedCard(null);
     } catch (error) {
       console.error("카드 저장 중 오류:", error);
     }
@@ -218,7 +218,7 @@ export default function CardModal({ card, setSelectedAction, projectId }: CardMo
   }, [comments]);
 
   return (
-    <div className={styles.modal} onClick={() => setSelectedAction(null)}>
+    <div className={styles.modal} onClick={() => setSelectedCard(null)}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <h2 className={styles.title}>{card.text}</h2>
 

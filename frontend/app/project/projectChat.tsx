@@ -10,7 +10,7 @@ export interface ChatMessage {
   created_at: string; // 혹은 Date, 백엔드에서 문자열로 주면 string이 더 일반적
   sender: string;     // username
 }
-function Chat() {
+function Chat({ projectId }: { projectId: string | null }) {
   const [message, setMessage] = useState('');
   const [receivedMessages, setReceivedMessages] = useState<{ sender: string; text: string, id : number, created_at : string}[]>([]);
   const username = localStorage.getItem('username') || '나';
@@ -23,7 +23,7 @@ function Chat() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({}),
+        body: JSON.stringify({project_id : projectId}),
       });
   
       if (!response.ok) {
@@ -54,7 +54,7 @@ function Chat() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ user: userEmail, content: message }),
+        body: JSON.stringify({ user: userEmail, content: message, project_id : projectId}),
       });
   
       if (!response.ok) {

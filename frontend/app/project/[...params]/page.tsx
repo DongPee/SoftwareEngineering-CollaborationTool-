@@ -18,9 +18,13 @@ export default function Project() {
   const router = useRouter();
   const params = useParams(); // App Router용
 
-  const [projectId, projectName, projectDesc] = params.params || [];
+  const [projectId, encodedName, encodedDesc] = params.params || [];
+
+  const projectName = decodeURIComponent(encodedName || "");
+  const projectDesc = decodeURIComponent(encodedDesc || "");
   const auth = useContext(AuthContext);
 
+  
   useEffect(() => {
     if (!auth?.isLoggedIn) {
       router.push("/");
@@ -53,8 +57,6 @@ export default function Project() {
             ? "보드"
             : active === "calender"
             ? "캘린더"
-            : active === "calender"
-            ? "캘린더"
             : active === "log"
             ? "로그"
             : "채팅"}
@@ -66,7 +68,9 @@ export default function Project() {
             projectDesc={projectDesc}
           />
         )}
-        {active === "timeline" && <ProjectTimeline projectId={projectId} />}
+        {active === "timeline" && (
+          <ProjectTimeline projectId={projectId} />
+        )}
         {active === "board" && (
           <Board
             projectId={projectId}
@@ -79,7 +83,11 @@ export default function Project() {
             projectId={projectId}
           />
         )}
-        {active === "chat" && <Chat />}
+        {active === "chat" && (
+          <Chat
+            projectId={projectId}
+          />
+          )}
         {active === "log" && (
           <Log
             projectId={projectId}

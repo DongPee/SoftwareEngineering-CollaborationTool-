@@ -8,6 +8,7 @@ import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 import multer from 'multer';
 import multerS3 from 'multer-s3';
+import cron from 'node-cron';
 import { S3Client } from '@aws-sdk/client-s3';
 dotenv.config({ path: '.env.local' });
 import OpenAI from "openai";
@@ -107,7 +108,7 @@ async function sendVerificationEmail(email, verificationCode) {
         });
 
         const mailOptions = {
-            from: 'email@gmail.com',
+            from: process.env.EMAIL,
             to: email,
             subject: '이메일 인증 코드',
             text: `회원가입을 위한 인증 코드: ${verificationCode}`
@@ -119,6 +120,76 @@ async function sendVerificationEmail(email, verificationCode) {
         console.error('이메일 전송 오류:', error);
     }
 }
+
+
+async function sendDueSoonEmail(email, cardTitle, endDate, time) {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL,
+      pass: process.env.PASSWORD,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL,
+    to: email,
+    subject: `[마감 임박] 카드 '${cardTitle}'의 마감일이 ${time} 남았습니다!`,
+    text: `안녕하세요! 담당하신 카드 '${cardTitle}'의 마감일 (${endDate})이 정확히 ${time} 남았습니다. 프로젝트를 확인해 주세요.`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`✅ ${email}에게 마감 임박 이메일 전송 완료`);
+  } catch (error) {
+    console.error(`❌ 이메일 전송 실패 (${email}):`, error);
+  }
+}
+
+
+cron.schedule('0 0 * * *', async () => {
+  console.log('📨 [알림] 마감 1주 전 카드 확인 스케줄러 실행');
+
+  try {
+    const [rows] = await db.query(`
+      SELECT c.id, c.title, c.endDate, u.email
+      FROM card_table c
+      JOIN user_info u ON c.manager = u.id
+      WHERE c.endDate = DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+    `);
+
+    for (const card of rows) {
+      await sendDueSoonEmail(card.email, card.title, card.endDate.toISOString().split('T')[0], "1주일");
+    }
+
+    console.log('📬 마감 임박 이메일 알림 완료');
+  } catch (error) {
+    console.error('🚨 마감 알림 스케줄러 오류:', error);
+  }
+});
+
+
+
+cron.schedule('0 0 * * *', async () => {
+  console.log('📨 [알림] 마감 1일 전 카드 확인 스케줄러 실행');
+
+  try {
+    const [rows] = await db.query(`
+      SELECT c.id, c.title, c.endDate, u.email
+      FROM card_table c
+      JOIN user_info u ON c.manager = u.id
+      WHERE c.endDate = DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+    `);
+
+    for (const card of rows) {
+      await sendDueSoonEmail(card.email, card.title, card.endDate.toISOString().split('T')[0], "1일");
+    }
+
+    console.log('📬 마감 임박 이메일 알림 완료');
+  } catch (error) {
+    console.error('🚨 마감 알림 스케줄러 오류:', error);
+  }
+});
 
 
 
@@ -706,7 +777,7 @@ app.post('/api/createInviteLInk', async (req, res) => {
         await db.query("INSERT INTO invite_tokens (token, project_id, inviter_email) VALUES (?, ?, ?)", [token, projectId, inviterEmail]);
         
         res.json({
-        inviteUrl: `http://43.203.124.34:3000/invite/${token}`
+        inviteUrl: `http://43.203.124.34/invite/${token}`
 });
 
     } catch (err) {
@@ -1019,7 +1090,7 @@ app.post('/api/setCard_desc', async (req, res) => {
 
 
 app.post('/api/setChat', async (req, res) => {
-    const { user, content } = req.body;
+    const { user, content, project_id} = req.body;
 
     if (!user || !content) {
         return res.status(400).json({ error: "user(email) 또는 content가 없습니다." });
@@ -1034,8 +1105,8 @@ app.post('/api/setChat', async (req, res) => {
         const userId = result2[0].id;
         const username = result2[0].username;
         const [result] = await db.query(
-            'INSERT INTO chat_messages (user_id, content) VALUES (?, ?)',
-            [userId, content]
+            'INSERT INTO chat_messages (user_id, content, project_id) VALUES (?, ?, ?)',
+            [userId, content, project_id]
         );
         const insertId = result.insertId;
         const [result3] = await db.query(
@@ -1060,12 +1131,15 @@ app.post('/api/setChat', async (req, res) => {
 
 
 app.post('/api/getChat', async (req, res) => {
+    const {project_id} = req.body;
+    if(!project_id) return res.status(400).json({error:'project id가 없음'});
     try {
         const [rows] = await db.query(
                 `SELECT c.id, c.content, CONVERT_TZ(c.created_at, '+00:00', '+09:00') AS created_at, u.username AS sender
                 FROM chat_messages c
                 JOIN user_info u ON c.user_id = u.id
-                ORDER BY c.created_at ASC`);
+                where c.project_id = ?
+                ORDER BY c.created_at ASC`, [project_id]);
         if (rows.length === 0) {
             return res.json([]);
         }
@@ -1108,6 +1182,32 @@ app.post('/api/dragCard', async (req, res) => {
     try {
         const [rows] = await db.query("update card_table set column_id = ? where id = ?", [columnId, cardId]);
         res.json({message : "카드 옮기기 성공"});
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
+app.post('/api/checkOwner', async (req, res) => {
+    const { email, project_id } = req.body;
+
+    if (!email || !project_id) {
+        return res.status(400).json({ error: "이메일 또는 프로젝트 ID가 없습니다." });
+    }
+    try {
+        const [rows] = await db.query(
+            `SELECT pm.role
+             FROM project_members pm
+             JOIN user_info ui ON pm.user_id = ui.id
+             WHERE ui.email = ? AND pm.project_id = ?`,
+            [email, project_id]
+        );
+        if(rows.length === 0){
+            return res.json({error : "데이터가 없음"});
+        }
+        res.json({role : rows[0].role});
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "서버 오류 발생" });
