@@ -1,95 +1,128 @@
+// app/project/ProjectSummary.tsx
+import React, { useContext, useEffect, useState } from "react";
 import Image from "next/image";
-import { useState, useContext } from "react";
-import type { Card } from "../cardContext";
-import CardModal from "./CardModal";
-import { CardContext } from '../cardContext';
+import { CardContext } from "../cardContext";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
-type BoardProps = {
-  projectId : string | null;
-  projectName : string | null;
-  projectDesc : string | null;
+// Props 타입
+export type SummaryProps = {
+  projectId: string | null;
+  projectName: string | null;
+  projectDesc: string | null;
 };
 
-const Summary = ({projectId}: BoardProps) => {
-  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+
+const ProjectSummary: React.FC<SummaryProps> = ({
+  projectId,
+}) => {
   const cardCon = useContext(CardContext);
+  const [counts, setCounts] = useState<{ title: string; count: number }[]>([]);
+  const generateColors = (num: number) => {
+    return Array.from({ length: num }, (_, i) => `hsl(${(i * 360) / num}, 70%, 60%)`);
+  };
+  const dynamicColors = generateColors(cardCon.columns.length);
 
-  const today = new Date();
-  const cards = cardCon?.cards || [];
+  
+  
 
-  const completedCount = cards.filter(card => {
-    return card.endDate && new Date(card.endDate) < today;
-  }).length;
+  const { columns, cards, fetchCardsByProject } = cardCon;
 
-  const createdCount = cards.length;
+  useEffect(() => {
+    if (!projectId) return;
+    (async () => {
+      try {
+        await fetchCardsByProject(projectId);
+      } catch (e) {
+        console.warn("ProjectSummary: 카드 로드 실패", e);
+      }
+    })();
+  }, [projectId]);
 
-  const updatedCount = cards.filter(card => {
-    const createdAt = new Date(card.startDate);
-    const diff = (today.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
-    return diff <= 7;
-  }).length;
+  // 카드 카운트 계산 및 그래디언트 업데이트
+  useEffect(() => {
+    const tmpCounts = columns.map((col) => ({
+      title: col.title,
+      count: cards.filter((c) => c.columnId === col.id).length,
+    }));
+    setCounts(tmpCounts);
+    const sum = tmpCounts.reduce((acc, cur) => acc + cur.count, 0) || 1;
 
-  const upcomingDueCount = cards.filter(card => {
-    if (!card.endDate) return false;
-    const dueDate = new Date(card.endDate);
-    const diff = (dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
-    return diff >= 0 && diff <= 3;
-  }).length;
-
+    let offset = 0;
+    tmpCounts.map((item, idx) => {
+      const pct = (item.count / sum) * 100;
+      const start = offset;
+      offset += pct;
+      return `${dynamicColors[idx % dynamicColors.length]} ${start}% ${offset}%`;
+    });
+  }, [columns, cards]);
+  if (!cardCon || typeof cardCon.fetchCardsByProject !== "function") {
+    return <div>Loading summary…</div>;
+  }
   return (
     <div className="summary-b p-6 overflow-y-auto">
+      {/* 상단 요약 블록 */}
       <div className="m-3 grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="summary-top p-4 text-center rounded-lg">
-          <div className="flex items-center gap-2 ml-1">
-            <Image className="summaryImages" src="/checkLogo.jpg" alt="check" width={60} height={60} />
-            <h1 className="font-bold">{completedCount}개 완료함</h1>
+        {counts.map(({ title, count }) => (
+          <div key={title} className="summary-top p-4 text-center rounded-lg">
+            <div className="flex">
+              <Image className="summaryImages" src="/checkLogo.jpg" alt="check" width={60} height={60} />
+              <div className="flex items-center justify-center gap-2">
+                <h1 className="font-bold">
+                  {count}개 {title}
+                </h1>
+              </div>
+            </div>
+            
           </div>
-        </div>
-        <div className="summary-top p-4 text-center rounded-lg">
-          <div className="flex items-center gap-2 ml-1">
-            <Image className="summaryImages" src="/updateLogo.jpg" alt="check" width={60} height={60} />
-            <h1 className="font-bold">{updatedCount}개 업데이트함</h1>
-          </div>
-        </div>
-        <div className="summary-top p-4 text-center rounded-lg">
-          <div className="flex items-center gap-2 ml-1">
-            <Image className="summaryImages" src="/madeLogo.jpg" alt="check" width={60} height={60} />
-            <h1 className="font-bold">{createdCount}개 만듦</h1>
-          </div>
-        </div>
-        <div className="summary-top p-4 text-center rounded-lg">
-          <div className="flex items-center gap-2 ml-1">
-            <Image className="summaryImages" src="/deadlineLogo.jpg" alt="check" width={60} height={60} />
-            <h1 className="font-bold">{upcomingDueCount}개 마감 예정</h1>
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* 하단 요약 블록 */}
+      {/* 상태 개요 카드 */}
       <div className="h-150 m-3 grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="summary-middle p-4 text-center rounded-lg relative">
+          <div className="flex items-center justify-center mb-2">
+            <h2 className="font-bold">상태 개요</h2>
+          </div>
+
+          <ResponsiveContainer width="100%" height={250}>
+            <PieChart>
+              <Pie
+                data={counts}
+                dataKey="count"
+                nameKey="title"
+                cx="50%"
+                cy="50%"
+                outerRadius={80}
+                label={({ name }) => name.length > 4 ? name.slice(0, 4) + "…" : name}
+              >
+                {counts.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={dynamicColors[index % dynamicColors.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* 기타 summary-middle 블록들 */}
         <div className="summary-middle p-4 text-center rounded-lg">
-          <h1 className="font-bold">상태 개요</h1>
+          <h2 className="font-bold">최근 활동</h2>
         </div>
         <div className="summary-middle p-4 text-center rounded-lg">
-          <h1 className="font-bold">최근 활동</h1>
+          <h2 className="font-bold">업무 유형</h2>
         </div>
         <div className="summary-middle p-4 text-center rounded-lg">
-          <h1 className="font-bold">업무 유형</h1>
-        </div>
-        <div className="summary-middle p-4 text-center rounded-lg">
-          <h1 className="font-bold">팀 워크로드</h1>
+          <h2 className="font-bold">팀 워크로드</h2>
         </div>
       </div>
-
-      {selectedCard && (
-        <CardModal
-          card={selectedCard}
-          setSelectedAction={setSelectedCard}
-          projectId={projectId}
-        />
-      )}
     </div>
   );
 };
 
-export default Summary;
+export default ProjectSummary;

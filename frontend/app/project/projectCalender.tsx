@@ -5,7 +5,11 @@ import type { Card } from "../cardContext";
 import CardModal from "./CardModal";
 import styles from "./Calender.module.css";
 import { io } from "socket.io-client";
+<<<<<<< HEAD
 
+=======
+import dayjs from "dayjs";
+>>>>>>> b87d4e576e24f79c6a79dfec016d2a253ee66906
 const socket = io("http://43.203.124.34:5001");
 
 const Calendar = ({ projectId }: { projectId: string | null }) => {
@@ -15,7 +19,11 @@ const Calendar = ({ projectId }: { projectId: string | null }) => {
   const [tempYear, setTempYear] = useState(currentDate.getFullYear());
   const [tempMonth, setTempMonth] = useState(currentDate.getMonth() + 1);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+<<<<<<< HEAD
 
+=======
+  const [hoveredCardId, setHoveredCardId] = useState<number>(null);
+>>>>>>> b87d4e576e24f79c6a79dfec016d2a253ee66906
   const isScrolling = useRef(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const cardCon = useContext(CardContext);
@@ -88,6 +96,7 @@ const Calendar = ({ projectId }: { projectId: string | null }) => {
     const month = currentDate.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
+<<<<<<< HEAD
     const days: (number | null)[] = Array(firstDay).fill(null).concat(
       Array.from({ length: daysInMonth }, (_, i) => i + 1)
     );
@@ -98,6 +107,11 @@ const Calendar = ({ projectId }: { projectId: string | null }) => {
     for (let i = 1; i <= daysInMonth; i++) {
       days.push(i);
     }
+=======
+    const days: (number | null)[] = Array(firstDay).fill(null)
+      .concat(Array.from({ length: daysInMonth }, (_, i) => i + 1));
+
+>>>>>>> b87d4e576e24f79c6a79dfec016d2a253ee66906
     return days;
   };
 
@@ -138,7 +152,10 @@ const Calendar = ({ projectId }: { projectId: string | null }) => {
       if (!start || !end) return false;
 
       const startDate = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+<<<<<<< HEAD
       const endDate = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+=======
+>>>>>>> b87d4e576e24f79c6a79dfec016d2a253ee66906
 
       return startDate <= date && date <= end;
     });
@@ -212,16 +229,26 @@ const Calendar = ({ projectId }: { projectId: string | null }) => {
             {day && (
               <>
                 <div className={styles.dayNumber}>{day}</div>
-                {getCardForDay(day).map((card, i) => (
-                  <div
-                    key={i}
-                    className={styles.cardBar}
-                    style={{ top: `${30 + i * 24}px` }}
-                    onClick={() => setSelectedCard(card)}
-                  >
-                    {card.text}
-                  </div>
-                ))}
+                {getCardForDay(day).map((card, i) => {
+                  console.log('day:', day, '| i:', i, '| card:', card);
+                  return (
+                    <div
+                      key={`${card.id}-${i}`}
+                      className={`
+                        ${styles.cardBar} 
+                        ${hoveredCardId === card.id ? styles.cardBarHover : ''}
+                        ${day === dayjs(card.startDate).date() ? 'rounded-l-lg' : ''}
+                        ${day === dayjs(card.endDate).date() ? 'rounded-r-lg' : ''}
+                      `}
+                      style={{ top: `${30 + i * 24}px` }}
+                      onMouseEnter={() => setHoveredCardId(card.id)}
+                      onMouseLeave={() => setHoveredCardId(null)}
+                      onClick={() => setSelectedCard(card)}
+                    >
+                      {Math.floor((dayjs(card.endDate).date() + dayjs(card.startDate).date()) / 2) === day ? card.text : ''}
+                    </div>
+                  );
+                })}
               </>
             )}
           </div>

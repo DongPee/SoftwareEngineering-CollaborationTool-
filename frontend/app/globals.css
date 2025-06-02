@@ -224,6 +224,7 @@ body {
 }
 .summaryImages {
   filter: var(--summaryImages-filter);
+  left : 2px;
 }
 
 .project-info {
@@ -360,4 +361,8 @@ input {
   text-overflow: ellipsis;
   display: flex;
   align-items: center;
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> b87d4e576e24f79c6a79dfec016d2a253ee66906

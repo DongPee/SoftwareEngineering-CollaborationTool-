@@ -58,3 +58,4 @@ export const verifyCode = async (email: string, verificationCode: string) => {
     return { success: false, error: "인증 처리 중 문제가 발생했습니다." };
   }
 };
+

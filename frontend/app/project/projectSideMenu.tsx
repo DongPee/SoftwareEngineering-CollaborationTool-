@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getDarkMode } from "../DarkState";
-import { useEffect } from "react";
+import { useEffect, useState} from "react";
 
 type SidebarProps = {
   active: string;
@@ -17,8 +17,41 @@ const Sidebar = ({
   projectName,
   projectDesc,
 }: SidebarProps) => {
+  const [isOwner, setisOwner] = useState<boolean>(false);
+  const userEmail = localStorage.getItem('email') || '';
+  const check_owner = async () => {
+      try {
+        const response = await fetch("http://43.203.124.34:5001/api/checkOwner", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({email : userEmail, project_id : projectId}),
+        });
+    
+        if (!response.ok) {
+          throw new Error("서버 응답 실패");
+        }
+    
+        const data = await response.json();
+        if(data.role === "owner"){
+          return true;
+        }
+        return false;
+      } catch (error) {
+        console.error("채팅 데이터를 불러오는 중 오류 발생:", error);
+      }
+    };
   useEffect(() => {
     document.body.classList.toggle("dark-mode", getDarkMode());
+    const check = async () => {
+    const result = await check_owner(); // boolean
+      if (result !== undefined) {
+        setisOwner(result);
+      }
+    };
+
+    check();
   }, []);
 
   const makeTabHref = (tab: string) => {
@@ -61,13 +94,26 @@ const Sidebar = ({
               <span className="m-2">채팅</span>
             </div>
           </Link>
-
-          <Link href={makeTabHref("log")} onClick={() => setActive("log")}>
-            <div className={`flex items-center gap-3 rounded-2xl cursor-pointer hover:bg-blue-400 transition ${active === "log" ? "border-2 border-blue-400" : ""}`}>
-              <span className="m-2">로그</span>
-            </div>
-          </Link>
-
+          {isOwner && (
+            <Link
+              href={`/${
+                projectId
+                  ? `project/${projectId}/${encodeURIComponent(
+                      projectName
+                    )}/${encodeURIComponent(projectDesc)}`
+                  : "projectList"
+              }`}
+              onClick={() => setActive("log")}
+            >
+              <div
+                className={`flex items-center gap-3 rounded-2xl cursor-pointer hover:bg-blue-400 transition ${
+                  active === "log" ? "border-2 border-blue-400" : ""
+                }`}
+              >
+                <span className="m-2">로그</span>
+              </div>
+            </Link>
+          )}
           <Link href={makeTabHref("role")} onClick={() => setActive("role")}>
             <div className={`flex items-center gap-3 rounded-2xl cursor-pointer hover:bg-blue-400 transition ${active === "role" ? "border-2 border-blue-400" : ""}`}>
               <span className="m-2">역할 관리</span>

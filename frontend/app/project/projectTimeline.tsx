@@ -7,7 +7,6 @@ import CardModal from './CardModal';
 import { io } from 'socket.io-client';
 
 const socket = io('http://43.203.124.34:5001');
-const CELL_WIDTH = 34;
 
 export default function ProjectTimeline({ projectId }: { projectId: string | null }) {
   const isScrolling = useRef(false);
@@ -16,7 +15,8 @@ export default function ProjectTimeline({ projectId }: { projectId: string | nul
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [dateRange, setDateRange] = useState<Date[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
-
+  const [cellWidth, setCellWidth] = useState(34); // 기본값은 34px
+  const [centerDate, setCenterDate] = useState<Date | null>(null);
   const formatDate = (date: Date) => {
     const offset = date.getTimezoneOffset();
     const local = new Date(date.getTime() - offset * 60000);
@@ -29,8 +29,8 @@ export default function ProjectTimeline({ projectId }: { projectId: string | nul
 
     if (startIdx === -1 || endIdx === -1 || endIdx < startIdx) return { display: 'none' };
 
-    const left = startIdx * CELL_WIDTH;
-    const width = (endIdx - startIdx + 1) * CELL_WIDTH;
+    const left = startIdx * cellWidth;
+    const width = (endIdx - startIdx + 1) * cellWidth;
 
     return {
       position: 'absolute',
@@ -92,8 +92,8 @@ export default function ProjectTimeline({ projectId }: { projectId: string | nul
       setDateRange([...dateRange, ...newDates]);
     }
   };
-
   const handleScroll = () => {
+<<<<<<< HEAD
   const el = scrollRef.current;
   if (!el) return;
 
@@ -116,27 +116,87 @@ export default function ProjectTimeline({ projectId }: { projectId: string | nul
     }, 300);
   }
 };
+=======
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const scrollLeft = el.scrollLeft;
+    const visibleCenter = scrollLeft + el.clientWidth / 2;
+    const centerIndex = Math.floor(visibleCenter / cellWidth);
+    if (dateRange[centerIndex]) {
+      setCenterDate(dateRange[centerIndex]);
+    }
+
+    const nearLeftEdge = scrollLeft < 10;
+    const nearRightEdge = scrollLeft + el.clientWidth > el.scrollWidth - 10;
+
+    if (nearLeftEdge && !isScrolling.current) {
+      isScrolling.current = true;
+      expandDates('left');
+      setTimeout(() => {
+        isScrolling.current = false;
+      }, 300);
+    }
+
+    if (nearRightEdge && !isScrolling.current) {
+      isScrolling.current = true;
+      expandDates('right');
+      setTimeout(() => {
+        isScrolling.current = false;
+      }, 300);
+    }
+  };
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey) { // Ctrl 키 + 마우스 휠
+        e.preventDefault();
+        setCellWidth((prev) => {
+          const newWidth = Math.min(80, Math.max(20, prev + (e.deltaY > 0 ? -1  :1)));
+          return newWidth;
+        });
+      }
+    };
+
+    const el = scrollRef.current;
+    el?.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      el?.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
+>>>>>>> b87d4e576e24f79c6a79dfec016d2a253ee66906
 
   
   const getMonthLabel = (date: Date) => `${date.getMonth() + 1}월`;
 
   return (
     <div className={styles.timelineWrapper}>
-      <h2 className={styles.timelineTitle}>타임라인</h2>
-
+      <h2 className={styles.timelineTitle}>
+        타임라인
+      </h2>
+      {centerDate && (
+        <div className={styles.centerDateLabel}>
+          현재 날짜: {centerDate.getFullYear()}년 {centerDate.getMonth() + 1}월
+        </div>
+      )}
       <div className={styles.timelineContainer}>
+        {/*
         <div className={styles.taskColumn}>
           {cards.filter(c => c.startDate && c.endDate).map((card) => (
             <div key={card.id} className={styles.taskCell}>{card.text}</div>
           ))}
         </div>
-
+        */}
         <div className={styles.scrollSyncWrapper} ref={scrollRef} onScroll={handleScroll}>
           <div className={styles.dateRow}>
             {dateRange.map((d, i) => {
               const isFirst = i === 0 || dateRange[i - 1].getMonth() !== d.getMonth();
               return (
-                <div key={i} className={styles.dateCell}>
+                <div
+                  key={i}
+                  className={styles.dateCell}
+                  style={{ minWidth: `${cellWidth}px`, maxWidth: `${cellWidth}px` }}
+                >
                   <div className={styles.dateContent}>
                     {isFirst && <span className={styles.monthLabel}>{getMonthLabel(d)}</span>}
                     <span className={styles.dateNumber}>{d.getDate()}</span>

@@ -21,6 +21,7 @@ export default function Project() {
   const tab = searchParams.get("tab");
 
   const [projectId, encodedName, encodedDesc] = params.params || [];
+<<<<<<< HEAD
     const projectName = decodeURIComponent(encodedName || "");
     const projectDesc = decodeURIComponent(encodedDesc || "");
     
@@ -34,7 +35,14 @@ export default function Project() {
     current.set("tab", tab);
     window.history.replaceState({}, "", `?${current.toString()}`);
   };
+=======
 
+  const projectName = decodeURIComponent(encodedName || "");
+  const projectDesc = decodeURIComponent(encodedDesc || "");
+  const auth = useContext(AuthContext);
+>>>>>>> b87d4e576e24f79c6a79dfec016d2a253ee66906
+
+  
   useEffect(() => {
     if (!auth?.isLoggedIn) {
       router.push("/");
@@ -67,8 +75,6 @@ export default function Project() {
             ? "보드"
             : active === "calender"
             ? "캘린더"
-            : active === "calender"
-            ? "캘린더"
             : active === "log"
             ? "로그"
             : "채팅"}
@@ -80,7 +86,9 @@ export default function Project() {
             projectDesc={projectDesc}
           />
         )}
-        {active === "timeline" && <ProjectTimeline projectId={projectId} />}
+        {active === "timeline" && (
+          <ProjectTimeline projectId={projectId} />
+        )}
         {active === "board" && (
           <Board
             projectId={projectId}
@@ -93,7 +101,11 @@ export default function Project() {
             projectId={projectId}
           />
         )}
-        {active === "chat" && <Chat />}
+        {active === "chat" && (
+          <Chat
+            projectId={projectId}
+          />
+          )}
         {active === "log" && (
           <Log
             projectId={projectId}

@@ -10,7 +10,10 @@ import type { CardModalProps, comment} from "../cardContext";
 const socket = io('http://43.203.124.34:5001');
 
 export default function CardModal({ card, setSelectedCard, projectId }: CardModalProps) {
+<<<<<<< HEAD
   // setSelectedCard 함수형 props 직렬화 문제
+=======
+>>>>>>> b87d4e576e24f79c6a79dfec016d2a253ee66906
   const [details, setDetails] = useState(card.details);
   const [assignee, setAssignee] = useState<{ assignee: string; id: number }>();
   const [priority, setPriority] = useState('');
