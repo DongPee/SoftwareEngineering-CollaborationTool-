@@ -1,0 +1,62 @@
+.container {
+  padding: 24px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  min-height: 100vh;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: var(--text-color);
+}
+
+.subtitle {
+  font-size: 14px;
+  margin-bottom: 20px;
+  color: var(--text-color);
+}
+
+.dropdown {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-color);
+  color: var(--text-color);
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 300px;
+}
+
+.userList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.userCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--card-bg-color);
+  color: var(--text-color);
+  padding: 12px 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.username {
+  font-weight: 600;
+}
+
+.roleLabel {
+  font-size: 13px;
+  color: var(--text-color);
+}

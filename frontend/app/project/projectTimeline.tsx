@@ -93,30 +93,6 @@ export default function ProjectTimeline({ projectId }: { projectId: string | nul
     }
   };
   const handleScroll = () => {
-<<<<<<< HEAD
-  const el = scrollRef.current;
-  if (!el) return;
-
-  const nearLeftEdge = el.scrollLeft < 10;
-  const nearRightEdge = el.scrollLeft + el.clientWidth > el.scrollWidth - 10;
-
-  if (nearLeftEdge && !isScrolling.current) {
-    isScrolling.current = true;
-    expandDates('left');
-    setTimeout(() => {
-      isScrolling.current = false;
-    }, 300);
-  }
-
-  if (nearRightEdge && !isScrolling.current) {
-    isScrolling.current = true;
-    expandDates('right');
-    setTimeout(() => {
-      isScrolling.current = false;
-    }, 300);
-  }
-};
-=======
     const el = scrollRef.current;
     if (!el) return;
 
@@ -164,7 +140,6 @@ export default function ProjectTimeline({ projectId }: { projectId: string | nul
       el?.removeEventListener('wheel', handleWheel);
     };
   }, []);
->>>>>>> b87d4e576e24f79c6a79dfec016d2a253ee66906
 
   
   const getMonthLabel = (date: Date) => `${date.getMonth() + 1}월`;

@@ -83,12 +83,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-<<<<<<< HEAD
-=======
 .centerDateLabel {
   font-size: 14px;
   margin: 4px 0 10px 0;
   color: #555;
   text-align: center;
 }
->>>>>>> b87d4e576e24f79c6a79dfec016d2a253ee66906

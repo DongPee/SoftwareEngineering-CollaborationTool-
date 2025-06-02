@@ -14,7 +14,7 @@ const ProfilePage = () => {
   const router = useRouter();
   const [darkMode, setDarkModeState] = useState(getDarkMode());
 
-   useEffect(() => {
+  useEffect(() => {
     document.body.classList.toggle("dark-mode", darkMode);
   }, [darkMode]);
 
@@ -42,12 +42,12 @@ const ProfilePage = () => {
     <div className={styles.profileContainer}>
       <div className={styles.profileCard}>
         <Image
-          src="/default-user.png"  // 이미지 경로
+          src="/default-user.png"
           alt="프로필 이미지"
           className={styles.profileImage}
           style={{ filter: userFilter }}
-          width={100}  // 이미지 크기 지정
-          height={100}  // 이미지 크기 지정
+          width={100}
+          height={100}
         />
         <h1 className={styles.profileTitle}>{auth.username}</h1>
         <p className={styles.profileEmail}>{auth.email}</p>
@@ -63,7 +63,7 @@ const ProfilePage = () => {
 
         <div className={styles.buttonContainer}>
           <button
-            className={`${styles.button} ${styles.buttonSecondary}`}
+            className={`${styles.button} ${darkMode ? styles.buttonPrimary : styles.buttonSecondary}`}
             onClick={toggleDarkMode}
           >
             {darkMode ? "Day" : "Night"}

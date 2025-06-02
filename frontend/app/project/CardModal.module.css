@@ -1,13 +1,13 @@
 .modal {
-    color: var(--text-color);
-    position: fixed;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(4px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 50;
+  color: var(--text-color);
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
 }
 
 .modalContent {
@@ -62,7 +62,8 @@
   box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
 }
 
-.button {
+.button,
+.addCommentBtn {
   display: block;
   width: 100%;
   background-color: #3b82f6;
@@ -72,10 +73,30 @@
   margin-bottom: 20px;
   cursor: pointer;
   transition: background 0.2s ease;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .button:hover {
   background-color: #2563eb;
+}
+
+.addCommentBtn {
+  background-color: #22c55e;
+  padding: 0 14px;
+  height: 40px;
+  width: auto;
+}
+
+.addCommentBtn:hover {
+  background-color: #16a34a;
+}
+
+.closeBtn {
+  background-color: #6b7280;
+}
+.closeBtn:hover {
+  background-color: #ff4545;
 }
 
 .commentList {
@@ -93,39 +114,75 @@
   border-bottom: 1px solid #eee;
   padding: 6px 0;
 }
-
 .commentItem:last-child {
   border-bottom: none;
 }
 
 .commentInputWrap {
   display: flex;
+  align-items: center;
   gap: 8px;
 }
 
-.commentInput {
+.commentInputContainer {
+  position: relative;
   flex-grow: 1;
 }
 
-.addCommentBtn {
-  background-color: #22c55e;
+.commentInput {
+  width: 100%;
+  padding-left: 34px;
+}
+
+.attachBtn {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-80%);
+  background: none;
   border: none;
+  font-size: 20px;
+  width: 20px;
+  height: 28px;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  color: #888;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.attachBtn:hover {
+  color: #444;
+}
+
+.selectRow,
+.dateRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.selectColumn,
+.dateColumn {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.fileUploadBtn {
+  background-color: #22c55e;
+  color: white;
   border-radius: 12px;
   padding: 0 14px;
   height: 40px;
   cursor: pointer;
   transition: background 0.2s ease;
-  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-
-.addCommentBtn:hover {
+.fileUploadBtn:hover {
   background-color: #16a34a;
-}
-
-.closeBtn {
-  background-color: #6b7280;
-}
-
-.closeBtn:hover {
-  background-color: #ff4545;
 }

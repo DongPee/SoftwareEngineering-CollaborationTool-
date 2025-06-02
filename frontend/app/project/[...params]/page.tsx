@@ -13,6 +13,7 @@ import Chat from "../projectChat";
 import ProjectTimeline from "../projectTimeline";
 import Log from "../ProjectLog";
 import { useSearchParams } from "next/navigation";
+import ProjectRole from "../projectRole";
 
 export default function Project() {
   const router = useRouter();
@@ -20,27 +21,13 @@ export default function Project() {
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab");
 
+  const [active, setActive] = useState(tab || "summary");
+  
   const [projectId, encodedName, encodedDesc] = params.params || [];
-<<<<<<< HEAD
-    const projectName = decodeURIComponent(encodedName || "");
-    const projectDesc = decodeURIComponent(encodedDesc || "");
-    
-  const auth = useContext(AuthContext); const projectName = decodeURIComponent(encodedName || "");
-    const projectDesc = decodeURIComponent(encodedDesc || "");
-
-  const [active, setActiveState] = useState(tab ?? "summary");
-  const setActive = (tab: string) => {
-    setActiveState(tab);
-    const current = new URLSearchParams(window.location.search);
-    current.set("tab", tab);
-    window.history.replaceState({}, "", `?${current.toString()}`);
-  };
-=======
 
   const projectName = decodeURIComponent(encodedName || "");
   const projectDesc = decodeURIComponent(encodedDesc || "");
   const auth = useContext(AuthContext);
->>>>>>> b87d4e576e24f79c6a79dfec016d2a253ee66906
 
   
   useEffect(() => {
@@ -112,6 +99,13 @@ export default function Project() {
             projectName={projectName}
             projectDesc={projectDesc}
           />
+        )}
+        {active === "role" && (
+        <ProjectRole
+          projectId={projectId}
+          projectName={projectName}
+          projectDesc={projectDesc}
+        />
         )}
       </div>
     </div>

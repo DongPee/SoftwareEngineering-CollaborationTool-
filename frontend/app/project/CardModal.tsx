@@ -5,15 +5,11 @@ import styles from "./CardModal.module.css";
 import { showUsers } from "./addDeleteBoardCard";
 import { AuthContext } from "../AuthContext";
 import { io } from 'socket.io-client';
-import type { CardModalProps, comment} from "../cardContext";
+import type { CardModalProps, comment } from "../cardContext";
 
 const socket = io('http://43.203.124.34:5001');
 
 export default function CardModal({ card, setSelectedCard, projectId }: CardModalProps) {
-<<<<<<< HEAD
-  // setSelectedCard 함수형 props 직렬화 문제
-=======
->>>>>>> b87d4e576e24f79c6a79dfec016d2a253ee66906
   const [details, setDetails] = useState(card.details);
   const [assignee, setAssignee] = useState<{ assignee: string; id: number }>();
   const [priority, setPriority] = useState('');
@@ -29,24 +25,24 @@ export default function CardModal({ card, setSelectedCard, projectId }: CardModa
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const uploadFileToS3 = async (file: File): Promise<string | null> => {
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
 
-    const response = await fetch("http://43.203.124.34:5001/api/upload", {
-      method: "POST",
-      body: formData,
-    });
+      const response = await fetch("http://43.203.124.34:5001/api/upload", {
+        method: "POST",
+        body: formData,
+      });
 
-    if (!response.ok) throw new Error("파일 업로드 실패");
+      if (!response.ok) throw new Error("파일 업로드 실패");
 
-    const data = await response.json();
-    return data.fileUrl; // S3에 업로드된 파일 URL 반환
-  } catch (err) {
-    console.error("파일 업로드 중 오류:", err);
-    return null;
-  }
-};
+      const data = await response.json();
+      return data.fileUrl;
+    } catch (err) {
+      console.error("파일 업로드 중 오류:", err);
+      return null;
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -80,51 +76,52 @@ export default function CardModal({ card, setSelectedCard, projectId }: CardModa
   };
 
   const handleAddComment = async () => {
-    const trimmed = newComment.trim();
-    if (!trimmed && !selectedFile) return;
+  const trimmed = newComment.trim();
+  const author = localStorage.getItem("email") || auth?.email;
 
-    const author = localStorage.getItem("email") || auth?.email;
-    if (!author) return;
+  if (!author || !card?.id || (!trimmed && !selectedFile)) return;
 
-    let uploadedFileUrl = null;
-    if (selectedFile) {
-      uploadedFileUrl = await uploadFileToS3(selectedFile);
+  let uploadedFileUrl = null;
+  if (selectedFile) {
+    uploadedFileUrl = await uploadFileToS3(selectedFile);
+  }
+  // 댓글 내용이 없어도 파일이 있으면 기본 메시지 삽입
+  const finalContent = trimmed || (uploadedFileUrl ? "첨부파일" : "");
+
+  try {
+    const response = await fetch("http://43.203.124.34:5001/api/addComment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        cardId: card.id,
+        content: finalContent,
+        email: author,
+        fileUrl: uploadedFileUrl,
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      setComments((prev) => [
+        ...prev,
+        {
+          text: finalContent,
+          author: data.author,
+          author_email: data.author_email,
+          id: data.id,
+          file_Url: uploadedFileUrl,
+        },
+      ]);
+      setNewComment("");
+      setSelectedFile(null);
+      socket.emit("isModalChanged");
+    } else {
+      console.error("서버 응답 실패", await response.text());
     }
-    console.log(uploadedFileUrl);
-    try {
-      const response = await fetch("http://43.203.124.34:5001/api/addComment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cardId: card.id,
-          content: trimmed,
-          email: author,
-          fileUrl: uploadedFileUrl,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setComments((prev) => [
-          ...prev,
-          {
-            text: trimmed,
-            author: data.author,
-            author_email: data.author_email,
-            id: data.id,
-            file_Url: uploadedFileUrl, // ← 프론트에서도 표시
-          },
-        ]);
-        setNewComment("");
-        setSelectedFile(null); // 파일 초기화
-        socket.emit("isModalChanged");
-      } else {
-        console.error("서버 응답 실패", await response.text());
-      }
-    } catch (error) {
-      console.error("댓글 추가 오류:", error);
-    }
-  };
+  } catch (error) {
+    console.error("댓글 추가 오류:", error);
+  }
+};
 
   const handleEditComment = (index: number) => {
     setEditingIndex(index);
@@ -132,8 +129,8 @@ export default function CardModal({ card, setSelectedCard, projectId }: CardModa
   };
 
   const handleSaveEditedComment = (index: number) => {
-  console.log("댓글 수정 기능은 아직 구현되지 않았습니다. index:", index);
-};
+    console.log("댓글 수정 기능은 아직 구현되지 않았습니다. index:", index);
+  };
 
   const handleDeleteComment = async (index: number) => {
     const commentId = comments[index].id;
@@ -308,14 +305,31 @@ export default function CardModal({ card, setSelectedCard, projectId }: CardModa
         )}
 
         <div className={styles.commentInputWrap}>
-          <input value={newComment} onChange={(e) => setNewComment(e.target.value)} placeholder="댓글 입력" className={`${styles.input} ${styles.commentInput}`} />
-          <label className={styles.fileUploadBtn}>
-            첨부
-            <input type="file" style={{ display: "none" }} onChange={handleFileChange} />
-          </label>
-          {selectedFile && <span className={styles.fileName}>{selectedFile.name}</span>}
+          <div className={styles.commentInputContainer}>
+            <button
+              type="button"
+              className={styles.attachBtn}
+              onClick={() => document.getElementById("file-upload")?.click()}
+            >
+              +
+            </button>
+            <input
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="댓글 입력"
+              className={`${styles.input} ${styles.commentInput}`}
+            />
+            <input
+              id="file-upload"
+              type="file"
+              style={{ display: "none" }}
+              onChange={handleFileChange}
+            />
+          </div>
+
           <button onClick={handleAddComment} className={styles.addCommentBtn}>추가</button>
         </div>
+        {selectedFile && <div className={styles.fileName}>첨부 파일: {selectedFile.name}</div>}
 
         <button onClick={handleSave} className={styles.button}>완료</button>
       </div>
