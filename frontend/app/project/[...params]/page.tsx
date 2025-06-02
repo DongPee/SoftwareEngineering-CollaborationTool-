@@ -20,8 +20,12 @@ export default function Project() {
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab");
 
-  const [projectId, projectName, projectDesc] = params.params || [];
-  const auth = useContext(AuthContext);
+  const [projectId, encodedName, encodedDesc] = params.params || [];
+    const projectName = decodeURIComponent(encodedName || "");
+    const projectDesc = decodeURIComponent(encodedDesc || "");
+    
+  const auth = useContext(AuthContext); const projectName = decodeURIComponent(encodedName || "");
+    const projectDesc = decodeURIComponent(encodedDesc || "");
 
   const [active, setActiveState] = useState(tab ?? "summary");
   const setActive = (tab: string) => {

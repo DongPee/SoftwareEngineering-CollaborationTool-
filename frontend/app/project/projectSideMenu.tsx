@@ -67,6 +67,12 @@ const Sidebar = ({
               <span className="m-2">로그</span>
             </div>
           </Link>
+
+          <Link href={makeTabHref("role")} onClick={() => setActive("role")}>
+            <div className={`flex items-center gap-3 rounded-2xl cursor-pointer hover:bg-blue-400 transition ${active === "role" ? "border-2 border-blue-400" : ""}`}>
+              <span className="m-2">역할 관리</span>
+            </div>
+          </Link>
         </nav>
       </div>
     </div>
