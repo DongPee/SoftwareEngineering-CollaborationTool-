@@ -43,7 +43,7 @@ body {
   --text-socialLogin-color: #b5aa9a;
   --text-help-login-color: #ffae00;
   --text-inputGroupLabel-color: #ccc;
-  --summaryImages-filter: invert(1) brightness(2) contrast(0.47);
+  --summaryImages-filter: invert(1) brightness(2) contrast(0.69);
   --projectColor: brightness(0.7) contrast(2);
   --bg-mainPage-function: #504e4d;
   --header-btn-bg-color: #343434;

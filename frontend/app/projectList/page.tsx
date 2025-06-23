@@ -31,6 +31,7 @@ export default function ProjectSelector() {
     const [newProjectName, setNewProjectName] = useState("");
     const [description, setNewDescription] = useState("");
     const [isComposing, setIsComposing] = useState(false); // 한글 조합 중인지 여부
+
     const projectList = async () => {
         const email = auth?.email ?? "";
         try {
@@ -107,13 +108,16 @@ export default function ProjectSelector() {
     };
 
     const deleteProject = async (projectId: number) => {
+        const email = auth?.email ?? "";
+        console.log(projectId);
+        console.log(email);
         try {
             const response = await fetch("http://43.203.124.34:5001/api/deleteProject", {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ projectId }),
+                body: JSON.stringify({ projectId, email}),
             });
     
             if (!response.ok) {
@@ -143,6 +147,7 @@ export default function ProjectSelector() {
     };
 
     const toggleEdit = (index: number) => {
+
         setProjects(prev =>
             prev.map((proj, i) =>
                 i === index ? { ...proj, editing: !proj.editing } : proj
@@ -150,6 +155,32 @@ export default function ProjectSelector() {
         );
     };
 
+    const updateNameDesc = async (index: number) => {
+        const projectId = projects[index].id;
+        const name = projects[index].name;
+        const desc = projects[index].desc;
+        if(!projectId || !name || !desc){
+            alert("잠시 후 다시 시도해주세요.");
+            return;
+        }
+        console.log(projectId, name, desc);
+        try {
+            const response = await fetch("http://43.203.124.34:5001/api/updateProjectNameDesc", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({projectId, name, desc}),
+            });
+            if (!response.ok) {
+                throw new Error("프로젝트 삭제 실패");
+            }    
+        } catch (err) {
+            console.error("프로젝트 삭제 오류:", err);
+            alert("프로젝트 삭제에 실패했습니다.");
+        }
+            
+    };
     const updateName = (index: number, name: string) => {
         setProjects(prev =>
             prev.map((proj, i) =>
@@ -194,7 +225,6 @@ export default function ProjectSelector() {
             }
         }
     };
-
     return (
         <>
             {!auth?.isLoggedIn ? (
@@ -284,7 +314,12 @@ export default function ProjectSelector() {
                                         </button>
                                     )}
                                     <button
-                                        onClick={() => toggleEdit(index)}
+                                        onClick={() => {
+                                            if (project.editing) {
+                                                updateNameDesc(index);
+                                            }
+                                            toggleEdit(index);
+                                        }}
                                         className="border-2 border-black text-black text-sm rounded hover:bg-gray-100 mr-1"
                                     >
                                         <p className="m-2">{project.editing ? "✓" : "✎"}</p>

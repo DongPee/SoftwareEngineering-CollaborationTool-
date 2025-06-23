@@ -58,3 +58,23 @@ export const verifyCode = async (email: string, verificationCode: string) => {
     return { success: false, error: "인증 처리 중 문제가 발생했습니다." };
   }
 };
+
+export const writeLog = async (log_type : string, content : string, author_email : string, projectId : string) =>{
+  try {
+    const response = await fetch("http://43.203.124.34:5001/api/writeLog", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ log_type, content, author_email, projectId}),
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      return { success: true };
+    } else {
+      return { success: false, error: data.error };
+    }
+  } catch (error) {
+    console.error("인증 오류:", error);
+    return { success: false, error: "인증 처리 중 문제가 발생했습니다." };
+  }
+}

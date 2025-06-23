@@ -4,8 +4,10 @@ import { createColumn, deleteColumn, createCard, deleteCards, deleteCard } from 
 import { io } from 'socket.io-client';
 import { CardContext } from "../cardContext";
 import type { CardType, ColumnType, Card, Column} from "../cardContext";
+import { AuthContext } from "../AuthContext";
 const socket = io('http://43.203.124.34:5001');
-
+import { writeLog } from "../verification";
+import LoginPage from "../login/page";
 type BoardProps = {
   projectId: string | null;
   projectName: string | null;
@@ -18,6 +20,8 @@ export default function Board({ projectId }: BoardProps) {
   const [newColumnTitle, setNewColumnTitle] = useState("");
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const cardCon = useContext(CardContext);
+  const auth = useContext(AuthContext);
+  const email = auth.email || null;
   const fetchColumnsAndCards = async () => {
     if (!projectId) return;
     try {
@@ -122,7 +126,6 @@ export default function Board({ projectId }: BoardProps) {
   
   
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>, column: Column) => {
-    e.preventDefault();
     const cardId = parseInt(e.dataTransfer.getData("cardId"));
     
     const card = columns.flatMap(col => col.cards).find(c => c.id === cardId);
@@ -147,9 +150,12 @@ export default function Board({ projectId }: BoardProps) {
         console.error("카드 옮기기 에러", error);
       }
       socket.emit('isChanged');
+      writeLog("드래그 앤 드롭", `카드 ${cardId}가 컬럼 '${column.title}'(id: ${column.id})로 이동`, email, projectId);
+
     }
   };
 
+  if(!auth.email) return <LoginPage />
   return (
     <div className="board">
       {columns.map(column => (
@@ -166,6 +172,8 @@ export default function Board({ projectId }: BoardProps) {
                 await deleteCards(column.id);
                 await deleteColumn(column.id);
                 setColumns(prev => prev.filter((col) => col.id !== column.id));
+                writeLog("컬럼삭제", `${column.title}컬럼 삭제`, email, projectId.toString());
+
                 socket.emit('isChanged');
               }}
               className="px-2 py-1 bg-red-500 text-white rounded"
@@ -198,6 +206,8 @@ export default function Board({ projectId }: BoardProps) {
                       return col;
                     })
                   );
+                  writeLog("카드삭제", `${card.text}카드삭제`, email, projectId.toString());
+
                   socket.emit('isChanged');
                 }}
                 className="px-2 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
@@ -263,6 +273,8 @@ export default function Board({ projectId }: BoardProps) {
                       : col
                   ));
                 });
+                writeLog("카드추가", `${column.newCardText} 카드 추가`, email, projectId.toString());
+
                 socket.emit('isChanged');
               }}
               className="px-4 py-2 bg-blue-500 text-white rounded-md w-1/5"
@@ -304,7 +316,7 @@ export default function Board({ projectId }: BoardProps) {
               onClick={async () => {
                 if (projectId) {
                   const newCol = await createColumn(newColumnTitle, parseInt(projectId));
-
+                  writeLog("컬럼추가", `${newColumnTitle}컬럼 추가`, email, projectId.toString());
                   if (!newCol) {
                     console.error("컬럼 생성 실패");
                     return;

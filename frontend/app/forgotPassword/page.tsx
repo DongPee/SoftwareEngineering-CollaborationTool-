@@ -68,7 +68,7 @@ export default function ForgotPasswordPage() {
         <div className="flex justify-center">
           <Image src="/ollert-logo.jpg" alt="Trello" width={120} height={40} />
         </div>
-        <h1 className={styles.title}>비밀번호 찾기</h1>
+        <h1 className={styles.title}>비밀번호 찾기/변경</h1>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           {/* 이메일 입력 */}

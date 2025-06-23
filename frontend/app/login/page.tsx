@@ -23,7 +23,7 @@ export default function LoginPage() {
     if(reEmail && token){
       rememberLogin(reEmail, token);
     }
-  });
+  }, []);
   const rememberLogin = async (reEmail : string, token : string) => {
     console.log(reEmail);
     console.log(token);
@@ -107,14 +107,6 @@ export default function LoginPage() {
   };
 
   // handleGoogleLogin 함수에서 signIn 후 사용자 정보를 가져오기 위해 session을 사용
-const handleGoogleLogin = async () => {
-  const response = await signIn("google", { redirect: false });
-  if (response?.error) {
-    console.error("로그인 오류:", response.error);
-  } else{
-    auth?.login("", "goggle", "");
-  }
-};
 const handleKakaoLogin = async () => {
   const response = await signIn("kakao", { redirect: false });
 
@@ -181,13 +173,6 @@ const handleKakaoLogin = async () => {
         {/* 소셜 로그인 */}
         <p className={styles.socialLogin}>또는 다음을 사용하여 계속하기</p>
         <div className="flex flex-col space-y-2">
-          <button
-            onClick={handleGoogleLogin}
-            className="flex items-center justify-center border p-2 rounded hover:bg-gray-200"
-          >
-            <Image src="/google-logo.png" alt="Google" width={20} height={20} className="ml-4 mr-4" />
-            Google
-          </button>
           <button
             onClick={handleKakaoLogin}
             className="flex items-center justify-center border p-2 rounded hover:bg-gray-200"

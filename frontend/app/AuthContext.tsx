@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          em
+          em:email
         }),
       });
 

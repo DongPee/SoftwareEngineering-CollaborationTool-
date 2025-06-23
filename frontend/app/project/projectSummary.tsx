@@ -110,16 +110,7 @@ const ProjectSummary: React.FC<SummaryProps> = ({
           </ResponsiveContainer>
         </div>
 
-        {/* 기타 summary-middle 블록들 */}
-        <div className="summary-middle p-4 text-center rounded-lg">
-          <h2 className="font-bold">최근 활동</h2>
-        </div>
-        <div className="summary-middle p-4 text-center rounded-lg">
-          <h2 className="font-bold">업무 유형</h2>
-        </div>
-        <div className="summary-middle p-4 text-center rounded-lg">
-          <h2 className="font-bold">팀 워크로드</h2>
-        </div>
+
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import styles from "./signup.module.css";
 import { requestVerification, verifyCode } from "../verification";
+import { useRouter } from "next/navigation"; 
 
 export default function Signup() {
   const [username, setUsername] = useState("");
@@ -14,6 +15,7 @@ export default function Signup() {
   const [ICode, setICode] = useState("");
   const [isVerified, setIsVerified] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const router = useRouter(); 
 
   // 인증 코드 요청
   const handleRequestVerification = async () => {
@@ -61,6 +63,7 @@ export default function Signup() {
       const data = await response.json();
       if (response.ok) {
         alert("회원가입 성공!");
+        router.push("/")
       } else {
         alert(`회원가입 실패: ${data.error}`);
       }

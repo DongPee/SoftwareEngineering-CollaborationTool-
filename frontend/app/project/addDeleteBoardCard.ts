@@ -184,3 +184,27 @@ export const showUsers = async (projectId: string | null) => {
 };
 
 
+export const showUsersRole = async (projectId: string | null) => {
+  if (!projectId) return [];
+
+  try {
+    const response = await fetch("http://43.203.124.34:5001/api/showProjectUsernameRole", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ projectId }),
+    });
+
+    const res = await response.json();
+    const result = res.rows;
+
+    if (response.ok && Array.isArray(result)) {
+      return result; 
+    } else {
+      console.error("응답 실패:", res.error || "알 수 없는 오류");
+      return [];
+    }
+  } catch (error) {
+    console.error("API 호출 실패:", error);
+    return [];
+  }
+};

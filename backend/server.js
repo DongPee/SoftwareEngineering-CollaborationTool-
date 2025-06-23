@@ -147,6 +147,33 @@ async function sendDueSoonEmail(email, cardTitle, endDate, time) {
 }
 
 
+
+async function sendEmailToManager(email, cardTitle) {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL,
+      pass: process.env.PASSWORD,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL,
+    to: email,
+    subject: `카드 '${cardTitle}'에 담당자로 설정되었습니다.`,
+    text: `안녕하세요! 카드 '${cardTitle}'에 담당자로 설정되었습니다. 프로젝트를 확인해 주세요.`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`✅ ${email}에게 이메일 전송 완료`);
+  } catch (error) {
+    console.error(`❌ 이메일 전송 실패 (${email}):`, error);
+  }
+}
+
+
+
 cron.schedule('0 0 * * *', async () => {
   console.log('📨 [알림] 마감 1주 전 카드 확인 스케줄러 실행');
 
@@ -374,24 +401,44 @@ app.post('/api/signup', async (req, res) => {
 
 
 app.delete("/api/deleteProject", async (req, res) => {
-    const { projectId } = req.body;
-    console.log(projectId);
-    if (!projectId) {
-        return res.status(400).json({ message: "프로젝트 ID가 필요합니다." });
+  const { projectId, email } = req.body;
+  if (!projectId || !email) {
+    return res.status(400).json({ message: "프로젝트 ID 또는 이메일이 필요합니다." });
+  }
+  try {
+    const [result3] = await db.query("select id from user_info where email = ?", [email]);
+    if(result3.length === 0){
+        return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+    }
+    const [result2] = await db.query(
+      "SELECT role FROM project_members WHERE project_id = ? AND user_id = ?",
+      [projectId, result3[0].id]
+    );
+    if (result2.length === 0) {
+      return res.status(404).json({ message: "해당 프로젝트에서 사용자를 찾을 수 없습니다." });
+    }
+    const { role } = result2[0];
+    if (role === "owner") {
+      const [result] = await db.query("DELETE FROM projects WHERE id = ?", [projectId]);
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: "프로젝트를 찾을 수 없습니다." });
+      }
+    } else if (role === "member") {
+      const [result] = await db.query(
+        "DELETE FROM project_members WHERE project_id = ? AND user_id = ?",
+        [projectId, result3[0].id]
+      );
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: "프로젝트 멤버에서 삭제 실패" });
+      }
     }
 
-    try {
-        const result = await db.query("DELETE FROM projects WHERE id = ?", [projectId]);
+    res.status(200).json({ message: "프로젝트 삭제 성공" });
 
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: "프로젝트를 찾을 수 없습니다." });
-        }
-
-        res.status(200).json({ message: "프로젝트 삭제 성공" });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "서버 오류" });
-    }
+  } catch (err) {
+    console.error("프로젝트 삭제 오류:", err);
+    res.status(500).json({ message: "서버 오류" });
+  }
 });
 
 
@@ -913,6 +960,55 @@ app.post('/api/showProjectUsername', async (req, res) => {
 
 
 
+app.post('/api/showProjectUsernameRole', async (req, res) => {
+    const {projectId} = req.body;
+
+    if (!projectId) {
+        return res.status(400).json({ error: "프로젝트 Id가 없습니다." });
+    }
+
+    try {
+        const [rows] = await db.query("SELECT ui.username, ui.id, pm.role FROM project_members pm JOIN user_info ui ON pm.user_id = ui.id WHERE pm.project_id = ?;", [projectId]);
+        if (rows.length === 0 ) return res.status(400).json({ error: "사용자가 없음" });
+        res.json({ rows });
+        
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
+app.post('/api/changeRole', async (req, res) => {
+    const { projectId, user_id, role } = req.body;
+
+    if (!projectId || !user_id || !role) {
+        return res.status(400).json({ error: "프로젝트 ID, user ID, role이 없습니다." });
+    }
+
+    try {
+        const [result] = await db.query(
+            "UPDATE project_members SET role = ? WHERE project_id = ? AND user_id = ?",
+            [role, projectId, user_id]
+        );
+
+        // ✅ 변경된 행이 있는지 확인
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "해당 유저가 존재하지 않거나 역할이 변경되지 않았습니다." });
+        }
+
+        res.json({ success: true, message: "역할이 성공적으로 변경되었습니다." });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
 app.post('/api/addComment', async (req, res) => {
     const { cardId, content, email, fileUrl} = req.body;
     if (!cardId || !content || !email) {
@@ -939,6 +1035,32 @@ app.post('/api/addComment', async (req, res) => {
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
+app.post('/api/editComment', async (req, res) => {
+    const { commentId, content, cardId } = req.body;
+  
+    if (!commentId || !content || !cardId) {
+        return res.status(400).json({ error: "commentId, content, cardId가 없습니다." });
+    }
+  
+    try {
+        const [result] = await db.query(
+            "update comment_table set content = ? where id = ? and cards_id = ?", 
+            [content, commentId, cardId]
+        );
+      
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "댓글을 찾을 수 없습니다." });
+        }
+
+        res.json({ message: "댓글이 수정되었습니다." });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "서버 오류 발생" });
     }
 });
 
@@ -1027,12 +1149,38 @@ app.post('/api/setCardManager', async (req, res) => {
     }
     try {
         const [rows] = await db.query("update card_table set manager = ? WHERE id = ?", [assignee, cardId]);
+        const [rows2] = await db.query("select email from user_info where id = ?", [assignee]);
+        if(rows2.length === 0){
+            return res.status(401).json({error : "사용자가 없습니다."});
+        }
+        const [rows3] = await db.query("select title from card_table where id = ?", [cardId]);
+        if(rows3.length === 0){
+            return res.status(401).json({error : "카드가 없습니다."});
+        }
+        await sendEmailToManager(rows2[0].email, rows3[0].title);
+
         res.json({ rows });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "서버 오류 발생" });
     }
 });
+
+
+app.post('/api/updateProjectNameDesc', async (req, res) => {
+    const { projectId, name, desc} = req.body;
+    if (!projectId) {
+        return res.status(401).json({ error: "projectId가 없습니다." });
+    }
+    try {
+        const [rows] = await db.query("update projects set name = ?, description = ? WHERE id = ?", [name, desc, projectId]);
+        return res.status(200).json({message : "이름, 설명 변경 완료"});
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
 
 
 
@@ -1212,6 +1360,88 @@ app.post('/api/checkOwner', async (req, res) => {
         console.error(err);
         res.status(500).json({ error: "서버 오류 발생" });
     }
+});
+
+
+
+app.post("/api/writeLog", async (req, res) => {
+    const { log_type, content,  author_email, projectId} = req.body;
+
+    if (!log_type || !content || !author_email || !projectId) {
+        return res.status(400).json({ error: "로그 쓰기 실패" });
+    }
+    try {
+        const [rows2] = await db.query(
+            `select id from user_info where email = ?`,
+            [author_email]
+        );
+        if(rows2.length === 0){
+            return res.status(400).json({message:"사용자 없음"});
+        }
+        const author_id = rows2[0].id;
+        const [rows] = await db.query(
+            `insert into logs(author, log_type, content, project_Id) values(?, ?, ?, ?)`,
+            [author_id, log_type, content, projectId]
+        );
+        return res.status(200).json({"message" : "쓰기 성공"}) 
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+
+app.post("/api/getLog", async (req, res) => {
+    const { projectId } = req.body;
+
+    if (!projectId) {
+        return res.status(400).json({ error: "로그조회실패" });
+    }
+
+    try {
+        const [rows] = await db.query(
+            `
+            SELECT 
+                id,
+                author,
+                log_type,
+                content,
+                DATE_ADD(created_at, INTERVAL 9 HOUR) AS created_at,
+                project_id
+            FROM logs
+            WHERE project_id = ?
+            ORDER BY created_at DESC
+            `,
+            [projectId]
+        );
+
+        res.status(200).json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "서버 오류 발생" });
+    }
+});
+
+
+app.post('/api/editCardTitle', async (req, res) => {
+  const { name, card_id } = req.body;
+  if (!name || !card_id) {
+    return res.status(400).json({ error: "name 또는 card_id가 없습니다." });
+  }
+  try {
+    const [result] = await db.query(
+      "UPDATE card_table SET title = ? WHERE id = ?",
+      [name, card_id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "해당 카드가 존재하지 않습니다." });
+    }
+    res.json({ message: "카드 제목 수정 성공", card_id });
+  } catch (err) {
+    console.error("카드 제목 수정 오류:", err);
+    res.status(500).json({ error: "서버 오류 발생" });
+  }
 });
 
 

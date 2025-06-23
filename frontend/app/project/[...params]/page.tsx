@@ -12,12 +12,17 @@ import Calendar from "../projectCalender";
 import Chat from "../projectChat";
 import ProjectTimeline from "../projectTimeline";
 import Log from "../ProjectLog";
+import { useSearchParams } from "next/navigation";
+import ProjectRole from "../projectRole";
 
 export default function Project() {
-  const [active, setActive] = useState("summary");
   const router = useRouter();
   const params = useParams(); // App Router용
+  const searchParams = useSearchParams();
+  const tab = searchParams.get("tab");
 
+  const [active, setActive] = useState(tab || "summary");
+  
   const [projectId, encodedName, encodedDesc] = params.params || [];
 
   const projectName = decodeURIComponent(encodedName || "");
@@ -90,6 +95,13 @@ export default function Project() {
           )}
         {active === "log" && (
           <Log
+            projectId={projectId}
+            projectName={projectName}
+            projectDesc={projectDesc}
+          />
+        )}
+        {active === "role" && (
+          <ProjectRole
             projectId={projectId}
             projectName={projectName}
             projectDesc={projectDesc}

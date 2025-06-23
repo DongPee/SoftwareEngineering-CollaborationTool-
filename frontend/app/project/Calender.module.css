@@ -43,12 +43,10 @@
   text-align: center;
   font-weight: bold;
   padding: 6px 0;
-  background: #f3f4f6;
   border-bottom: 1px solid #d1d5db;
 }
 
 .calendarCell {
-  background: #fff;
   min-height: 90px;
   position: relative;
   padding: 4px;
@@ -60,7 +58,6 @@
   font-weight: 600;
   margin-bottom: 4px;
   text-align: left;
-  color: #4b5563;
 }
 
 .cardBar {
